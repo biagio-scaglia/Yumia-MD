@@ -1,9 +1,12 @@
 import {
   CardElement,
   CodeElement,
+  ColumnElement,
+  ColumnsElement,
   GroupElement,
   HeadingElement,
   ImageElement,
+  LayoutDirectiveElement,
   ListElement,
   ListItem,
   ParagraphElement,
@@ -123,5 +126,37 @@ export function createGroup(
     direction,
     elements,
     ...(gap !== undefined ? { gap } : {}),
+  };
+}
+
+export function createColumn(elements: SlideElement[], width?: string | number): ColumnElement {
+  return {
+    type: 'column',
+    elements,
+    ...(width !== undefined ? { width } : {}),
+  };
+}
+
+export function createColumns(
+  columns: ColumnElement[],
+  ratios?: string,
+  gap?: number | string
+): ColumnsElement {
+  return {
+    type: 'columns',
+    columns,
+    ...(ratios ? { ratios } : {}),
+    ...(gap !== undefined ? { gap } : {}),
+  };
+}
+
+export function createLayoutDirective(
+  mode: string,
+  attributes?: Record<string, string>
+): LayoutDirectiveElement {
+  return {
+    type: 'layout-directive',
+    mode,
+    ...(attributes ? { attributes } : {}),
   };
 }

@@ -1,7 +1,13 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { HeadingElement, ListElement, ParagraphElement } from '@yumia/ast';
+import {
+  CardElement,
+  ColumnsElement,
+  HeadingElement,
+  ListElement,
+  ParagraphElement,
+} from '@yumia/ast';
 import { parseYumia } from '@yumia/parser';
 import { YumiaCompiler } from '@yumia/core';
 import { PptxRenderer } from '@yumia/renderer-pptx';
@@ -27,6 +33,7 @@ describe('Integration: Example Presentation', () => {
     expect((slide1?.elements[1] as ParagraphElement).text).toBe(
       'Version Control for Application State.'
     );
+    expect(slide1?.notes).toContain('Introduce HomuraJS');
 
     // Slide 2: The Problem
     const slide2 = presentation.slides[1];
@@ -42,13 +49,27 @@ describe('Integration: Example Presentation', () => {
     expect(list.items[1]?.text).toBe('Difficult debugging');
     expect(list.items[2]?.text).toBe('Lost state history');
 
-    // Slide 3: The Solution
+    // Slide 3: The Solution with Columns and Cards
     const slide3 = presentation.slides[2];
     expect(slide3?.elements).toHaveLength(2);
     expect((slide3?.elements[0] as HeadingElement).text).toBe('The Solution');
-    expect((slide3?.elements[1] as ParagraphElement).text).toBe(
-      'A structured approach to application state history.'
-    );
+
+    const columns = slide3?.elements[1] as ColumnsElement;
+    expect(columns.type).toBe('columns');
+    expect(columns.ratios).toBe('50:50');
+    expect(columns.columns).toHaveLength(2);
+
+    const col1 = columns.columns[0];
+    const card1 = col1?.elements[0] as CardElement;
+    expect(card1.type).toBe('card');
+    expect(card1.title).toBe('Before');
+
+    const col2 = columns.columns[1];
+    const card2 = col2?.elements[0] as CardElement;
+    expect(card2.type).toBe('card');
+    expect(card2.title).toBe('After');
+
+    expect(slide3?.notes).toContain('deterministic timeline replay');
   });
 
   it('should compile the example presentation via core compiler', async () => {

@@ -98,6 +98,25 @@ export interface GroupElement {
   gap?: number | string;
 }
 
+export interface ColumnElement {
+  type: 'column';
+  elements: SlideElement[];
+  width?: string | number;
+}
+
+export interface ColumnsElement {
+  type: 'columns';
+  columns: ColumnElement[];
+  ratios?: string;
+  gap?: number | string;
+}
+
+export interface LayoutDirectiveElement {
+  type: 'layout-directive';
+  mode: string;
+  attributes?: Record<string, string>;
+}
+
 export type SlideElement =
   | HeadingElement
   | ParagraphElement
@@ -107,7 +126,10 @@ export type SlideElement =
   | CodeElement
   | QuoteElement
   | TableElement
-  | GroupElement;
+  | GroupElement
+  | ColumnElement
+  | ColumnsElement
+  | LayoutDirectiveElement;
 
 export interface Slide {
   id?: string;
