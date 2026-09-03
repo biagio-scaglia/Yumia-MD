@@ -8,6 +8,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
+function runCommand(command, description) {
+  console.log(`\n⚙️  ${description}...`);
+  try {
+    execSync(command, { cwd: rootDir, stdio: 'inherit' });
+    console.log(`✓ ${description} completed successfully.`);
+  } catch (err) {
+    console.error(`\n❌ Error during ${description}:`, err.message);
+    process.exit(1);
+  }
+}
+
 function getRootPackageJson() {
   const rootPkgPath = join(rootDir, 'package.json');
   return {
@@ -66,7 +77,15 @@ function calculateNextVersion(currentVersion, bumpType) {
   }
 }
 
-function updateCliVersionConstant(newVersion) {
+function updateVersions(newVersion) {
+  const pkgPaths = getAllPackageJsonPaths();
+  for (const pkgPath of pkgPaths) {
+    const raw = readFileSync(pkgPath, 'utf-8');
+    const json = JSON.parse(raw);
+    json.version = newVersion;
+    writeFileSync(pkgPath, JSON.stringify(json, null, 2) + '\n', 'utf-8');
+  }
+
   const cliFilePath = join(rootDir, 'packages', 'cli', 'src', 'cli.ts');
   try {
     const content = readFileSync(cliFilePath, 'utf-8');
@@ -76,75 +95,38 @@ function updateCliVersionConstant(newVersion) {
     );
     if (content !== updated) {
       writeFileSync(cliFilePath, updated, 'utf-8');
-      console.log(`✓ Updated CLI constant in packages/cli/src/cli.ts -> ${newVersion}`);
     }
   } catch (err) {
     console.warn(`Could not update CLI version constant: ${err.message}`);
   }
 }
 
-function runPublish(targetVersion) {
-  console.log(`\n📦 Building and publishing v${targetVersion} to NPM...`);
-  try {
-    execSync('pnpm build', { cwd: rootDir, stdio: 'inherit' });
-    execSync('pnpm test', { cwd: rootDir, stdio: 'inherit' });
-    execSync('pnpm -r publish --access public --no-git-checks', { cwd: rootDir, stdio: 'inherit' });
-    console.log(`\n🎉 Published YumiaMD v${targetVersion} to NPM successfully!`);
-  } catch (err) {
-    console.error(`\n❌ Failed to publish to NPM:`, err.message);
-    process.exit(1);
-  }
-}
-
 function main() {
-  const rawArgs = process.argv.slice(2);
-  const shouldPublish = rawArgs.includes('--publish') || rawArgs.includes('-p');
-  const args = rawArgs.filter((a) => a !== '--publish' && a !== '-p');
-  const arg = args[0];
-
+  const arg = process.argv[2];
   const { data: rootPkg } = getRootPackageJson();
-  const currentVersion = rootPkg.version || '0.1.0';
+  let targetVersion = rootPkg.version || '0.1.0';
 
-  if (!arg || arg === '--help' || arg === '-h') {
-    console.log(`
-YumiaMD Version Bumper & NPM Publisher
-
-Current version: ${currentVersion}
-
-Usage:
-  node scripts/bump-version.mjs <patch | minor | major | X.Y.Z> [--publish]
-
-Examples:
-  pnpm version:bump patch             # Bumps version only: 0.1.0 -> 0.1.1
-  pnpm version:bump minor --publish   # Bumps to 0.2.0 and publishes to NPM
-  pnpm release                        # Builds, tests, and publishes to NPM
-`);
-    process.exit(0);
+  if (arg && arg !== '--current') {
+    targetVersion = calculateNextVersion(targetVersion, arg);
+    console.log(`\n🚀 Preparing release for YumiaMD v${targetVersion}...`);
+    updateVersions(targetVersion);
+  } else {
+    console.log(`\n🚀 Publishing current version YumiaMD v${targetVersion} to NPM...`);
   }
 
-  const nextVersion = calculateNextVersion(currentVersion, arg);
-  console.log(`Bumping YumiaMD workspace version: ${currentVersion} ➔ ${nextVersion}`);
+  // 1. Build fresh dist/ bundles
+  runCommand('pnpm build', 'Building all workspace packages');
 
-  const pkgPaths = getAllPackageJsonPaths();
-  let updatedCount = 0;
+  // 2. Run automated tests
+  runCommand('pnpm test', 'Running test suite');
 
-  for (const pkgPath of pkgPaths) {
-    const raw = readFileSync(pkgPath, 'utf-8');
-    const json = JSON.parse(raw);
-    json.version = nextVersion;
-    writeFileSync(pkgPath, JSON.stringify(json, null, 2) + '\n', 'utf-8');
-    const relativePath = pkgPath.replace(rootDir, '').replace(/^[/\\]/, '');
-    console.log(`✓ Updated ${relativePath} -> ${nextVersion}`);
-    updatedCount++;
-  }
+  // 3. Publish to NPM
+  runCommand(
+    'pnpm -r publish --access public --no-git-checks',
+    `Publishing packages to NPM registry (v${targetVersion})`
+  );
 
-  updateCliVersionConstant(nextVersion);
-
-  console.log(`\n✓ Successfully bumped ${updatedCount} package(s) to v${nextVersion}`);
-
-  if (shouldPublish) {
-    runPublish(nextVersion);
-  }
+  console.log(`\n🎉 Successfully published YumiaMD v${targetVersion} to NPM!`);
 }
 
 main();
