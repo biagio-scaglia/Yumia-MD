@@ -29,6 +29,8 @@ export interface SlideLayoutResult {
   slideId?: string;
   viewport: Size;
   nodes: LayoutNode[];
+  overflow?: boolean;
+  overflowAmount?: number;
 }
 
 export interface PresentationLayoutResult {

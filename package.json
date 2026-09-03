@@ -12,7 +12,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "pnpm -r typecheck",
-    "version:bump": "node scripts/bump-version.mjs"
+    "version:bump": "node scripts/bump-version.mjs",
+    "publish:packages": "pnpm -r publish --access public --no-git-checks"
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
@@ -22,5 +23,15 @@
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.24.0",
     "vitest": "^3.0.5"
+  },
+  "author": "Biagio Scaglia",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/biagio-scaglia/Yumia-MD.git"
+  },
+  "homepage": "https://github.com/biagio-scaglia/Yumia-MD#readme",
+  "bugs": {
+    "url": "https://github.com/biagio-scaglia/Yumia-MD/issues"
   }
 }

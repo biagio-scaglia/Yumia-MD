@@ -1,12 +1,13 @@
 {
-  "name": "@yumia/cli",
+  "name": "yumiamd",
   "version": "0.1.0",
-  "description": "Command line interface for YumiaMD presentations",
+  "description": "Command line interface and compiler for YumiaMD presentations",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "yumia": "./dist/bin.js"
+    "yumia": "./dist/bin.js",
+    "yumiamd": "./dist/bin.js"
   },
   "exports": {
     ".": {
@@ -17,7 +18,9 @@
   "dependencies": {
     "@yumia/ast": "workspace:*",
     "@yumia/core": "workspace:*",
-    "@yumia/parser": "workspace:*"
+    "@yumia/layout": "workspace:*",
+    "@yumia/parser": "workspace:*",
+    "@yumia/theme": "workspace:*"
   },
   "scripts": {
     "build": "tsc",
@@ -29,5 +32,21 @@
     "cli"
   ],
   "author": "Biagio Scaglia",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/biagio-scaglia/Yumia-MD.git"
+  },
+  "homepage": "https://github.com/biagio-scaglia/Yumia-MD#readme",
+  "bugs": {
+    "url": "https://github.com/biagio-scaglia/Yumia-MD/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
 }

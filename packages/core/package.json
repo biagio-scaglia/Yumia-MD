@@ -29,5 +29,21 @@
     "compiler"
   ],
   "author": "Biagio Scaglia",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/biagio-scaglia/Yumia-MD.git"
+  },
+  "homepage": "https://github.com/biagio-scaglia/Yumia-MD#readme",
+  "bugs": {
+    "url": "https://github.com/biagio-scaglia/Yumia-MD/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
 }

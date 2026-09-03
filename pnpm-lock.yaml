@@ -39,9 +39,15 @@ importers:
       '@yumia/core':
         specifier: workspace:*
         version: link:../core
+      '@yumia/layout':
+        specifier: workspace:*
+        version: link:../layout
       '@yumia/parser':
         specifier: workspace:*
         version: link:../parser
+      '@yumia/theme':
+        specifier: workspace:*
+        version: link:../theme
 
   packages/core:
     dependencies:
