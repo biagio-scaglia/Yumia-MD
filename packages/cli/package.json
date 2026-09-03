@@ -20,6 +20,7 @@
     "@biagioscaglia/yumia-core": "workspace:*",
     "@biagioscaglia/yumia-layout": "workspace:*",
     "@biagioscaglia/yumia-parser": "workspace:*",
+    "@biagioscaglia/yumia-renderer-pptx": "workspace:*",
     "@biagioscaglia/yumia-theme": "workspace:*"
   },
   "scripts": {

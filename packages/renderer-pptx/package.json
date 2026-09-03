@@ -15,7 +15,8 @@
     "@biagioscaglia/yumia-ast": "workspace:*",
     "@biagioscaglia/yumia-layout": "workspace:*",
     "@biagioscaglia/yumia-renderer": "workspace:*",
-    "@biagioscaglia/yumia-theme": "workspace:*"
+    "@biagioscaglia/yumia-theme": "workspace:*",
+    "pptxgenjs": "^4.0.1"
   },
   "scripts": {
     "build": "tsc",

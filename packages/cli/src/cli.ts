@@ -1,8 +1,10 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, dirname, extname, join, resolve } from 'node:path';
 import { parseYumia } from '@biagioscaglia/yumia-parser';
 import { DefaultLayoutEngine } from '@biagioscaglia/yumia-layout';
 import { Presentation, Slide } from '@biagioscaglia/yumia-ast';
+import { YumiaCompiler } from '@biagioscaglia/yumia-core';
+import { PptxRenderer } from '@biagioscaglia/yumia-renderer-pptx';
 
 export const VERSION = '0.1.2';
 
@@ -18,16 +20,18 @@ Commands:
   validate <file>    Validate a .yumia.md presentation syntax and structure
   lint <file>        Analyze presentation for layout overflows and accessibility
   inspect <file>     Inspect the AST and geometric layout tree
-  build <file>       Compile a presentation to target formats (planned)
+  build <file>       Compile a presentation to editable PowerPoint (.pptx)
 
 Options:
+  --out, -o <file>   Specify output file path (default: dist/<name>.pptx)
+  --format, -f <fmt> Target output format: pptx (default)
   --layout           Show computed geometric bounding boxes in 'inspect'
   -h, --help         Show this help message
   -v, --version      Show CLI version
 `.trim();
 }
 
-export function runCli(argv: string[]): { exitCode: number; output: string } {
+export async function runCli(argv: string[]): Promise<{ exitCode: number; output: string }> {
   const args = argv.slice(2);
 
   if (args.length === 0 || args.includes('-h') || args.includes('--help')) {
@@ -89,7 +93,7 @@ Opening slide introducing the project.
 
       return {
         exitCode: 0,
-        output: `✓ Created presentation project '${projectName}' at ./${projectName}\n  Edit ./${projectName}/presentation.yumia.md to get started!`,
+        output: `✓ Created presentation project '${projectName}' at ./${projectName}\n  Edit ./${projectName}/presentation.yumia.md to get started!\n  Then compile with: yumia build ./${projectName}/presentation.yumia.md`,
       };
     } catch (err) {
       return {
@@ -192,10 +196,46 @@ Opening slide introducing the project.
   }
 
   if (command === 'build') {
-    return {
-      exitCode: 0,
-      output: `[planned] Compiling '${target ?? 'presentation'}' via YumiaCompiler...`,
-    };
+    if (!target) {
+      return { exitCode: 1, output: 'Error: Please specify a presentation file to build.' };
+    }
+
+    try {
+      const resolvedInput = resolve(process.cwd(), target);
+      const source = readFileSync(resolvedInput, 'utf-8');
+
+      // Determine output path
+      let outputPath = '';
+      const outFlagIndex = args.findIndex((a) => a === '--out' || a === '-o');
+      if (outFlagIndex !== -1 && args[outFlagIndex + 1]) {
+        outputPath = resolve(process.cwd(), args[outFlagIndex + 1]!);
+      } else {
+        const fileBase = basename(resolvedInput, extname(resolvedInput)).replace(/\.yumia$/, '');
+        outputPath = join(dirname(resolvedInput), 'dist', `${fileBase}.pptx`);
+      }
+
+      mkdirSync(dirname(outputPath), { recursive: true });
+
+      const compiler = new YumiaCompiler();
+      const renderer = new PptxRenderer();
+
+      const result = await compiler.compile(source, renderer);
+      const buffer =
+        result.data instanceof Uint8Array
+          ? Buffer.from(result.data)
+          : Buffer.from(new Uint8Array(result.data));
+      writeFileSync(outputPath, buffer);
+
+      return {
+        exitCode: 0,
+        output: `✓ Successfully compiled '${target}' ➔ '${outputPath}' (${result.slideCount} native editable slides)`,
+      };
+    } catch (err) {
+      return {
+        exitCode: 1,
+        output: `✗ Build failed: ${err instanceof Error ? err.message : String(err)}`,
+      };
+    }
   }
 
   return {

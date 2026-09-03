@@ -5,26 +5,38 @@
 [![CI](https://github.com/biagio-scaglia/Yumia-MD/actions/workflows/ci.yml/badge.svg)](https://github.com/biagio-scaglia/Yumia-MD/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-YumiaMD is an experimental Markdown-based presentation authoring and compilation tool. It provides a human-readable and AI-friendly way to author slide decks in plain Markdown with semantic extensions, and compiles them through a modular pipeline.
-
-> [!NOTE]
-> **Current Status: Experimental.** This repository is in its initial architectural phase. Rendering targets (PPTX, PDF, HTML) are currently defined as architectural interfaces and placeholders.
+YumiaMD is a modern presentation compiler. It provides a human-readable and AI-friendly way to author slide decks in plain Markdown with semantic presentation directives (`:::columns`, `:::card`, `:::notes`), and compiles them into **native, fully editable PowerPoint (.pptx)** presentations, clean vector PDFs, and interactive HTML5 decks.
 
 ---
 
 ## The Problem
 
-Creating slide decks today usually forces a trade-off between:
+Creating slide decks today usually forces a frustrating trade-off:
 
-- **Visual GUI Tools (PowerPoint, Keynote)**: Great for layout and native objects, but hostile to version control, diffs, automation, and AI workflows.
-- **HTML/Markdown Deck Tools (Marp, Reveal.js, Slidev)**: Great for web display and code-first authoring, but generally export static PDFs or flat rasterized PPTX images rather than native, editable PowerPoint objects.
+- **Visual GUI Tools (PowerPoint, Keynote)**: Great for layout and native objects, but hostile to version control, diffs, automation, and AI generation workflows.
+- **HTML/Markdown Deck Tools (Marp, Reveal.js, Slidev)**: Great for web display and code-first authoring, but export static PDFs or flat rasterized PPTX images rather than native, editable PowerPoint objects.
 
-YumiaMD explores a compiler architecture designed from day one around **semantic decoupling**:
+YumiaMD provides a true compiler architecture designed around **semantic decoupling**:
 
-1. Clean Markdown source representation.
-2. An intermediate semantic presentation Abstract Syntax Tree (AST).
-3. Pluggable layout calculation.
-4. Native object code generation for downstream targets (PowerPoint, PDF, HTML).
+```text
+presentation.yumia.md
+          │
+          ▼
+   @biagioscaglia/yumia-parser
+          │
+          ▼
+    Presentation AST
+          │
+          ▼
+  Deterministic Layout Engine
+          │
+          ▼
+   ┌──────┼────────┐
+   ▼      ▼        ▼
+ PPTX    PDF      HTML
+```
+
+> **Native Object Principle**: A slide compiled to PowerPoint is **not** an image or HTML/CSS screenshot. Headings, bullet lists, vector card shapes, and notes are generated as **100% native OpenXML PowerPoint objects** that you can click, edit, and re-theme in Microsoft PowerPoint or Google Slides.
 
 ---
 
@@ -32,103 +44,117 @@ YumiaMD explores a compiler architecture designed from day one around **semantic
 
 ```markdown
 ---
-title: My Presentation
+title: System Overview
 theme: default
+author: Biagio Scaglia
 ---
 
-# Hello Yumia
+# High-Performance State Machines
 
-Presentation authoring using Markdown.
+Deterministic reactive workflows powered by HomuraJS.
+
+:::notes
+Opening slide introducing deterministic workflows.
+:::
 
 ---
 
-# Key Concepts
+# Architecture & Capabilities
 
-- Separation of content and presentation
-- Native editable presentation export
-- First-class toolchain for humans and AI
+:::columns ratios="50:50"
+
+:::column
+:::card Core Engine
+
+- 100% Deterministic execution
+- Zero runtime dependencies
+- TypeScript-first typing
+  :::
+  :::
+
+:::column
+:::card Compiler Targets
+
+- Native editable PPTX
+- Vector PDF documents
+- Interactive HTML5 decks
+  :::
+  :::
+
+:::
 ```
 
 ---
 
-## Planned Architecture
+## CLI Usage (`yumiamd`)
 
-YumiaMD processes presentations through a strict unidirectional compiler pipeline:
+Install or run the CLI globally / locally:
 
-```
-Source (.yumia.md) ──► @biagioscaglia/yumia-parser ──► @biagioscaglia/yumia-ast ──► @biagioscaglia/yumia-theme
-                                                              │
-                                                              ▼
-Output Target ◄── @biagioscaglia/yumia-renderer-* ◄── @biagioscaglia/yumia-layout ◄───────┘
-```
+```bash
+# Initialize a new presentation project
+yumia init my-deck
 
-- **`@biagioscaglia/yumia-ast`**: Semantic data structures representing presentation entities (slides, headings, cards, tables, code blocks).
-- **`@biagioscaglia/yumia-parser`**: Converts Markdown + presentation DSL into the semantic AST.
-- **`@biagioscaglia/yumia-theme`**: Semantic design tokens (colors, typography scales, spacing, border radii).
-- **`@biagioscaglia/yumia-layout`**: Calculates positions and dimensions independently of target rendering formats.
-- **`@biagioscaglia/yumia-renderer`**: Core rendering abstractions and contexts.
-- **`@biagioscaglia/yumia-renderer-pptx`** _(planned)_: Compiles presentations into native, editable PowerPoint `.pptx` objects.
-- **`@biagioscaglia/yumia-renderer-pdf`** _(planned)_: Compiles presentations into vector PDF documents.
-- **`@biagioscaglia/yumia-renderer-html`** _(planned)_: Compiles presentations into interactive HTML5 decks.
-- **`@biagioscaglia/yumia-core`**: Orchestrates parsing, theming, layout, and rendering into unified compile workflows.
-- **`yumiamd`**: Command-line developer tool for building, validating, and inspecting presentations.
+# Validate markdown syntax and AST structure
+yumia validate presentation.yumia.md
 
----
+# Lint presentation for vertical overflow and accessibility
+yumia lint presentation.yumia.md
 
-## Repository Structure
+# Inspect AST and deterministic layout bounding boxes
+yumia inspect presentation.yumia.md --layout
 
-```
-Yumia-MD/
-├── packages/
-│   ├── ast/             # Semantic AST data structures
-│   ├── parser/          # Markdown & frontmatter parser
-│   ├── theme/           # Semantic design tokens & theme model
-│   ├── layout/          # Geometry and layout computation engine
-│   ├── renderer/        # Base renderer abstractions
-│   ├── renderer-pptx/   # Native PPTX renderer (placeholder)
-│   ├── renderer-pdf/    # PDF renderer (placeholder)
-│   ├── renderer-html/   # HTML deck renderer (placeholder)
-│   ├── core/            # Pipeline coordinator
-│   └── cli/             # Command-line interface
-├── examples/
-│   └── basic/           # Sample YumiaMD presentations
-├── tests/               # Workspace integration tests
-├── docs/                # Architecture and design documentation
-└── .github/
-    └── workflows/       # GitHub Actions CI workflow
+# Compile directly to a native editable PowerPoint deck
+yumia build presentation.yumia.md --out dist/presentation.pptx
 ```
 
 ---
 
-## Development
+## Packages Overview
+
+| Package                              | Responsibility                                                  |
+| :----------------------------------- | :-------------------------------------------------------------- |
+| `@biagioscaglia/yumia-ast`           | Pure semantic presentation AST data structures                  |
+| `@biagioscaglia/yumia-parser`        | Converts Markdown + Presentation DSL into AST                   |
+| `@biagioscaglia/yumia-theme`         | Semantic design tokens (colors, typography, spacing)            |
+| `@biagioscaglia/yumia-layout`        | Deterministic geometric placement (stack, columns, cards)       |
+| `@biagioscaglia/yumia-renderer`      | Base renderer abstractions and rendering context                |
+| `@biagioscaglia/yumia-renderer-pptx` | **Native editable PowerPoint (`.pptx`) generation engine**      |
+| `@biagioscaglia/yumia-renderer-pdf`  | Vector PDF document compiler _(in development)_                 |
+| `@biagioscaglia/yumia-renderer-html` | Interactive HTML5 presentation deck compiler _(in development)_ |
+| `@biagioscaglia/yumia-core`          | Compiler pipeline coordinator                                   |
+| `yumiamd`                            | Command-line interface and compiler runner (`yumia`)            |
+
+---
+
+## Development & Testing
 
 This monorepo uses **pnpm** and **TypeScript** (strict mode).
-
-### Prerequisites
-
-- Node.js >= 20.0.0
-- pnpm >= 9.0.0
-
-### Setup
 
 ```bash
 # Install all dependencies across workspaces
 pnpm install
 
-# Typecheck all packages
+# Build all packages
+pnpm build
+
+# Typecheck workspace packages
 pnpm typecheck
 
-# Run test suite with Vitest
+# Run test suite with Vitest (24 unit & integration tests)
 pnpm test
 
 # Lint code with ESLint
 pnpm lint
 
-# Check code formatting
-pnpm format:check
-
 # Format code with Prettier
 pnpm format
+```
+
+### Release & Publish to NPM
+
+```bash
+# Increment version, build, test, publish to NPM, commit, tag, and push to GitHub:
+pnpm release patch
 ```
 
 ---
@@ -137,15 +163,14 @@ pnpm format
 
 - [x] Initial monorepo setup & strict TypeScript configuration
 - [x] Semantic AST model (`@biagioscaglia/yumia-ast`)
-- [x] Minimal Markdown and frontmatter parser (`@biagioscaglia/yumia-parser`)
+- [x] Markdown and directive parser (`@biagioscaglia/yumia-parser`)
 - [x] Theme token interfaces and default theme (`@biagioscaglia/yumia-theme`)
-- [x] Layout model and engine abstraction (`@biagioscaglia/yumia-layout`)
-- [x] Renderer contracts and pipeline orchestration (`@biagioscaglia/yumia-renderer`, `@biagioscaglia/yumia-core`, `yumiamd`)
-- [ ] Markdown presentation DSL extensions (grid layouts, column directives, speaker notes)
-- [ ] Native PowerPoint generation engine (`@biagioscaglia/yumia-renderer-pptx`)
+- [x] Deterministic Layout Engine (`@biagioscaglia/yumia-layout`)
+- [x] **Native PowerPoint generation engine (`@biagioscaglia/yumia-renderer-pptx`)**
+- [x] Full CLI toolchain (`yumia init`, `validate`, `lint`, `inspect`, `build`)
+- [x] Automated NPM and GitHub release tooling (`pnpm release`)
+- [ ] HTML live preview dev server (`yumia dev`)
 - [ ] Vector PDF renderer (`@biagioscaglia/yumia-renderer-pdf`)
-- [ ] HTML presentation previewer (`@biagioscaglia/yumia-renderer-html`)
-- [ ] Watch mode and live preview dev server
 
 ---
 

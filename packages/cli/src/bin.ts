@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { runCli } from './cli.js';
 
-const result = runCli(process.argv);
+const result = await runCli(process.argv);
 if (result.output) {
   if (result.exitCode === 0) {
     console.log(result.output);
