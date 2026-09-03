@@ -1,0 +1,33 @@
+{
+  "name": "@yumia/cli",
+  "version": "0.1.0",
+  "description": "Command line interface for YumiaMD presentations",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "yumia": "./dist/bin.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@yumia/ast": "workspace:*",
+    "@yumia/core": "workspace:*",
+    "@yumia/parser": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "yumia",
+    "presentation",
+    "cli"
+  ],
+  "author": "Biagio Scaglia",
+  "license": "MIT"
+}

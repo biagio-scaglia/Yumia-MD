@@ -1,0 +1,30 @@
+{
+  "name": "@yumia/renderer",
+  "version": "0.1.0",
+  "description": "Base renderer abstraction and rendering context for YumiaMD",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@yumia/ast": "workspace:*",
+    "@yumia/layout": "workspace:*",
+    "@yumia/theme": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "yumia",
+    "presentation",
+    "renderer"
+  ],
+  "author": "Biagio Scaglia",
+  "license": "MIT"
+}

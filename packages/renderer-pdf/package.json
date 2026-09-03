@@ -1,0 +1,30 @@
+{
+  "name": "@yumia/renderer-pdf",
+  "version": "0.1.0",
+  "description": "PDF renderer placeholder for YumiaMD presentations",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@yumia/ast": "workspace:*",
+    "@yumia/renderer": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "yumia",
+    "presentation",
+    "pdf",
+    "renderer"
+  ],
+  "author": "Biagio Scaglia",
+  "license": "MIT"
+}

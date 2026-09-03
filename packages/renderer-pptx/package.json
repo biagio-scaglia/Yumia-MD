@@ -1,0 +1,33 @@
+{
+  "name": "@yumia/renderer-pptx",
+  "version": "0.1.0",
+  "description": "Native editable PowerPoint (PPTX) renderer placeholder for YumiaMD",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@yumia/ast": "workspace:*",
+    "@yumia/layout": "workspace:*",
+    "@yumia/renderer": "workspace:*",
+    "@yumia/theme": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "yumia",
+    "presentation",
+    "pptx",
+    "powerpoint",
+    "renderer"
+  ],
+  "author": "Biagio Scaglia",
+  "license": "MIT"
+}

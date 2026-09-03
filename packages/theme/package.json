@@ -1,0 +1,26 @@
+{
+  "name": "@yumia/theme",
+  "version": "0.1.0",
+  "description": "Semantic theme definitions and tokens for YumiaMD presentations",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "yumia",
+    "presentation",
+    "theme",
+    "tokens"
+  ],
+  "author": "Biagio Scaglia",
+  "license": "MIT"
+}

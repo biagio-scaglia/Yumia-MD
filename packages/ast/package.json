@@ -1,0 +1,27 @@
+{
+  "name": "@yumia/ast",
+  "version": "0.1.0",
+  "description": "Semantic AST data structures for YumiaMD presentations",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist"
+  },
+  "keywords": [
+    "yumia",
+    "presentation",
+    "ast",
+    "markdown"
+  ],
+  "author": "Biagio Scaglia",
+  "license": "MIT"
+}
