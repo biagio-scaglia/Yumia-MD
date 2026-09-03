@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execSync } from 'node:child_process';
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -8,14 +8,27 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
-function runCommand(command, description) {
+const ORDERED_PACKAGES = [
+  'ast',
+  'theme',
+  'parser',
+  'layout',
+  'renderer',
+  'renderer-html',
+  'renderer-pdf',
+  'renderer-pptx',
+  'core',
+  'cli',
+];
+
+function runCommand(command, description, cwd = rootDir) {
   console.log(`\n⚙️  ${description}...`);
   try {
-    execSync(command, { cwd: rootDir, stdio: 'inherit' });
-    console.log(`✓ ${description} completed successfully.`);
+    execSync(command, { cwd, stdio: 'inherit' });
+    console.log(`✓ ${description} completed.`);
   } catch (err) {
     console.error(`\n❌ Error during ${description}:`, err.message);
-    process.exit(1);
+    throw err;
   }
 }
 
@@ -28,24 +41,10 @@ function getRootPackageJson() {
 }
 
 function getAllPackageJsonPaths() {
-  const packagesDir = join(rootDir, 'packages');
-  const entries = readdirSync(packagesDir);
   const pkgPaths = [join(rootDir, 'package.json')];
-
-  for (const entry of entries) {
-    const fullPath = join(packagesDir, entry);
-    if (statSync(fullPath).isDirectory()) {
-      const pkgJsonPath = join(fullPath, 'package.json');
-      try {
-        if (statSync(pkgJsonPath).isFile()) {
-          pkgPaths.push(pkgJsonPath);
-        }
-      } catch {
-        // Ignored
-      }
-    }
+  for (const pkg of ORDERED_PACKAGES) {
+    pkgPaths.push(join(rootDir, 'packages', pkg, 'package.json'));
   }
-
   return pkgPaths;
 }
 
@@ -101,6 +100,42 @@ function updateVersions(newVersion) {
   }
 }
 
+function publishAllPackages(targetVersion) {
+  console.log(
+    `\n📦 Publishing ${ORDERED_PACKAGES.length} packages sequentially to NPM (v${targetVersion})...`
+  );
+
+  for (const pkgDir of ORDERED_PACKAGES) {
+    const fullPath = join(rootDir, 'packages', pkgDir);
+    const pkgJson = JSON.parse(readFileSync(join(fullPath, 'package.json'), 'utf-8'));
+    const pkgName = pkgJson.name;
+
+    console.log(`\n🚀 [${pkgDir}] Publishing ${pkgName}@${targetVersion}...`);
+    let published = false;
+    let attempts = 0;
+
+    while (!published && attempts < 2) {
+      attempts++;
+      try {
+        execSync('pnpm publish --access public --no-git-checks', {
+          cwd: fullPath,
+          stdio: 'inherit',
+        });
+        published = true;
+        console.log(`✓ Published ${pkgName}@${targetVersion}`);
+      } catch (err) {
+        if (attempts < 2) {
+          console.warn(`⚠️  Retrying publication for ${pkgName} in 2s...`);
+          execSync('node -e "setTimeout(()=>{}, 2000)"');
+        } else {
+          console.error(`❌ Could not publish ${pkgName}:`, err.message);
+          throw err;
+        }
+      }
+    }
+  }
+}
+
 function main() {
   const arg = process.argv[2];
   const { data: rootPkg } = getRootPackageJson();
@@ -111,7 +146,7 @@ function main() {
     console.log(`\n🚀 Preparing release for YumiaMD v${targetVersion}...`);
     updateVersions(targetVersion);
   } else {
-    console.log(`\n🚀 Publishing current version YumiaMD v${targetVersion} to NPM...`);
+    console.log(`\n🚀 Releasing YumiaMD v${targetVersion} to NPM...`);
   }
 
   // 1. Build fresh dist/ bundles
@@ -120,13 +155,10 @@ function main() {
   // 2. Run automated tests
   runCommand('pnpm test', 'Running test suite');
 
-  // 3. Publish to NPM
-  runCommand(
-    'pnpm -r publish --access public --no-git-checks',
-    `Publishing packages to NPM registry (v${targetVersion})`
-  );
+  // 3. Publish sequentially
+  publishAllPackages(targetVersion);
 
-  console.log(`\n🎉 Successfully published YumiaMD v${targetVersion} to NPM!`);
+  console.log(`\n🎉 All packages for YumiaMD v${targetVersion} are now live on NPM!`);
 }
 
 main();
