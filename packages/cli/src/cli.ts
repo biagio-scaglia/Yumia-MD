@@ -4,7 +4,7 @@ import { parseYumia } from '@biagioscaglia/yumia-parser';
 import { DefaultLayoutEngine } from '@biagioscaglia/yumia-layout';
 import { Presentation, Slide } from '@biagioscaglia/yumia-ast';
 
-export const VERSION = '0.1.1';
+export const VERSION = '0.1.2';
 
 export function printHelp(): string {
   return `

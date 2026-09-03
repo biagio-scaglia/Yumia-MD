@@ -1,6 +1,6 @@
 {
   "name": "@biagioscaglia/yumia-renderer-pdf",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "PDF renderer placeholder for YumiaMD presentations",
   "type": "module",
   "main": "./dist/index.js",

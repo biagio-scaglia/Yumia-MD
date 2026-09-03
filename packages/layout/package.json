@@ -1,6 +1,6 @@
 {
   "name": "@biagioscaglia/yumia-layout",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Foundational layout computation engine and geometric models for YumiaMD",
   "type": "module",
   "main": "./dist/index.js",

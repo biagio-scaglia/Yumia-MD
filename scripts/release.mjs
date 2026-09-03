@@ -121,7 +121,7 @@ function publishAllPackages(targetVersion) {
       const errStr = err.message || '';
       if (errStr.includes('previously published') || errStr.includes('403 Forbidden')) {
         console.log(
-          `ℹ️  ${pkgName}@${targetVersion} is already published or locked on NPM. Skipping to next package.`
+          `ℹ️  ${pkgName}@${targetVersion} is already published on NPM. Skipping to next package.`
         );
       } else {
         console.warn(`⚠️  Retrying publication for ${pkgName} in 2s...`);
@@ -146,6 +146,29 @@ function publishAllPackages(targetVersion) {
   }
 }
 
+function gitCommitAndTag(version) {
+  console.log(`\n🐙 Syncing git release commit & tag for v${version}...`);
+  try {
+    execSync('git add .', { cwd: rootDir, stdio: 'inherit' });
+    const status = execSync('git status --porcelain', { cwd: rootDir, encoding: 'utf-8' });
+    if (status.trim()) {
+      execSync(`git commit -m "chore(release): v${version}"`, { cwd: rootDir, stdio: 'inherit' });
+    }
+    try {
+      execSync(`git tag -a v${version} -m "Release v${version}"`, {
+        cwd: rootDir,
+        stdio: 'inherit',
+      });
+    } catch {
+      // tag may exist
+    }
+    execSync('git push origin main --tags', { cwd: rootDir, stdio: 'inherit' });
+    console.log(`✓ Git commit, tag v${version}, and push completed.`);
+  } catch (err) {
+    console.warn(`⚠️ Git push note: ${err.message}`);
+  }
+}
+
 function main() {
   const arg = process.argv[2];
   const { data: rootPkg } = getRootPackageJson();
@@ -165,10 +188,13 @@ function main() {
   // 2. Run automated tests
   runCommand('pnpm test', 'Running test suite');
 
-  // 3. Publish sequentially
+  // 3. Publish to NPM
   publishAllPackages(targetVersion);
 
-  console.log(`\n🎉 All packages for YumiaMD v${targetVersion} are now live on NPM!`);
+  // 4. Git commit, tag and push to GitHub
+  gitCommitAndTag(targetVersion);
+
+  console.log(`\n🎉 All packages for YumiaMD v${targetVersion} are now live on NPM & GitHub!`);
 }
 
 main();

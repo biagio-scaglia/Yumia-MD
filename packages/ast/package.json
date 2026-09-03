@@ -1,6 +1,6 @@
 {
   "name": "@biagioscaglia/yumia-ast",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Semantic AST data structures for YumiaMD presentations",
   "type": "module",
   "main": "./dist/index.js",
