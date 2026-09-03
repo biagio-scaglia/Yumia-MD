@@ -1,6 +1,6 @@
 {
   "name": "@biagioscaglia/yumia-parser",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Parser for YumiaMD Markdown presentation syntax",
   "type": "module",
   "main": "./dist/index.js",
