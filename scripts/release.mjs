@@ -111,25 +111,35 @@ function publishAllPackages(targetVersion) {
     const pkgName = pkgJson.name;
 
     console.log(`\n🚀 [${pkgDir}] Publishing ${pkgName}@${targetVersion}...`);
-    let published = false;
-    let attempts = 0;
-
-    while (!published && attempts < 2) {
-      attempts++;
-      try {
-        execSync('pnpm publish --access public --no-git-checks', {
-          cwd: fullPath,
-          stdio: 'inherit',
-        });
-        published = true;
-        console.log(`✓ Published ${pkgName}@${targetVersion}`);
-      } catch (err) {
-        if (attempts < 2) {
-          console.warn(`⚠️  Retrying publication for ${pkgName} in 2s...`);
+    try {
+      execSync('pnpm publish --access public --no-git-checks', {
+        cwd: fullPath,
+        stdio: 'inherit',
+      });
+      console.log(`✓ Published ${pkgName}@${targetVersion}`);
+    } catch (err) {
+      const errStr = err.message || '';
+      if (errStr.includes('previously published') || errStr.includes('403 Forbidden')) {
+        console.log(
+          `ℹ️  ${pkgName}@${targetVersion} is already published or locked on NPM. Skipping to next package.`
+        );
+      } else {
+        console.warn(`⚠️  Retrying publication for ${pkgName} in 2s...`);
+        try {
           execSync('node -e "setTimeout(()=>{}, 2000)"');
-        } else {
-          console.error(`❌ Could not publish ${pkgName}:`, err.message);
-          throw err;
+          execSync('pnpm publish --access public --no-git-checks', {
+            cwd: fullPath,
+            stdio: 'inherit',
+          });
+          console.log(`✓ Published ${pkgName}@${targetVersion}`);
+        } catch (retryErr) {
+          const retryStr = retryErr.message || '';
+          if (retryStr.includes('previously published') || retryStr.includes('403 Forbidden')) {
+            console.log(`ℹ️  ${pkgName}@${targetVersion} was already published. Skipping.`);
+          } else {
+            console.error(`❌ Could not publish ${pkgName}:`, retryErr.message);
+            throw retryErr;
+          }
         }
       }
     }
