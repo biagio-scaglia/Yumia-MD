@@ -23,7 +23,6 @@ export interface PptxRenderOptions {
   company?: string;
   title?: string;
   revision?: string;
-  layout?: 'LAYOUT_16x9' | 'LAYOUT_16x10' | 'LAYOUT_4x3';
 }
 
 export interface PptxOutput {
@@ -58,12 +57,14 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
 
     pptx.title = title;
     pptx.author = author;
-    pptx.layout = 'LAYOUT_16x9';
 
+    // Define crisp 16:9 widescreen canvas (13.333 x 7.5 inches)
     const slideWidthInches = 13.333;
     const slideHeightInches = 7.5;
-    const pixelViewport: Size = { width: 1920, height: 1080 };
+    pptx.defineLayout({ name: 'YUMIA_16_9', width: slideWidthInches, height: slideHeightInches });
+    pptx.layout = 'YUMIA_16_9';
 
+    const pixelViewport: Size = { width: 1920, height: 1080 };
     const scaleX = slideWidthInches / pixelViewport.width;
     const scaleY = slideHeightInches / pixelViewport.height;
 
@@ -246,11 +247,11 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
 
     if (card.title) {
       pptxSlide.addText(card.title, {
-        x: rect.x + 0.2,
-        y: rect.y + 0.15,
-        w: rect.w - 0.4,
-        h: 0.4,
-        fontSize: 20,
+        x: rect.x + 28 * scaleX,
+        y: rect.y + 20 * scaleY,
+        w: rect.w - 56 * scaleX,
+        h: 40 * scaleY,
+        fontSize: 22,
         bold: true,
         color: this.cleanHexColor(theme.colors.primary),
         fontFace: theme.typography.headingFont.split(',')[0]?.trim() || 'Arial',

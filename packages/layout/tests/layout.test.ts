@@ -57,7 +57,7 @@ describe('@biagioscaglia/yumia-layout', () => {
     expect(rightNode?.bounds.width).toBeGreaterThan(leftNode!.bounds.width);
   });
 
-  it('should compute nested bounds inside cards', () => {
+  it('should compute nested bounds inside cards with title clearance', () => {
     const card = createCard(
       [createHeading('Card Header', 3), createParagraph('Card details')],
       'Feature'
@@ -72,6 +72,7 @@ describe('@biagioscaglia/yumia-layout', () => {
 
     const innerHeading = cardNode?.children?.[0];
     expect(innerHeading?.bounds.x).toBe(cardNode!.bounds.x + 28); // 28px card padding
-    expect(innerHeading?.bounds.y).toBe(cardNode!.bounds.y + 28);
+    // 28px padding + 56px title clearance = 84px
+    expect(innerHeading?.bounds.y).toBe(cardNode!.bounds.y + 28 + 56);
   });
 });

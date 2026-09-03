@@ -150,7 +150,8 @@ export class DefaultLayoutEngine implements LayoutEngine {
   ): LayoutNode {
     const cardPadding = 28;
     const innerWidth = width - cardPadding * 2;
-    const innerStartY = y + cardPadding;
+    const titleHeight = element.title ? 56 : 0;
+    const innerStartY = y + cardPadding + titleHeight;
 
     const { nodes: children, totalHeight: innerHeight } = this.layoutElementList(
       element.elements,
@@ -160,8 +161,8 @@ export class DefaultLayoutEngine implements LayoutEngine {
       gap / 1.5
     );
 
-    const cardHeight = innerHeight + cardPadding * 2;
-    const bounds: Rect = { x, y, width, height: cardHeight };
+    const cardHeight = titleHeight + innerHeight + cardPadding * 2;
+    const bounds: Rect = { x, y, width, height: Math.max(100, cardHeight) };
 
     return {
       element,
@@ -257,7 +258,7 @@ export class DefaultLayoutEngine implements LayoutEngine {
   }
 
   private estimateListHeight(list: ListElement): number {
-    return Math.max(40, list.items.length * 36);
+    return Math.max(40, list.items.length * 40);
   }
 
   private estimateCodeHeight(code: CodeElement): number {
