@@ -6,7 +6,7 @@ import { Presentation, Slide } from '@biagioscaglia/yumia-ast';
 import { YumiaCompiler } from '@biagioscaglia/yumia-core';
 import { PptxRenderer } from '@biagioscaglia/yumia-renderer-pptx';
 
-export const VERSION = '0.1.3';
+export const VERSION = '0.1.4';
 
 export function printHelp(): string {
   return `
