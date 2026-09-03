@@ -1,4 +1,4 @@
-import { Presentation, Slide, SlideElement } from '@yumia/ast';
+import { Presentation, Slide, SlideElement } from '@biagioscaglia/yumia-ast';
 
 export interface Position {
   x: number;

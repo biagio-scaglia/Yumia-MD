@@ -33,94 +33,94 @@ importers:
 
   packages/cli:
     dependencies:
-      '@yumia/ast':
+      '@biagioscaglia/yumia-ast':
         specifier: workspace:*
         version: link:../ast
-      '@yumia/core':
+      '@biagioscaglia/yumia-core':
         specifier: workspace:*
         version: link:../core
-      '@yumia/layout':
+      '@biagioscaglia/yumia-layout':
         specifier: workspace:*
         version: link:../layout
-      '@yumia/parser':
+      '@biagioscaglia/yumia-parser':
         specifier: workspace:*
         version: link:../parser
-      '@yumia/theme':
+      '@biagioscaglia/yumia-theme':
         specifier: workspace:*
         version: link:../theme
 
   packages/core:
     dependencies:
-      '@yumia/ast':
+      '@biagioscaglia/yumia-ast':
         specifier: workspace:*
         version: link:../ast
-      '@yumia/layout':
+      '@biagioscaglia/yumia-layout':
         specifier: workspace:*
         version: link:../layout
-      '@yumia/parser':
+      '@biagioscaglia/yumia-parser':
         specifier: workspace:*
         version: link:../parser
-      '@yumia/renderer':
+      '@biagioscaglia/yumia-renderer':
         specifier: workspace:*
         version: link:../renderer
-      '@yumia/theme':
+      '@biagioscaglia/yumia-theme':
         specifier: workspace:*
         version: link:../theme
 
   packages/layout:
     dependencies:
-      '@yumia/ast':
+      '@biagioscaglia/yumia-ast':
         specifier: workspace:*
         version: link:../ast
 
   packages/parser:
     dependencies:
-      '@yumia/ast':
+      '@biagioscaglia/yumia-ast':
         specifier: workspace:*
         version: link:../ast
 
   packages/renderer:
     dependencies:
-      '@yumia/ast':
+      '@biagioscaglia/yumia-ast':
         specifier: workspace:*
         version: link:../ast
-      '@yumia/layout':
+      '@biagioscaglia/yumia-layout':
         specifier: workspace:*
         version: link:../layout
-      '@yumia/theme':
+      '@biagioscaglia/yumia-theme':
         specifier: workspace:*
         version: link:../theme
 
   packages/renderer-html:
     dependencies:
-      '@yumia/ast':
+      '@biagioscaglia/yumia-ast':
         specifier: workspace:*
         version: link:../ast
-      '@yumia/renderer':
+      '@biagioscaglia/yumia-renderer':
         specifier: workspace:*
         version: link:../renderer
 
   packages/renderer-pdf:
     dependencies:
-      '@yumia/ast':
+      '@biagioscaglia/yumia-ast':
         specifier: workspace:*
         version: link:../ast
-      '@yumia/renderer':
+      '@biagioscaglia/yumia-renderer':
         specifier: workspace:*
         version: link:../renderer
 
   packages/renderer-pptx:
     dependencies:
-      '@yumia/ast':
+      '@biagioscaglia/yumia-ast':
         specifier: workspace:*
         version: link:../ast
-      '@yumia/layout':
+      '@biagioscaglia/yumia-layout':
         specifier: workspace:*
         version: link:../layout
-      '@yumia/renderer':
+      '@biagioscaglia/yumia-renderer':
         specifier: workspace:*
         version: link:../renderer
-      '@yumia/theme':
+      '@biagioscaglia/yumia-theme':
         specifier: workspace:*
         version: link:../theme
 

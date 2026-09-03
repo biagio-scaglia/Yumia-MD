@@ -3,16 +3,16 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@yumia/ast": ["./packages/ast/src/index.ts"],
-      "@yumia/parser": ["./packages/parser/src/index.ts"],
-      "@yumia/theme": ["./packages/theme/src/index.ts"],
-      "@yumia/layout": ["./packages/layout/src/index.ts"],
-      "@yumia/renderer": ["./packages/renderer/src/index.ts"],
-      "@yumia/renderer-pptx": ["./packages/renderer-pptx/src/index.ts"],
-      "@yumia/renderer-pdf": ["./packages/renderer-pdf/src/index.ts"],
-      "@yumia/renderer-html": ["./packages/renderer-html/src/index.ts"],
-      "@yumia/core": ["./packages/core/src/index.ts"],
-      "@yumia/cli": ["./packages/cli/src/index.ts"]
+      "@biagioscaglia/yumia-ast": ["./packages/ast/src/index.ts"],
+      "@biagioscaglia/yumia-parser": ["./packages/parser/src/index.ts"],
+      "@biagioscaglia/yumia-theme": ["./packages/theme/src/index.ts"],
+      "@biagioscaglia/yumia-layout": ["./packages/layout/src/index.ts"],
+      "@biagioscaglia/yumia-renderer": ["./packages/renderer/src/index.ts"],
+      "@biagioscaglia/yumia-renderer-pptx": ["./packages/renderer-pptx/src/index.ts"],
+      "@biagioscaglia/yumia-renderer-pdf": ["./packages/renderer-pdf/src/index.ts"],
+      "@biagioscaglia/yumia-renderer-html": ["./packages/renderer-html/src/index.ts"],
+      "@biagioscaglia/yumia-core": ["./packages/core/src/index.ts"],
+      "yumiamd": ["./packages/cli/src/index.ts"]
     }
   },
   "include": ["packages/*/src/**/*", "tests/**/*", "packages/*/tests/**/*"],

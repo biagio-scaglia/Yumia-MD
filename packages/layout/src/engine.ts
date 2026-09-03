@@ -10,7 +10,7 @@ import {
   QuoteElement,
   Slide,
   SlideElement,
-} from '@yumia/ast';
+} from '@biagioscaglia/yumia-ast';
 import {
   LayoutEngine,
   LayoutNode,

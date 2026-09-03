@@ -1,10 +1,10 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { parseYumia } from '@yumia/parser';
-import { DefaultLayoutEngine } from '@yumia/layout';
-import { Presentation, Slide } from '@yumia/ast';
+import { parseYumia } from '@biagioscaglia/yumia-parser';
+import { DefaultLayoutEngine } from '@biagioscaglia/yumia-layout';
+import { Presentation, Slide } from '@biagioscaglia/yumia-ast';
 
-export const VERSION = '0.1.0';
+export const VERSION = '0.1.1';
 
 export function printHelp(): string {
   return `

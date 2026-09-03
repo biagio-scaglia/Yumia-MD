@@ -16,7 +16,7 @@ import {
   createPresentation,
   createQuote,
   createSlide,
-} from '@yumia/ast';
+} from '@biagioscaglia/yumia-ast';
 import { ParserOptions, YumiaParser } from './types.js';
 
 export class DefaultYumiaParser implements YumiaParser {

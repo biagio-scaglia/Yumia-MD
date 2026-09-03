@@ -1,5 +1,5 @@
-import { Presentation } from '@yumia/ast';
-import { RenderContext, YumiaRenderer } from '@yumia/renderer';
+import { Presentation } from '@biagioscaglia/yumia-ast';
+import { RenderContext, YumiaRenderer } from '@biagioscaglia/yumia-renderer';
 
 export interface PdfOutput {
   format: 'pdf';

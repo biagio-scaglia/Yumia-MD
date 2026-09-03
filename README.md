@@ -56,22 +56,22 @@ Presentation authoring using Markdown.
 YumiaMD processes presentations through a strict unidirectional compiler pipeline:
 
 ```
-Source (.yumia.md) ──► @yumia/parser ──► @yumia/ast ──► @yumia/theme
+Source (.yumia.md) ──► @biagioscaglia/yumia-parser ──► @biagioscaglia/yumia-ast ──► @biagioscaglia/yumia-theme
                                                               │
                                                               ▼
-Output Target ◄── @yumia/renderer-* ◄── @yumia/layout ◄───────┘
+Output Target ◄── @biagioscaglia/yumia-renderer-* ◄── @biagioscaglia/yumia-layout ◄───────┘
 ```
 
-- **`@yumia/ast`**: Semantic data structures representing presentation entities (slides, headings, cards, tables, code blocks).
-- **`@yumia/parser`**: Converts Markdown + presentation DSL into the semantic AST.
-- **`@yumia/theme`**: Semantic design tokens (colors, typography scales, spacing, border radii).
-- **`@yumia/layout`**: Calculates positions and dimensions independently of target rendering formats.
-- **`@yumia/renderer`**: Core rendering abstractions and contexts.
-- **`@yumia/renderer-pptx`** _(planned)_: Compiles presentations into native, editable PowerPoint `.pptx` objects.
-- **`@yumia/renderer-pdf`** _(planned)_: Compiles presentations into vector PDF documents.
-- **`@yumia/renderer-html`** _(planned)_: Compiles presentations into interactive HTML5 decks.
-- **`@yumia/core`**: Orchestrates parsing, theming, layout, and rendering into unified compile workflows.
-- **`@yumia/cli`**: Command-line developer tool for building, validating, and inspecting presentations.
+- **`@biagioscaglia/yumia-ast`**: Semantic data structures representing presentation entities (slides, headings, cards, tables, code blocks).
+- **`@biagioscaglia/yumia-parser`**: Converts Markdown + presentation DSL into the semantic AST.
+- **`@biagioscaglia/yumia-theme`**: Semantic design tokens (colors, typography scales, spacing, border radii).
+- **`@biagioscaglia/yumia-layout`**: Calculates positions and dimensions independently of target rendering formats.
+- **`@biagioscaglia/yumia-renderer`**: Core rendering abstractions and contexts.
+- **`@biagioscaglia/yumia-renderer-pptx`** _(planned)_: Compiles presentations into native, editable PowerPoint `.pptx` objects.
+- **`@biagioscaglia/yumia-renderer-pdf`** _(planned)_: Compiles presentations into vector PDF documents.
+- **`@biagioscaglia/yumia-renderer-html`** _(planned)_: Compiles presentations into interactive HTML5 decks.
+- **`@biagioscaglia/yumia-core`**: Orchestrates parsing, theming, layout, and rendering into unified compile workflows.
+- **`yumiamd`**: Command-line developer tool for building, validating, and inspecting presentations.
 
 ---
 
@@ -136,15 +136,15 @@ pnpm format
 ## Roadmap
 
 - [x] Initial monorepo setup & strict TypeScript configuration
-- [x] Semantic AST model (`@yumia/ast`)
-- [x] Minimal Markdown and frontmatter parser (`@yumia/parser`)
-- [x] Theme token interfaces and default theme (`@yumia/theme`)
-- [x] Layout model and engine abstraction (`@yumia/layout`)
-- [x] Renderer contracts and pipeline orchestration (`@yumia/renderer`, `@yumia/core`, `@yumia/cli`)
+- [x] Semantic AST model (`@biagioscaglia/yumia-ast`)
+- [x] Minimal Markdown and frontmatter parser (`@biagioscaglia/yumia-parser`)
+- [x] Theme token interfaces and default theme (`@biagioscaglia/yumia-theme`)
+- [x] Layout model and engine abstraction (`@biagioscaglia/yumia-layout`)
+- [x] Renderer contracts and pipeline orchestration (`@biagioscaglia/yumia-renderer`, `@biagioscaglia/yumia-core`, `yumiamd`)
 - [ ] Markdown presentation DSL extensions (grid layouts, column directives, speaker notes)
-- [ ] Native PowerPoint generation engine (`@yumia/renderer-pptx`)
-- [ ] Vector PDF renderer (`@yumia/renderer-pdf`)
-- [ ] HTML presentation previewer (`@yumia/renderer-html`)
+- [ ] Native PowerPoint generation engine (`@biagioscaglia/yumia-renderer-pptx`)
+- [ ] Vector PDF renderer (`@biagioscaglia/yumia-renderer-pdf`)
+- [ ] HTML presentation previewer (`@biagioscaglia/yumia-renderer-html`)
 - [ ] Watch mode and live preview dev server
 
 ---

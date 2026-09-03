@@ -1,6 +1,6 @@
 {
-  "name": "@yumia/parser",
-  "version": "0.1.0",
+  "name": "@biagioscaglia/yumia-parser",
+  "version": "0.1.1",
   "description": "Parser for YumiaMD Markdown presentation syntax",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,7 +12,7 @@
     }
   },
   "dependencies": {
-    "@yumia/ast": "workspace:*"
+    "@biagioscaglia/yumia-ast": "workspace:*"
   },
   "scripts": {
     "build": "tsc",

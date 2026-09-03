@@ -7,10 +7,10 @@ import {
   HeadingElement,
   ListElement,
   ParagraphElement,
-} from '@yumia/ast';
-import { parseYumia } from '@yumia/parser';
-import { YumiaCompiler } from '@yumia/core';
-import { PptxRenderer } from '@yumia/renderer-pptx';
+} from '@biagioscaglia/yumia-ast';
+import { parseYumia } from '@biagioscaglia/yumia-parser';
+import { YumiaCompiler } from '@biagioscaglia/yumia-core';
+import { PptxRenderer } from '@biagioscaglia/yumia-renderer-pptx';
 
 describe('Integration: Example Presentation', () => {
   it('should parse examples/basic/presentation.yumia.md accurately into AST', () => {

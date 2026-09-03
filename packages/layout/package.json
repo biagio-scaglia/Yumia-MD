@@ -1,6 +1,6 @@
 {
-  "name": "@yumia/layout",
-  "version": "0.1.0",
+  "name": "@biagioscaglia/yumia-layout",
+  "version": "0.1.1",
   "description": "Foundational layout computation engine and geometric models for YumiaMD",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,7 +12,7 @@
     }
   },
   "dependencies": {
-    "@yumia/ast": "workspace:*"
+    "@biagioscaglia/yumia-ast": "workspace:*"
   },
   "scripts": {
     "build": "tsc",

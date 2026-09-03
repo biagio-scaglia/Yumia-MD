@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { YumiaCompiler } from '../src/index.js';
-import { PptxRenderer } from '@yumia/renderer-pptx';
-import { HtmlRenderer } from '@yumia/renderer-html';
+import { PptxRenderer } from '@biagioscaglia/yumia-renderer-pptx';
+import { HtmlRenderer } from '@biagioscaglia/yumia-renderer-html';
 
-describe('@yumia/core', () => {
+describe('@biagioscaglia/yumia-core', () => {
   it('should orchestrate the compile pipeline end-to-end', async () => {
     const source = `---
 title: Test Presentation

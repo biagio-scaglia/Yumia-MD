@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createTheme, defaultTheme } from '../src/index.js';
 
-describe('@yumia/theme', () => {
+describe('@biagioscaglia/yumia-theme', () => {
   it('should have valid default theme structure and tokens', () => {
     expect(defaultTheme.name).toBe('default');
     expect(defaultTheme.colors.primary).toBeDefined();

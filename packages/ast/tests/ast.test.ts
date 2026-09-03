@@ -13,7 +13,7 @@ import {
   createTable,
 } from '../src/index.js';
 
-describe('@yumia/ast', () => {
+describe('@biagioscaglia/yumia-ast', () => {
   it('should construct a presentation AST with metadata and slides', () => {
     const slide1 = createSlide([
       createHeading('Welcome to Yumia', 1),
