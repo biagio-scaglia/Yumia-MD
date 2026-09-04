@@ -50,5 +50,9 @@ Speaker notes for slide 1.
     expect(result.html).toContain('99.9%');
     expect(result.html).toContain('Speaker notes for slide 1.');
     expect(result.html).toContain('__yumia_live_reload');
+    expect(result.html).toContain('btn-speaker');
+    expect(result.html).toContain('btn-overview');
+    expect(result.html).toContain('speaker-layout');
+    expect(result.html).toContain('yumia_presentation_sync');
   });
 });
