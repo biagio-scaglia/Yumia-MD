@@ -135,7 +135,28 @@ export interface CodeElement extends BaseElement {
   type: 'code';
   code: string;
   language?: string;
+  highlight?: string;
   highlightLines?: number[];
+}
+
+export interface TocItem {
+  number?: string | number | undefined;
+  title: string;
+  subtitle?: string | undefined;
+  description?: string | undefined;
+}
+
+export interface SectionElement extends BaseElement {
+  type: 'section';
+  title: string;
+  subtitle?: string | undefined;
+  number?: string | number | undefined;
+}
+
+export interface TocElement extends BaseElement {
+  type: 'toc';
+  title?: string | undefined;
+  items?: TocItem[] | undefined;
 }
 
 export interface QuoteElement extends BaseElement {
@@ -248,6 +269,8 @@ export type SlideElement =
   | CardElement
   | MetricElement
   | CodeElement
+  | SectionElement
+  | TocElement
   | QuoteElement
   | TableElement
   | ChartElement

@@ -14,8 +14,10 @@ import {
   ParagraphElement,
   Presentation,
   QuoteElement,
+  SectionElement,
   TableElement,
   TimelineElement,
+  TocElement,
 } from '@yumiamd/ast';
 import { DefaultLayoutEngine, LayoutNode, Rect, Size, SlideLayoutResult } from '@yumiamd/layout';
 import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
@@ -178,7 +180,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       const slideLayout: SlideLayoutResult = this.layoutEngine.computeSlide(slide, pixelViewport);
 
       for (const node of slideLayout.nodes) {
-        this.renderNode(pptxSlide, pptx, node, scaleX, scaleY, theme);
+        this.renderNode(pptxSlide, pptx, node, scaleX, scaleY, theme, presentation);
       }
 
       if (slide.notes) {
@@ -207,7 +209,8 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     node: LayoutNode,
     scaleX: number,
     scaleY: number,
-    theme: YumiaTheme
+    theme: YumiaTheme,
+    presentation?: Presentation
   ): void {
     const { element, bounds } = node;
     const rect = this.toInches(bounds, scaleX, scaleY);
@@ -238,10 +241,10 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         this.renderMetric(pptxSlide, pptx, node, scaleX, scaleY, theme);
         break;
       case 'card':
-        this.renderCard(pptxSlide, pptx, node, scaleX, scaleY, theme);
+        this.renderCard(pptxSlide, pptx, node, scaleX, scaleY, theme, presentation);
         break;
       case 'columns':
-        this.renderColumns(pptxSlide, pptx, node, scaleX, scaleY, theme);
+        this.renderColumns(pptxSlide, pptx, node, scaleX, scaleY, theme, presentation);
         break;
       case 'badge':
         this.renderBadge(pptxSlide, pptx, element as BadgeElement, rect, theme);
@@ -254,6 +257,12 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         break;
       case 'compare':
         this.renderCompare(pptxSlide, pptx, node, scaleX, scaleY, theme);
+        break;
+      case 'section':
+        this.renderSection(pptxSlide, pptx, element as SectionElement, rect, theme);
+        break;
+      case 'toc':
+        this.renderToc(pptxSlide, pptx, element as TocElement, rect, theme, presentation);
         break;
       case 'mermaid':
         this.renderMermaid(pptxSlide, pptx, element as MermaidElement, rect, theme);
@@ -559,7 +568,8 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     node: LayoutNode,
     scaleX: number,
     scaleY: number,
-    theme: YumiaTheme
+    theme: YumiaTheme,
+    presentation?: Presentation
   ): void {
     const card = node.element as CardElement;
     const rect = this.toInches(node.bounds, scaleX, scaleY);
@@ -589,6 +599,16 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       rectRadius: 0.08,
     });
 
+    // Left Accent Bar
+    pptxSlide.addShape(pptx.ShapeType.roundRect, {
+      x: rect.x + 0.02,
+      y: rect.y + 0.04,
+      w: 0.06,
+      h: rect.h - 0.08,
+      fill: { color: borderColor },
+      rectRadius: 0.03,
+    });
+
     if (card.title) {
       pptxSlide.addText(card.title, {
         x: rect.x + 0.25,
@@ -604,7 +624,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
 
     if (node.children) {
       for (const childNode of node.children) {
-        this.renderNode(pptxSlide, pptx, childNode, scaleX, scaleY, theme);
+        this.renderNode(pptxSlide, pptx, childNode, scaleX, scaleY, theme, presentation);
       }
     }
   }
@@ -615,13 +635,14 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     node: LayoutNode,
     scaleX: number,
     scaleY: number,
-    theme: YumiaTheme
+    theme: YumiaTheme,
+    presentation?: Presentation
   ): void {
     if (node.children) {
       for (const colNode of node.children) {
         if (colNode.children) {
           for (const itemNode of colNode.children) {
-            this.renderNode(pptxSlide, pptx, itemNode, scaleX, scaleY, theme);
+            this.renderNode(pptxSlide, pptx, itemNode, scaleX, scaleY, theme, presentation);
           }
         }
       }
@@ -636,8 +657,10 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     theme: YumiaTheme
   ): void {
     const codeTheme = theme.components?.code;
-    const bgColor = this.cleanHexColor(codeTheme?.background || '#0f172a');
+    const bgColor = this.cleanHexColor(codeTheme?.background || '#0a0f1d');
     const textColor = this.cleanHexColor(codeTheme?.textColor || '#f8fafc');
+    const primaryColor = this.cleanHexColor(theme.colors.primary || '#00F0FF');
+    const mutedColor = this.cleanHexColor(theme.colors.muted || '#64748b');
 
     pptxSlide.addShape(pptx.ShapeType.roundRect, {
       x: rect.x,
@@ -645,19 +668,80 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       w: rect.w,
       h: rect.h,
       fill: { color: bgColor },
+      line: { color: this.cleanHexColor(theme.colors.border || '#1e293b'), width: 1 },
       rectRadius: 0.05,
     });
 
-    pptxSlide.addText(code.code, {
-      x: rect.x + 0.2,
-      y: rect.y + 0.15,
-      w: rect.w - 0.4,
-      h: rect.h - 0.3,
-      fontSize: 14,
-      fontFace: 'Courier New',
-      color: textColor,
-      valign: 'top',
-    });
+    const lines = code.code.split('\n');
+    if (code.highlight) {
+      const highlightSet = new Set<number>();
+      const parts = code.highlight.split(',');
+      for (const part of parts) {
+        const trimmed = part.trim();
+        if (!trimmed) continue;
+        if (trimmed.includes('-')) {
+          const [startStr, endStr] = trimmed.split('-');
+          const start = parseInt(startStr || '0', 10);
+          const end = parseInt(endStr || '0', 10);
+          if (!isNaN(start) && !isNaN(end) && start <= end) {
+            for (let n = start; n <= end; n++) highlightSet.add(n);
+          }
+        } else {
+          const num = parseInt(trimmed, 10);
+          if (!isNaN(num)) highlightSet.add(num);
+        }
+      }
+
+      const chunks: InlineChunk[] = [];
+      lines.forEach((line, idx) => {
+        const lineNum = idx + 1;
+        const isHl = highlightSet.has(lineNum);
+        const lineNumPad = String(lineNum).padStart(2, '0');
+        const numColor = isHl ? primaryColor : mutedColor;
+        const contentColor = isHl ? primaryColor : mutedColor;
+
+        chunks.push({
+          text: `${lineNumPad}  `,
+          options: {
+            fontSize: 12,
+            fontFace: 'Consolas',
+            color: numColor,
+            bold: isHl,
+          },
+        });
+
+        chunks.push({
+          text: line || ' ',
+          options: {
+            fontSize: 12,
+            fontFace: 'Consolas',
+            color: contentColor,
+            bold: isHl,
+            breakLine: idx < lines.length - 1,
+          },
+        });
+      });
+
+      pptxSlide.addText(chunks, {
+        x: rect.x + 0.2,
+        y: rect.y + 0.15,
+        w: rect.w - 0.4,
+        h: rect.h - 0.3,
+        valign: 'top',
+        margin: 0,
+      });
+    } else {
+      pptxSlide.addText(code.code, {
+        x: rect.x + 0.2,
+        y: rect.y + 0.15,
+        w: rect.w - 0.4,
+        h: rect.h - 0.3,
+        fontSize: 13,
+        fontFace: 'Consolas',
+        color: textColor,
+        valign: 'top',
+      });
+    }
   }
 
   private renderQuote(
@@ -822,7 +906,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       const itemX = rect.x + idx * itemW;
       const dotX = itemX + itemW / 2 - 0.1;
 
-      // Milestone dot
+      // Outer Milestone dot
       pptxSlide.addShape(pptx.ShapeType.roundRect, {
         x: dotX,
         y: lineY - 0.08,
@@ -885,7 +969,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       w: colW,
       h: rect.h,
       fill: { color: this.cleanHexColor(theme.colors.surface) },
-      line: { color: this.cleanHexColor(theme.colors.border), width: 1 },
+      line: { color: this.cleanHexColor(theme.colors.border), width: 1.5 },
       rectRadius: 0.1,
     });
 
@@ -895,7 +979,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         y: rect.y + 0.15,
         w: colW - 0.3,
         h: 0.4,
-        fontSize: 14,
+        fontSize: 15,
         bold: true,
         color: this.cleanHexColor(theme.colors.primary),
         fontFace: cleanFontFace(theme.typography.headingFont),
@@ -910,7 +994,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       w: colW,
       h: rect.h,
       fill: { color: this.cleanHexColor(theme.colors.surface) },
-      line: { color: this.cleanHexColor(theme.colors.border), width: 1 },
+      line: { color: this.cleanHexColor(theme.colors.border), width: 1.5 },
       rectRadius: 0.1,
     });
 
@@ -920,12 +1004,256 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         y: rect.y + 0.15,
         w: colW - 0.3,
         h: 0.4,
-        fontSize: 14,
+        fontSize: 15,
         bold: true,
         color: this.cleanHexColor(theme.colors.primary),
         fontFace: cleanFontFace(theme.typography.headingFont),
       });
     }
+
+    // Center VS Badge
+    const vsX = rect.x + colW + 0.05;
+    pptxSlide.addShape(pptx.ShapeType.roundRect, {
+      x: vsX,
+      y: rect.y + rect.h / 2 - 0.18,
+      w: 0.3,
+      h: 0.3,
+      fill: { color: this.cleanHexColor(theme.colors.border || '#334155') },
+      rectRadius: 0.15,
+    });
+    pptxSlide.addText('VS', {
+      x: vsX,
+      y: rect.y + rect.h / 2 - 0.18,
+      w: 0.3,
+      h: 0.3,
+      fontSize: 10,
+      bold: true,
+      color: this.cleanHexColor(theme.colors.muted || '#94a3b8'),
+      fontFace: cleanFontFace(theme.typography.headingFont),
+      align: 'center',
+      valign: 'middle',
+    });
+  }
+
+  private renderSection(
+    pptxSlide: PptxSlide,
+    pptx: PptxInstance,
+    section: SectionElement,
+    rect: { x: number; y: number; w: number; h: number },
+    theme: YumiaTheme
+  ): void {
+    const cardBg = this.cleanHexColor(theme.colors.surface || '#0f172a');
+    const primaryHex = this.cleanHexColor(theme.colors.primary || '#00F0FF');
+
+    // Container box
+    pptxSlide.addShape(pptx.ShapeType.roundRect, {
+      x: rect.x,
+      y: rect.y,
+      w: rect.w,
+      h: rect.h,
+      fill: { color: cardBg },
+      line: { color: primaryHex, width: 2 },
+      rectRadius: 0.1,
+    });
+
+    if (section.number !== undefined) {
+      const numStr = String(section.number);
+      const pillW = Math.min(2.4, Math.max(1.4, numStr.length * 0.15 + 0.8));
+      const pillX = rect.x + (rect.w - pillW) / 2;
+      const pillY = rect.y + 0.35;
+
+      pptxSlide.addShape(pptx.ShapeType.roundRect, {
+        x: pillX,
+        y: pillY,
+        w: pillW,
+        h: 0.36,
+        fill: { color: primaryHex },
+        rectRadius: 0.18,
+      });
+
+      pptxSlide.addText(`SECTION ${numStr}`.toUpperCase(), {
+        x: pillX,
+        y: pillY,
+        w: pillW,
+        h: 0.36,
+        fontSize: 11,
+        bold: true,
+        color: '000000',
+        fontFace: cleanFontFace(theme.typography.headingFont),
+        align: 'center',
+        valign: 'middle',
+      });
+    }
+
+    const titleY = section.number !== undefined ? rect.y + 0.85 : rect.y + 0.45;
+    pptxSlide.addText(section.title, {
+      x: rect.x + 0.3,
+      y: titleY,
+      w: rect.w - 0.6,
+      h: 0.85,
+      fontSize: 28,
+      bold: true,
+      color: this.cleanHexColor(theme.colors.text || '#ffffff'),
+      fontFace: cleanFontFace(theme.typography.headingFont),
+      align: 'center',
+      valign: 'middle',
+    });
+
+    if (section.subtitle) {
+      pptxSlide.addText(section.subtitle, {
+        x: rect.x + 0.4,
+        y: titleY + 0.85,
+        w: rect.w - 0.8,
+        h: 0.55,
+        fontSize: 15,
+        color: this.cleanHexColor(theme.colors.muted || '#94a3b8'),
+        fontFace: cleanFontFace(theme.typography.bodyFont),
+        align: 'center',
+        valign: 'top',
+      });
+    }
+  }
+
+  private renderToc(
+    pptxSlide: PptxSlide,
+    pptx: PptxInstance,
+    toc: TocElement,
+    rect: { x: number; y: number; w: number; h: number },
+    theme: YumiaTheme,
+    presentation?: Presentation
+  ): void {
+    const items = toc.items ? [...toc.items] : [];
+    if (items.length === 0 && presentation) {
+      let autoIdx = 1;
+      for (const s of presentation.slides) {
+        for (const el of s.elements) {
+          if (el.type === 'section') {
+            const sec = el as SectionElement;
+            items.push({
+              number: sec.number !== undefined ? String(sec.number) : String(autoIdx++),
+              title: sec.title,
+              description: sec.subtitle,
+            });
+          }
+        }
+      }
+      if (items.length === 0) {
+        presentation.slides.forEach((s, idx) => {
+          const heading = s.elements.find((el) => el.type === 'heading') as
+            HeadingElement | undefined;
+          if (heading) {
+            items.push({
+              number: String(idx + 1),
+              title: heading.text,
+            });
+          }
+        });
+      }
+    }
+
+    if (items.length === 0) return;
+
+    const primaryHex = this.cleanHexColor(theme.colors.primary || '#00F0FF');
+    const surfaceHex = this.cleanHexColor(theme.colors.surface || '#0f172a');
+    const borderHex = this.cleanHexColor(theme.colors.border || '#334155');
+    const textHex = this.cleanHexColor(theme.colors.text || '#ffffff');
+    const mutedHex = this.cleanHexColor(theme.colors.muted || '#94a3b8');
+
+    let currentY = rect.y;
+    if (toc.title) {
+      pptxSlide.addText(toc.title, {
+        x: rect.x,
+        y: currentY,
+        w: rect.w,
+        h: 0.5,
+        fontSize: 22,
+        bold: true,
+        color: primaryHex,
+        fontFace: cleanFontFace(theme.typography.headingFont),
+      });
+      currentY += 0.65;
+    }
+
+    const availableH = rect.h - (currentY - rect.y);
+    const cols = items.length > 4 ? 2 : 1;
+    const rows = Math.ceil(items.length / cols);
+    const colW = (rect.w - (cols - 1) * 0.3) / cols;
+    const itemH = Math.min(0.85, (availableH - (rows - 1) * 0.12) / rows);
+
+    items.forEach((item, idx) => {
+      const c = idx % cols;
+      const r = Math.floor(idx / cols);
+      const itemX = rect.x + c * (colW + 0.3);
+      const itemY = currentY + r * (itemH + 0.12);
+      const num = item.number !== undefined ? String(item.number) : String(idx + 1);
+      const descText = item.description || item.subtitle;
+
+      pptxSlide.addShape(pptx.ShapeType.roundRect, {
+        x: itemX,
+        y: itemY,
+        w: colW,
+        h: itemH,
+        fill: { color: surfaceHex },
+        line: { color: borderHex, width: 1 },
+        rectRadius: 0.08,
+      });
+
+      pptxSlide.addShape(pptx.ShapeType.roundRect, {
+        x: itemX + 0.12,
+        y: itemY + (itemH - 0.36) / 2,
+        w: 0.36,
+        h: 0.36,
+        fill: { color: primaryHex },
+        rectRadius: 0.08,
+      });
+
+      pptxSlide.addText(num, {
+        x: itemX + 0.12,
+        y: itemY + (itemH - 0.36) / 2,
+        w: 0.36,
+        h: 0.36,
+        fontSize: 11,
+        bold: true,
+        color: '000000',
+        fontFace: cleanFontFace(theme.typography.headingFont),
+        align: 'center',
+        valign: 'middle',
+      });
+
+      const textX = itemX + 0.55;
+      const textW = colW - 0.65;
+      const titleChunks: InlineChunk[] = [
+        {
+          text: item.title,
+          options: {
+            fontSize: 13,
+            bold: true,
+            color: textHex,
+            fontFace: cleanFontFace(theme.typography.headingFont),
+            breakLine: Boolean(descText),
+          },
+        },
+      ];
+      if (descText) {
+        titleChunks.push({
+          text: descText,
+          options: {
+            fontSize: 10,
+            color: mutedHex,
+            fontFace: cleanFontFace(theme.typography.bodyFont),
+          },
+        });
+      }
+
+      pptxSlide.addText(titleChunks, {
+        x: textX,
+        y: itemY + 0.06,
+        w: textW,
+        h: itemH - 0.12,
+        valign: 'middle',
+        margin: 0,
+      });
+    });
   }
 
   private renderMermaid(

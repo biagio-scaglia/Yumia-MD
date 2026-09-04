@@ -6,6 +6,7 @@ theme: cyberpunk
 aspectRatio: '16:9'
 transition: push
 embedFonts: true
+watermark: 'YumiaMD'
 ---
 
 # QuantumScale Enterprise AI
@@ -19,6 +20,25 @@ Prossima Generazione di Sistemi di Calcolo Deterministico e Simulazione Neurale.
 :::notes
 Benvenuti alla presentazione ufficiale di QuantumScale Enterprise AI.
 Questa presentazione dimostra la potenza del compilatore YumiaMD attraverso tutti i suoi target: PPTX nativo, PDF vettoriale e Web Deck HTML5.
+:::
+
+---
+
+:::toc "📑 Indice della Presentazione"
+
+1. Master Slides & Enterprise Layout - Brand identity e font embedding
+2. Formule & Simulazione Neurale - KaTeX e modelli stocastici
+3. Pipeline & Codice Sorgente - Line Highlighting e architettura
+4. Dati & Multi-Formato - PPTX, Vector PDF e Web Deck HTML5
+   :::
+
+:::notes
+L'indice della presentazione offre una panoramica strutturata per slide deck complessi.
+:::
+
+---
+
+:::section "Parte 1: Architettura & Master Slide" subtitle="Brand identity aziendale, layout deterministico e font embedding" number="01"
 :::
 
 ---
@@ -55,68 +75,111 @@ Con il supporto per i template .potx e l'embedding dei font, i team enterprise p
 
 ---
 
-# 📐 Equazioni Matematiche & Modelli Teorici
-
-:::transition type="wipe" duration="0.5s"
-
-:::badge text="Physics & Deep Learning" variant="primary" :::
-
-:::math
-\mathcal{L}_{\text{total}} = \mathbb{E}_{x \sim p_{\text{data}}} \left[ -\log D_\theta(x) \right] + \mathbb{E}_{z \sim p_z} \left[ -\log (1 - D_\theta(G_\phi(z))) \right] + \lambda \|\nabla \hat{D}\|_2^2
-:::
-
-:::columns ratios="50:50"
-
-:::column
-:::card Modello Quantistico variant="primary"
-
-$$
-i \hbar \frac{\partial}{\partial t} |\Psi(t)\rangle = \hat{H} |\Psi(t)\rangle
-$$
-
-:::
-:::
-
-:::column
-:::card Garanzia Tipografica Multi-Target variant="info"
-
-- **PowerPoint**: Box equazione con font `Cambria Math`
-- **PDF & HTML**: KaTeX rendering e vettori 600 DPI
-  :::
-  :::
-
-:::
-
-:::notes
-Le equazioni matematiche scientifiche in formato LaTeX e AsciiMath vengono compilate nativamente con tipografia corretta in tutti i formati supportati.
+:::section "Parte 2: Modelli Matematici & Codice" subtitle="Formule differenziali e focus sulle righe di codice" number="02"
 :::
 
 ---
 
-# 📊 Analytics & Metriche di Performance
+# 📐 Equazioni Matematiche & Modelli Teorici
+
+:::transition type="wipe" duration="0.5s"
+
+:::math
+i \hbar \frac{\partial}{\partial t} \Psi(\mathbf{r}, t) = \hat{H} \Psi(\mathbf{r}, t)
+:::
+
+$$
+\min_{G} \max_{D} V(D, G) = \mathbb{E}_{x \sim p_{\text{data}}(x)}[\log D(x)] + \mathbb{E}_{z \sim p_z(z)}[\log(1 - D(G(z)))]
+$$
+
+:::card Descrizione del Modello Neurale variant="info"
+La formulazione accoppia operatori Hamiltoniani discretizzati su griglie tridimensionali con loss functions avversarie ad alta stabilità numerica.
+:::
+
+:::notes
+Le equazioni sono compilate sia per browser web (KaTeX) sia per Office PowerPoint e PDF vettoriale.
+:::
+
+---
+
+# 💻 Pipeline di Calcolo & Line Highlighting
+
+:::transition type="fade" duration="0.4s"
+
+Evidenziazione selettiva del codice di compilazione:
+
+```typescript {3,6-8}
+import { compile, resolveTheme } from 'yumiamd';
+
+// 1. Risolve il tema e le coordinate geometriche
+const theme = resolveTheme('cyberpunk');
+
+// 2. Compila la pipeline deterministica verso PPTX nativo
+const presentation = await compile('./quantum.yumia.md', {
+  format: 'pptx',
+  embedFonts: true,
+});
+
+console.log('Slide deck compilato con successo!');
+```
+
+:::notes
+Le righe 3 e 6-8 vengono risaltate visivamente per concentrare l'attenzione degli spettatori sul flusso logico.
+:::
+
+---
+
+:::section "Parte 3: Metriche, Confronto & Roadmap" subtitle="Performance, diagrammi Mermaid e timeline di rilascio" number="03"
+:::
+
+---
+
+# ⚡ Metriche di Throughput Computazionale
 
 :::transition type="push" duration="0.4s"
 
 :::columns ratios="33:33:34"
 
 :::column
-:::metric value="12.4x" label="Throughput" change="+340% vs v1" variant="success"
+:::metric value="14.2 TFlops" label="Throughput Neurale" change="+42% vs baseline" variant="primary"
 :::
 :::
 
 :::column
-:::metric value="1.8ms" label="Inference Latency" change="-72% p99" variant="primary"
+:::metric value="0.45 ms" label="Latenza Inferenza" change="-68% response time" variant="success"
 :::
 :::
 
 :::column
-:::metric value="99.99%" label="SLA Availability" change="Mission Critical" variant="info"
+:::metric value="99.99%" label="Uptime Cluster" change="Zero downtime" variant="info"
 :::
 :::
 
 :::
 
-:::chart type="bar" title="Benchmark di Elaborazione (Mflop/s per Watt)" labels="Baseline, GPU Cluster, Tensor Engine, QuantumScale V2" data="420, 1180, 2450, 4890"
+:::notes
+Metriche generate come componenti reattivi con colori sincronizzati al tema aziendale.
+:::
+
+---
+
+# 📊 Visualizzazione Dati & Grafici Nativi
+
+:::transition type="fade" duration="0.4s"
+
+:::columns ratios="50:50"
+
+:::column
+:::chart type="bar" title="Adozione Enterprise per Trimestre" labels="Q1, Q2, Q3, Q4" data="150, 320, 680, 1240"
+:::
+:::
+
+:::column
+:::chart type="pie" title="Distribuzione Flotta Server (%)" labels="NVIDIA H100, TPU v5p, Custom ASIC" data="55, 30, 15"
+:::
+:::
+
+:::
 
 :::notes
 I grafici a barre, linee e torte sono compilati in veri oggetti nativi di PowerPoint modificabili direttamente dall'interfaccia di Office.
@@ -158,10 +221,9 @@ Questo confronto evidenzia il gap tecnico tra i vecchi tool di presentazione e l
 
 - [Q1 2026] Core Engine: Parser AST semantico, deterministic layout e rendering OpenXML nativo
 - [Q2 2026] Multi-Target: Compilatore PDFKit vettoriale e Interactive HTML5 Deck con Speaker View
-- [Q3 2026] Visual Directives: Grafici nativi, Mermaid, Timelines, Box Compare e Badges
-- [Q4 2026] Enterprise & Science: Master `.potx`, Font Embedding, Equazioni Matematiche e Transizioni
-
-:::
+- [Q3 2026] Visual Directives: Grafici nativi, Mermaid, Timelines, Box Compare e TOC
+- [Q4 2026] Enterprise & Science: Master `.potx`, Font Embedding, Line Highlighting e Stampa PDF
+  :::
 
 :::notes
 La nostra roadmap mostra l'evoluzione continua del compilatore fino all'introduzione delle funzionalità enterprise e scientifiche.
@@ -178,22 +240,20 @@ graph LR
 A[Markdown .yumia.md] --> B[Yumia Parser]
 B --> C[Presentation AST]
 C --> D[Layout Engine]
-D --> E[Native PPTX]
-D --> F[Vector PDF]
-D --> G[HTML5 Web App]
+D --> E[PowerPoint .pptx]
+D --> F[Vector PDF .pdf]
+D --> G[HTML5 Deck .html]
 :::
 
 :::notes
-I diagrammi Mermaid vengono renderizzati dinamicamente sia nel browser sia strutturati nei documenti finali.
+Il diagramma Mermaid viene compilato sia per il browser sia inserito all'interno delle esportazioni.
 :::
 
 ---
 
-# 🎬 Reveal Progressivo a Step
+# 🎯 Perché Scegliere YumiaMD per le Presentazioni
 
 :::transition type="push" duration="0.4s"
-
-# Punti Chiave per il Successo
 
 :::step
 
@@ -241,7 +301,7 @@ Usa la barra spaziatrice o le frecce per mostrare i punti uno alla volta durante
 - Zero-config dev server live
 - Speaker View dual-window con tasto **S**
 - Griglia panoramica con tasto **ESC** / **O**
-- Deploy istantaneo su GitHub Pages / Vercel
+- Stampa diretta & PDF con tasto **P**
   :::
   :::
 

@@ -20,11 +20,14 @@ import {
   Presentation,
   PresentationMetadata,
   QuoteElement,
+  SectionElement,
   Slide,
   SlideElement,
   TableElement,
   TimelineElement,
   TimelineItem,
+  TocElement,
+  TocItem,
 } from './types.js';
 
 export function createPresentation(
@@ -232,6 +235,27 @@ export function createColumns(
     columns,
     ...(ratios ? { ratios } : {}),
     ...(gap !== undefined ? { gap } : {}),
+  };
+}
+
+export function createSection(
+  title: string,
+  subtitle?: string,
+  number?: string | number
+): SectionElement {
+  return {
+    type: 'section',
+    title,
+    ...(subtitle ? { subtitle } : {}),
+    ...(number !== undefined ? { number } : {}),
+  };
+}
+
+export function createToc(title?: string, items?: TocItem[]): TocElement {
+  return {
+    type: 'toc',
+    ...(title ? { title } : {}),
+    ...(items ? { items } : {}),
   };
 }
 

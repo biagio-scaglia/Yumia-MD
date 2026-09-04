@@ -76,4 +76,53 @@ Testing custom stylesheets and scripts injection.
     expect(result.html).toContain('https://cdn.example.com/custom-theme.css');
     expect(result.html).toContain('https://cdn.example.com/custom-analytics.js');
   });
+
+  it('renders section dividers, table of contents, code line highlights and print button', async () => {
+    const source = `---
+title: Features Deck
+---
+
+:::section "Part 1: Engine Architecture" subtitle="Deep dive" number="01"
+:::
+
+---
+
+:::toc "Agenda"
+1. Architecture - Core AST
+2. Code Highlighting - Line Steps
+:::
+
+---
+
+# Code Highlight Demo
+
+\`\`\`typescript {2}
+const a = 1;
+const b = 2; // highlighted
+const c = 3;
+\`\`\`
+`;
+
+    const presentation = parseYumia(source);
+    const renderer = new HtmlRenderer();
+    const result = await renderer.render(presentation);
+
+    expect(result.slideCount).toBe(3);
+    // Section check
+    expect(result.html).toContain('yumia-section-card');
+    expect(result.html).toContain('Part 1: Engine Architecture');
+    expect(result.html).toContain('SECTION 01');
+
+    // TOC check
+    expect(result.html).toContain('yumia-toc-grid');
+    expect(result.html).toContain('Architecture');
+
+    // Code line highlight check
+    expect(result.html).toContain('yumia-code-line highlighted');
+    expect(result.html).toContain('yumia-code-line dimmed');
+
+    // Print button & print media check
+    expect(result.html).toContain('btn-print');
+    expect(result.html).toContain('@media print');
+  });
 });

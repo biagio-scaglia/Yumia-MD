@@ -67,4 +67,47 @@ describe('@yumiamd/renderer-pptx', () => {
     expect(result.slideCount).toBe(1);
     expect(result.data.byteLength).toBeGreaterThan(1000);
   });
+
+  it('should compile section slides, table of contents, and highlighted code blocks to PPTX', async () => {
+    const slide1 = createSlide([
+      {
+        type: 'section',
+        title: 'Deep Dive Architecture',
+        subtitle: 'Exploring compiler geometry and layout engine',
+        number: '02',
+      },
+    ]);
+
+    const slide2 = createSlide([
+      {
+        type: 'toc',
+        title: 'Agenda',
+        items: [
+          { number: '1', title: 'Architecture Overview', description: 'AST & Core' },
+          { number: '2', title: 'Highlighting & Presentation', description: 'Code steps' },
+        ],
+      },
+    ]);
+
+    const slide3 = createSlide([
+      {
+        type: 'code',
+        code: "import { compile } from 'yumiamd';\nconst res = await compile(src, { format: 'pptx' });\nconsole.log(res);",
+        language: 'typescript',
+        highlight: '2',
+      },
+    ]);
+
+    const presentation = createPresentation({ title: 'Feature Showcase' }, [
+      slide1,
+      slide2,
+      slide3,
+    ]);
+    const renderer = new PptxRenderer();
+    const result = await renderer.render(presentation);
+
+    expect(result.format).toBe('pptx');
+    expect(result.slideCount).toBe(3);
+    expect(result.data.byteLength).toBeGreaterThan(2000);
+  });
 });

@@ -12,6 +12,7 @@ import {
   SlideTransitionType,
   TimelineElement,
   TimelineItem,
+  TocItem,
   createBadge,
   createCard,
   createChart,
@@ -29,11 +30,35 @@ import {
   createParagraph,
   createPresentation,
   createQuote,
+  createSection,
   createSlide,
   createTable,
   createTimeline,
+  createToc,
 } from '@yumiamd/ast';
 import { ParserOptions, YumiaParser } from './types.js';
+
+export function parseHighlightLines(highlightStr?: string): number[] {
+  if (!highlightStr) return [];
+  const lines = new Set<number>();
+  const parts = highlightStr.split(',');
+  for (const part of parts) {
+    const trimmed = part.trim();
+    if (!trimmed) continue;
+    if (trimmed.includes('-')) {
+      const [startStr, endStr] = trimmed.split('-');
+      const start = parseInt(startStr || '0', 10);
+      const end = parseInt(endStr || '0', 10);
+      if (!isNaN(start) && !isNaN(end) && start <= end) {
+        for (let n = start; n <= end; n++) lines.add(n);
+      }
+    } else {
+      const num = parseInt(trimmed, 10);
+      if (!isNaN(num)) lines.add(num);
+    }
+  }
+  return Array.from(lines).sort((a, b) => a - b);
+}
 
 export class DefaultYumiaParser implements YumiaParser {
   private diagnostics: Diagnostic[] = [];
@@ -348,7 +373,17 @@ export class DefaultYumiaParser implements YumiaParser {
       // Code Block (```lang)
       if (line.startsWith('```')) {
         flushAll();
-        const language = line.slice(3).trim() || undefined;
+        let rawLang = line.slice(3).trim() || undefined;
+        let highlight: string | undefined;
+        if (rawLang) {
+          const hlMatch =
+            rawLang.match(/\{([\d,\s-]+)\}/) || rawLang.match(/highlight=['"]([\d,\s-]+)['"]/);
+          if (hlMatch) {
+            highlight = hlMatch[1]?.trim();
+            rawLang = rawLang.replace(hlMatch[0], '').trim() || undefined;
+          }
+        }
+        const language = rawLang;
         const codeLines: string[] = [];
         const codeStartLine = currentLineNum;
         i++;
@@ -378,6 +413,10 @@ export class DefaultYumiaParser implements YumiaParser {
         }
 
         const el = createCode(codeLines.join('\n'), language);
+        if (highlight) {
+          el.highlight = highlight;
+          el.highlightLines = parseHighlightLines(highlight);
+        }
         el.loc = {
           start: { line: codeStartLine, column: 1 },
           end: { line: baseLine + i - 1, column: 1 },
@@ -610,6 +649,84 @@ export class DefaultYumiaParser implements YumiaParser {
           elements.push(el);
         } else if (directiveName === 'compare') {
           const el = this.parseCompareBlock(directiveArg, blockLines, blockBaseLine);
+          el.loc = {
+            start: { line: directiveStartLine, column: 1 },
+            end: { line: baseLine + i - 1, column: 1 },
+          };
+          elements.push(el);
+        } else if (directiveName === 'code') {
+          const langMatch = directiveArg.match(/lang(?:uage)?=['"](.*?)['"]/);
+          const hlMatch = directiveArg.match(/highlight=['"](.*?)['"]/);
+          let lang = langMatch ? langMatch[1] : directiveArg.split(' ')[0] || undefined;
+          if (lang && (lang.includes('=') || lang.startsWith('{'))) lang = undefined;
+          const hlBraceMatch = directiveArg.match(/\{([\d,\s-]+)\}/);
+          const highlight = hlMatch ? hlMatch[1] : hlBraceMatch ? hlBraceMatch[1] : undefined;
+          const codeContent = blockLines.join('\n');
+          const el = createCode(codeContent, lang);
+          if (highlight) {
+            el.highlight = highlight;
+            el.highlightLines = parseHighlightLines(highlight);
+          }
+          el.loc = {
+            start: { line: directiveStartLine, column: 1 },
+            end: { line: baseLine + i - 1, column: 1 },
+          };
+          elements.push(el);
+        } else if (directiveName === 'section') {
+          const titleMatch = directiveArg.match(/\btitle=(?:"([^"]*)"|'([^']*)'|(\S+))/);
+          const subtitleMatch = directiveArg.match(/\bsubtitle=(?:"([^"]*)"|'([^']*)'|(\S+))/);
+          const numberMatch = directiveArg.match(/\bnumber=(?:"([^"]*)"|'([^']*)'|(\S+))/);
+          let subtitle = subtitleMatch
+            ? (subtitleMatch[1] ?? subtitleMatch[2] ?? subtitleMatch[3])
+            : undefined;
+          const number = numberMatch
+            ? (numberMatch[1] ?? numberMatch[2] ?? numberMatch[3])
+            : undefined;
+          let title = titleMatch ? (titleMatch[1] ?? titleMatch[2] ?? titleMatch[3]) : undefined;
+          if (!title) {
+            const stripped = directiveArg
+              .replace(/\bsubtitle=(?:"[^"]*"|'[^']*'|\S+)/g, '')
+              .replace(/\bnumber=(?:"[^"]*"|'[^']*'|\S+)/g, '')
+              .trim();
+            title = stripped.replace(/^['"](.*)['"]$/, '$1').trim() || undefined;
+          }
+          if (blockLines.length > 0) {
+            if (!title) title = blockLines[0]?.trim() || '';
+            if (!subtitle && blockLines.length > 1)
+              subtitle = blockLines.slice(1).join('\n').trim();
+          }
+          const el = createSection(title || 'Section', subtitle, number);
+          el.loc = {
+            start: { line: directiveStartLine, column: 1 },
+            end: { line: baseLine + i - 1, column: 1 },
+          };
+          elements.push(el);
+        } else if (directiveName === 'toc') {
+          const titleMatch = directiveArg.match(/\btitle=(?:"([^"]*)"|'([^']*)'|(\S+))/);
+          let title = titleMatch ? (titleMatch[1] ?? titleMatch[2] ?? titleMatch[3]) : undefined;
+          if (!title) {
+            title = directiveArg.replace(/^['"](.*)['"]$/, '$1').trim() || undefined;
+          }
+          const items: TocItem[] = [];
+          for (const bl of blockLines) {
+            const trimmed = bl.trim();
+            if (!trimmed) continue;
+            const matchOrdered = trimmed.match(/^(\d+)\.\s+(.*?)(?:\s+[-–—:]\s+(.*))?$/);
+            const matchUnordered = trimmed.match(/^[-*]\s+(.*?)(?:\s+[-–—:]\s+(.*))?$/);
+            if (matchOrdered && matchOrdered[1] && matchOrdered[2]) {
+              items.push({
+                number: matchOrdered[1],
+                title: matchOrdered[2].trim(),
+                description: matchOrdered[3]?.trim() || undefined,
+              });
+            } else if (matchUnordered && matchUnordered[1]) {
+              items.push({
+                title: matchUnordered[1].trim(),
+                description: matchUnordered[2]?.trim() || undefined,
+              });
+            }
+          }
+          const el = createToc(title, items.length > 0 ? items : undefined);
           el.loc = {
             start: { line: directiveStartLine, column: 1 },
             end: { line: baseLine + i - 1, column: 1 },

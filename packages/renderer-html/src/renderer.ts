@@ -15,10 +15,12 @@ import {
   ParagraphElement,
   Presentation,
   QuoteElement,
+  SectionElement,
   Slide,
   SlideElement,
   TableElement,
   TimelineElement,
+  TocElement,
 } from '@yumiamd/ast';
 import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
 import { defaultTheme, resolveTheme, ThemeOverrides, YumiaTheme } from '@yumiamd/theme';
@@ -93,7 +95,8 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
           idx + 1,
           presentation.slides.length,
           theme,
-          presentation.metadata.watermark
+          presentation.metadata.watermark,
+          presentation
         )
       )
       .join('\n');
@@ -792,17 +795,177 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       to { opacity: 1; transform: scale(1); }
     }
 
-    /* Progressive Reveal (Step Builds) */
-    .yumia-slide-wrapper [data-step] {
-      transition: opacity 0.25s ease, transform 0.25s ease;
+    /* Code Block Line Highlighting & Numbers */
+    .yumia-code-block {
+      display: block;
+      padding: 0.75rem 0;
+      font-family: var(--yumia-font-code);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      overflow-x: auto;
+      border-radius: var(--yumia-radius-card);
+      background: rgba(10, 15, 30, 0.88);
+      border: 1.5px solid var(--yumia-border);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+      margin: 0.8rem 0;
     }
-    .yumia-slide-wrapper:not(.step-active) [data-step] {
-      opacity: 0.2;
-      transform: translateY(4px);
+    .yumia-code-block code {
+      display: block;
+      padding: 0;
+      background: transparent;
+      border: none;
     }
-    .yumia-slide-wrapper.step-active [data-step] {
+    .yumia-code-line {
+      display: flex;
+      align-items: center;
+      min-height: 1.6em;
+      padding: 0 1rem;
+      transition: background 0.15s ease, opacity 0.15s ease;
+    }
+    .yumia-code-line.dimmed {
+      opacity: 0.35;
+    }
+    .yumia-code-line.highlighted {
+      background: rgba(0, 240, 255, 0.16);
+      border-left: 3.5px solid var(--yumia-primary);
       opacity: 1;
-      transform: translateY(0);
+      font-weight: 600;
+    }
+    .yumia-code-line .line-num {
+      user-select: none;
+      width: 28px;
+      margin-right: 14px;
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 0.8rem;
+      text-align: right;
+    }
+    .yumia-code-line .line-text {
+      flex: 1;
+    }
+
+    /* Section Divider Card */
+    .yumia-section-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 3rem 2rem;
+      margin: auto 0;
+      background: radial-gradient(circle at center, rgba(0, 240, 255, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%);
+      border: 1.5px solid var(--yumia-primary);
+      border-radius: var(--yumia-radius-card);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 240, 255, 0.2);
+      width: 100%;
+    }
+    .yumia-section-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 14px;
+      border-radius: 999px;
+      background: var(--yumia-primary);
+      color: #000;
+      font-weight: 800;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+    }
+    .yumia-section-title {
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      font-weight: 800;
+      color: var(--yumia-text);
+      margin-bottom: 0.8rem;
+      line-height: 1.2;
+    }
+    .yumia-section-subtitle {
+      font-size: 1.15rem;
+      color: var(--yumia-muted);
+      max-width: 650px;
+    }
+
+    /* Table of Contents Grid */
+    .yumia-toc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      width: 100%;
+      margin: 1.2rem 0;
+    }
+    .yumia-toc-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--yumia-surface);
+      border: 1.5px solid var(--yumia-border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .yumia-toc-item:hover {
+      transform: translateX(4px);
+      border-color: var(--yumia-primary);
+    }
+    .yumia-toc-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: rgba(0, 240, 255, 0.15);
+      color: var(--yumia-primary);
+      font-weight: 800;
+      font-size: 0.95rem;
+    }
+    .yumia-toc-title {
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: var(--yumia-text);
+    }
+
+    /* Print & Export Media Styles */
+    @media print {
+      @page {
+        size: landscape;
+        margin: 0;
+      }
+      body {
+        background: #0f172a !important;
+        color: #f8fafc !important;
+        overflow: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      #deck-container {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+      }
+      #yumia-deck {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
+      }
+      .yumia-slide-wrapper {
+        display: flex !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        page-break-inside: avoid !important;
+        position: relative !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        min-height: 100vh !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+      }
+      .yumia-controls, .yumia-notes-drawer, .yumia-overview-modal, .yumia-progress-bar {
+        display: none !important;
+      }
     }
 
     /* Notes Drawer */
@@ -1032,6 +1195,7 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       <button class="yumia-btn" id="btn-next" title="Next Slide (→)">▶</button>
       <button class="yumia-btn" id="btn-overview" title="Slide Overview (ESC / O)">▦</button>
       <button class="yumia-btn" id="btn-speaker" title="Speaker View (S)">🎤</button>
+      <button class="yumia-btn" id="btn-print" title="Stampa / Salva PDF (Ctrl+P)">🖨️</button>
       <button class="yumia-btn" id="btn-notes" title="Toggle Notes (N)">📝</button>
       <button class="yumia-btn" id="btn-fs" title="Fullscreen (F)">⛶</button>
     </div>
@@ -1345,6 +1509,7 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
         toggleNotes: function() { notesDrawer?.classList.toggle('open'); },
         toggleOverview: function() { toggleOverview(); },
         openSpeaker: openSpeakerWindow,
+        print: function() { window.print(); },
         toggleFs: function() {
           if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().catch(() => {});
@@ -1363,6 +1528,7 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       document.getElementById('btn-overview')?.addEventListener('click', window.deckController.toggleOverview);
       document.getElementById('btn-close-overview')?.addEventListener('click', () => toggleOverview(false));
       document.getElementById('btn-speaker')?.addEventListener('click', window.deckController.openSpeaker);
+      document.getElementById('btn-print')?.addEventListener('click', window.deckController.print);
       document.getElementById('btn-fs')?.addEventListener('click', window.deckController.toggleFs);
 
       window.addEventListener('keydown', function(e) {
@@ -1380,6 +1546,11 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
           }
         }
 
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+          // let default browser print work or call print explicitly
+          return;
+        }
+
         if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown' || e.key.toLowerCase() === 'l') {
           e.preventDefault();
           window.deckController.next();
@@ -1390,6 +1561,8 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
           window.deckController.toggleFs();
         } else if (e.key.toLowerCase() === 's') {
           window.deckController.openSpeaker();
+        } else if (e.key.toLowerCase() === 'p') {
+          window.deckController.print();
         } else if (e.key.toLowerCase() === 'n') {
           window.deckController.toggleNotes();
         } else if (e.key === 'Escape' || e.key.toLowerCase() === 'o') {
@@ -1427,7 +1600,8 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     slideNum: number,
     totalSlides: number,
     theme: YumiaTheme,
-    watermarkOpt?: boolean | string
+    watermarkOpt?: boolean | string,
+    presentation?: Presentation
   ): string {
     const activeClass = slideNum === 1 ? 'active' : '';
     const notesAttr = slide.notes ? this.escapeHtml(slide.notes.replace(/\n/g, '<br>')) : '';
@@ -1444,7 +1618,9 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       ? `<div class="yumia-watermark">${this.escapeHtml(watermarkText)}</div>`
       : '';
 
-    const elementsHtml = slide.elements.map((el) => this.renderElement(el, theme)).join('\n');
+    const elementsHtml = slide.elements
+      .map((el) => this.renderElement(el, theme, presentation))
+      .join('\n');
 
     return `
     <div class="yumia-slide-wrapper ${activeClass} ${transClass}" id="slide-${slideNum}" data-notes="${notesAttr}">
@@ -1454,7 +1630,11 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     </div>`;
   }
 
-  private renderElement(element: SlideElement, theme: YumiaTheme): string {
+  private renderElement(
+    element: SlideElement,
+    theme: YumiaTheme,
+    presentation?: Presentation
+  ): string {
     switch (element.type) {
       case 'heading': {
         const h = element as HeadingElement;
@@ -1474,7 +1654,110 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       case 'code': {
         const c = element as CodeElement;
         const langClass = c.language ? `class="language-${c.language}"` : '';
+        const lines = c.code.split('\n');
+        if (c.highlight) {
+          const highlightSet = new Set<number>();
+          const parts = c.highlight.split(',');
+          for (const part of parts) {
+            const trimmed = part.trim();
+            if (!trimmed) continue;
+            if (trimmed.includes('-')) {
+              const [startStr, endStr] = trimmed.split('-');
+              const start = parseInt(startStr || '0', 10);
+              const end = parseInt(endStr || '0', 10);
+              if (!isNaN(start) && !isNaN(end) && start <= end) {
+                for (let n = start; n <= end; n++) highlightSet.add(n);
+              }
+            } else {
+              const num = parseInt(trimmed, 10);
+              if (!isNaN(num)) highlightSet.add(num);
+            }
+          }
+          const linesHtml = lines
+            .map((line, idx) => {
+              const lineNum = idx + 1;
+              const isHl = highlightSet.has(lineNum);
+              const hlClass = isHl ? 'highlighted' : 'dimmed';
+              return `<div class="yumia-code-line ${hlClass}"><span class="line-num">${lineNum}</span><span class="line-text">${this.escapeHtml(line) || '&nbsp;'}</span></div>`;
+            })
+            .join('');
+          return `<pre class="yumia-code-block"><code ${langClass}>${linesHtml}</code></pre>`;
+        }
         return `<pre><code ${langClass}>${this.escapeHtml(c.code)}</code></pre>`;
+      }
+      case 'section': {
+        const s = element as SectionElement;
+        const numStr =
+          s.number !== undefined
+            ? `<div class="yumia-section-pill">SECTION ${this.escapeHtml(String(s.number))}</div>`
+            : '';
+        const subStr = s.subtitle
+          ? `<div class="yumia-section-subtitle">${this.formatInline(s.subtitle)}</div>`
+          : '';
+        return `
+        <div class="yumia-section-card">
+          ${numStr}
+          <div class="yumia-section-title">${this.formatInline(s.title)}</div>
+          ${subStr}
+        </div>`;
+      }
+      case 'toc': {
+        const t = element as TocElement;
+        const items = t.items ? [...t.items] : [];
+        if (items.length === 0 && presentation) {
+          let autoSecIdx = 1;
+          for (const s of presentation.slides) {
+            for (const el of s.elements) {
+              if (el.type === 'section') {
+                const sec = el as SectionElement;
+                items.push({
+                  number: sec.number !== undefined ? String(sec.number) : String(autoSecIdx++),
+                  title: sec.title,
+                  description: sec.subtitle,
+                });
+              }
+            }
+          }
+          if (items.length === 0) {
+            presentation.slides.forEach((s, idx) => {
+              const heading = s.elements.find((el) => el.type === 'heading') as
+                HeadingElement | undefined;
+              if (heading) {
+                items.push({
+                  number: String(idx + 1),
+                  title: heading.text,
+                });
+              }
+            });
+          }
+        }
+        const titleHtml = t.title
+          ? `<h2 style="margin-bottom:1.5rem;">${this.escapeHtml(t.title)}</h2>`
+          : '';
+        const itemsHtml = items
+          .map((it, idx) => {
+            const num = it.number !== undefined ? String(it.number) : String(idx + 1);
+            const descText = it.description || it.subtitle;
+            const desc = descText
+              ? `<div style="font-size:0.85rem; color:var(--yumia-muted); margin-top:2px;">${this.formatInline(descText)}</div>`
+              : '';
+            return `
+          <div class="yumia-toc-item">
+            <div class="yumia-toc-num">${this.escapeHtml(num)}</div>
+            <div>
+              <div class="yumia-toc-title">${this.formatInline(it.title)}</div>
+              ${desc}
+            </div>
+          </div>`;
+          })
+          .join('\n');
+        return `
+        <div class="yumia-toc-container">
+          ${titleHtml}
+          <div class="yumia-toc-grid">
+            ${itemsHtml}
+          </div>
+        </div>`;
       }
       case 'quote': {
         const q = element as QuoteElement;

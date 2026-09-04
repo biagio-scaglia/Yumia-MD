@@ -12,7 +12,9 @@ import {
   ListElement,
   MathElement,
   MermaidElement,
+  SectionElement,
   TimelineElement,
+  TocElement,
 } from '@yumiamd/ast';
 
 describe('Parser Directives & Semantic Elements', () => {
@@ -267,5 +269,67 @@ Default transition from frontmatter
       type: 'fade',
       duration: '1s',
     });
+  });
+
+  it('should parse :::section divider slides', () => {
+    const source = `
+:::section "Part 2: Compiler Architecture" subtitle="Deep dive into coordinates and layout geometry" number="02"
+:::
+`;
+    const presentation = parseYumia(source);
+    expect(presentation.slides).toHaveLength(1);
+    const sec = presentation.slides[0]?.elements[0] as SectionElement;
+    expect(sec.type).toBe('section');
+    expect(sec.title).toBe('Part 2: Compiler Architecture');
+    expect(sec.subtitle).toBe('Deep dive into coordinates and layout geometry');
+    expect(sec.number).toBe('02');
+  });
+
+  it('should parse :::toc table of contents', () => {
+    const source = `
+:::toc "Table of Contents"
+1. Introduction - Project goals
+2. Architecture - AST and Renderers
+3. Output - PPTX & PDF
+:::
+`;
+    const presentation = parseYumia(source);
+    expect(presentation.slides).toHaveLength(1);
+    const toc = presentation.slides[0]?.elements[0] as TocElement;
+    expect(toc.type).toBe('toc');
+    expect(toc.title).toBe('Table of Contents');
+    expect(toc.items).toHaveLength(3);
+    expect(toc.items?.[0]?.number).toBe('1');
+    expect(toc.items?.[0]?.title).toBe('Introduction');
+    expect(toc.items?.[0]?.description).toBe('Project goals');
+  });
+
+  it('should parse code blocks with highlight range in markdown and directive', () => {
+    const source = `
+\`\`\`typescript {2,5-7}
+import { compile } from 'yumiamd';
+const source = '# Hello';
+const result = await compile(source, { format: 'pptx' });
+\`\`\`
+
+:::code lang="typescript" highlight="2,5-7"
+const x = 1;
+const y = 2;
+:::
+`;
+    const presentation = parseYumia(source);
+    expect(presentation.slides[0]?.elements).toHaveLength(2);
+
+    const code1 = presentation.slides[0]?.elements[0] as CodeElement;
+    expect(code1.type).toBe('code');
+    expect(code1.language).toBe('typescript');
+    expect(code1.highlight).toBe('2,5-7');
+    expect(code1.highlightLines).toEqual([2, 5, 6, 7]);
+
+    const code2 = presentation.slides[0]?.elements[1] as CodeElement;
+    expect(code2.type).toBe('code');
+    expect(code2.language).toBe('typescript');
+    expect(code2.highlight).toBe('2,5-7');
+    expect(code2.highlightLines).toEqual([2, 5, 6, 7]);
   });
 });

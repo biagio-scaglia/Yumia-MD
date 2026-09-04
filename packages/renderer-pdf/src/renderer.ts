@@ -15,10 +15,12 @@ import {
   ParagraphElement,
   Presentation,
   QuoteElement,
+  SectionElement,
   Slide,
   SlideElement,
   TableElement,
   TimelineElement,
+  TocElement,
 } from '@yumiamd/ast';
 import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
 import { defaultTheme, resolveTheme, ThemeOverrides, YumiaTheme } from '@yumiamd/theme';
@@ -73,7 +75,16 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         const totalSlides = presentation.slides.length;
         for (let i = 0; i < totalSlides; i++) {
           const slide = presentation.slides[i]!;
-          this.renderSlide(doc, slide, i + 1, totalSlides, pageWidth, pageHeight, theme);
+          this.renderSlide(
+            doc,
+            slide,
+            i + 1,
+            totalSlides,
+            pageWidth,
+            pageHeight,
+            theme,
+            presentation
+          );
         }
 
         doc.end();
@@ -90,7 +101,8 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
     totalSlides: number,
     pageWidth: number,
     pageHeight: number,
-    theme: YumiaTheme
+    theme: YumiaTheme,
+    presentation?: Presentation
   ): void {
     doc.addPage({
       size: [pageWidth, pageHeight],
@@ -108,7 +120,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
     // 3. Render slide elements sequentially
     for (const element of slide.elements) {
-      cursorY = this.renderElement(doc, element, padX, cursorY, contentWidth, theme);
+      cursorY = this.renderElement(doc, element, padX, cursorY, contentWidth, theme, presentation);
       cursorY += 12; // Gap between root blocks
     }
 
@@ -132,7 +144,8 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
     x: number,
     y: number,
     width: number,
-    theme: YumiaTheme
+    theme: YumiaTheme,
+    presentation?: Presentation
   ): number {
     switch (element.type) {
       case 'heading': {
@@ -226,10 +239,10 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
       case 'code': {
         const c = element as CodeElement;
-        const codeText = c.code;
-        doc.font('Courier').fontSize(11);
-        const textHeight = doc.heightOfString(codeText, { width: width - 24 });
-        const boxHeight = textHeight + 20;
+        const lines = c.code.split('\n');
+        doc.font('Courier').fontSize(10);
+        const lineHeight = 14;
+        const boxHeight = lines.length * lineHeight + 20;
 
         doc
           .roundedRect(x, y, width, boxHeight, 6)
@@ -237,11 +250,50 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           .strokeColor(theme.colors.border || 'rgba(255,255,255,0.1)')
           .stroke();
 
-        doc
-          .font('Courier')
-          .fontSize(11)
-          .fillColor(theme.colors.accent || '#38bdf8')
-          .text(codeText, x + 12, y + 10, { width: width - 24 });
+        const highlightSet = new Set<number>();
+        if (c.highlight) {
+          const parts = c.highlight.split(',');
+          for (const part of parts) {
+            const trimmed = part.trim();
+            if (!trimmed) continue;
+            if (trimmed.includes('-')) {
+              const [startStr, endStr] = trimmed.split('-');
+              const start = parseInt(startStr || '0', 10);
+              const end = parseInt(endStr || '0', 10);
+              if (!isNaN(start) && !isNaN(end) && start <= end) {
+                for (let n = start; n <= end; n++) highlightSet.add(n);
+              }
+            } else {
+              const num = parseInt(trimmed, 10);
+              if (!isNaN(num)) highlightSet.add(num);
+            }
+          }
+        }
+
+        lines.forEach((line, idx) => {
+          const lineNum = idx + 1;
+          const lineY = y + 10 + idx * lineHeight;
+          const isHl = highlightSet.has(lineNum);
+
+          const numColor = isHl ? theme.colors.primary : theme.colors.muted || '#555566';
+          const textColor = c.highlight
+            ? isHl
+              ? theme.colors.primary || '#00f0ff'
+              : theme.colors.muted || '#666677'
+            : theme.colors.accent || '#38bdf8';
+
+          doc
+            .font('Courier')
+            .fontSize(9)
+            .fillColor(numColor)
+            .text(String(lineNum).padStart(2, ' '), x + 10, lineY, { width: 22 });
+
+          doc
+            .font('Courier')
+            .fontSize(10)
+            .fillColor(textColor)
+            .text(line || ' ', x + 36, lineY, { width: width - 48 });
+        });
 
         return y + boxHeight;
       }
@@ -671,6 +723,138 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
             align: 'center',
           });
         return y + boxH + 8;
+      }
+
+      case 'section': {
+        const s = element as SectionElement;
+        const boxH = 130;
+        doc
+          .roundedRect(x, y, width, boxH, 8)
+          .fill(theme.colors.surface || 'rgba(255,255,255,0.06)');
+        doc
+          .roundedRect(x, y, width, boxH, 8)
+          .lineWidth(2)
+          .strokeColor(theme.colors.primary)
+          .stroke();
+
+        let curY = y + 18;
+        if (s.number !== undefined) {
+          const numStr = String(s.number);
+          doc.roundedRect(x + width / 2 - 40, curY, 80, 18, 9).fill(theme.colors.primary);
+          doc
+            .font('Helvetica-Bold')
+            .fontSize(9)
+            .fillColor('#000000')
+            .text(`SECTION ${numStr}`.toUpperCase(), x, curY + 4, { width, align: 'center' });
+          curY += 28;
+        }
+
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(22)
+          .fillColor(theme.colors.text)
+          .text(this.stripFormatting(s.title), x + 20, curY, {
+            width: width - 40,
+            align: 'center',
+          });
+        curY += 28;
+
+        if (s.subtitle) {
+          doc
+            .font('Helvetica')
+            .fontSize(12)
+            .fillColor(theme.colors.muted || '#999999')
+            .text(this.stripFormatting(s.subtitle), x + 30, curY, {
+              width: width - 60,
+              align: 'center',
+            });
+        }
+
+        return y + boxH + 8;
+      }
+
+      case 'toc': {
+        const t = element as TocElement;
+        const items = t.items ? [...t.items] : [];
+        if (items.length === 0 && presentation) {
+          let autoIdx = 1;
+          for (const s of presentation.slides) {
+            for (const el of s.elements) {
+              if (el.type === 'section') {
+                const sec = el as SectionElement;
+                items.push({
+                  number: sec.number !== undefined ? String(sec.number) : String(autoIdx++),
+                  title: sec.title,
+                  description: sec.subtitle,
+                });
+              }
+            }
+          }
+          if (items.length === 0) {
+            presentation.slides.forEach((s, idx) => {
+              const heading = s.elements.find((el) => el.type === 'heading') as
+                HeadingElement | undefined;
+              if (heading) {
+                items.push({
+                  number: String(idx + 1),
+                  title: heading.text,
+                });
+              }
+            });
+          }
+        }
+
+        let curY = y;
+        if (t.title) {
+          doc
+            .font('Helvetica-Bold')
+            .fontSize(18)
+            .fillColor(theme.colors.primary)
+            .text(this.stripFormatting(t.title), x, curY, { width });
+          curY += 26;
+        }
+
+        const itemH = 34;
+        items.forEach((item, idx) => {
+          const num = item.number !== undefined ? String(item.number) : String(idx + 1);
+          const descText = item.description || item.subtitle;
+          const itemY = curY + idx * (itemH + 8);
+
+          doc
+            .roundedRect(x, itemY, width, itemH, 6)
+            .fill(theme.colors.surface || 'rgba(255,255,255,0.04)');
+          doc
+            .roundedRect(x, itemY, width, itemH, 6)
+            .strokeColor(theme.colors.border || 'rgba(255,255,255,0.1)')
+            .stroke();
+
+          doc.roundedRect(x + 10, itemY + 6, 22, 22, 4).fill(theme.colors.primary);
+          doc
+            .font('Helvetica-Bold')
+            .fontSize(10)
+            .fillColor('#000000')
+            .text(num, x + 10, itemY + 11, { width: 22, align: 'center' });
+
+          doc
+            .font('Helvetica-Bold')
+            .fontSize(12)
+            .fillColor(theme.colors.text)
+            .text(this.stripFormatting(item.title), x + 40, itemY + (descText ? 5 : 10), {
+              width: width - 50,
+            });
+
+          if (descText) {
+            doc
+              .font('Helvetica')
+              .fontSize(9)
+              .fillColor(theme.colors.muted || '#888888')
+              .text(this.stripFormatting(descText), x + 40, itemY + 19, {
+                width: width - 50,
+              });
+          }
+        });
+
+        return curY + items.length * (itemH + 8) + 8;
       }
 
       default:

@@ -158,6 +158,14 @@ export class DefaultLayoutEngine implements LayoutEngine {
         const height = 90;
         return { element, bounds: { x, y, width, height } };
       }
+      case 'section': {
+        const height = 280;
+        return { element, bounds: { x, y, width, height } };
+      }
+      case 'toc': {
+        const height = 320;
+        return { element, bounds: { x, y, width, height } };
+      }
       case 'card': {
         return this.layoutCard(element, x, y, width, gap);
       }

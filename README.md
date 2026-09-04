@@ -43,7 +43,7 @@ presentation.yumia.md
 
 ## 🎨 Rich Directive Syntax
 
-```markdown
+````markdown
 ---
 title: System Overview & Scientific Metrics
 theme: default
@@ -84,6 +84,42 @@ Opening slide introducing deterministic workflows and target capabilities.
 - 100% Native editable PowerPoint objects
 - Deterministic layout & vector graphics
 
+:::
+
+---
+
+# Section Dividers & Table of Contents
+
+:::section "Part 1: Architecture & Internals" subtitle="Deep dive into layout geometry and coordinates" number="01"
+:::
+
+---
+
+:::toc "📑 Table of Contents"
+
+1. Architecture - Parser AST & Deterministic Layout
+2. Multi-Target - PPTX, Vector PDF & Interactive HTML5
+3. Code Highlighting - Line Steps & Highlighting
+   :::
+
+---
+
+# Code Blocks with Line Highlighting & Focus
+
+```typescript {2,5-7}
+import { compile } from 'yumiamd';
+
+// Highlighted focus line
+const source = await readFile('./presentation.yumia.md', 'utf-8');
+const result = await compile(source, {
+  format: 'pptx',
+  theme: 'cyberpunk',
+});
+```
+````
+
+:::notes
+In HTML non-highlighted lines are dimmed with focus on highlighted lines. In PPTX & PDF, code boxes are formatted with line numbers and native accent styling.
 :::
 
 ---
@@ -134,15 +170,16 @@ D --> G[HTML5 Deck]
 
 - [Q1 2026] Core Compiler: AST parser, layout engine & PPTX generation
 - [Q2 2026] Multi-Format: Vector PDF & Interactive HTML5 Speaker View
-- [Q3 2026] Rich Directives: Native charts, Mermaid, timelines & compare
-- [Q4 2026] Enterprise: Master templates, font embedding, math & transitions
+- [Q3 2026] Rich Directives: Native charts, Mermaid, timelines, TOC & sections
+- [Q4 2026] Enterprise: Master templates, font embedding, line highlights & print
   :::
 
 :::step
 
 - ⚡ **Next Step**: Seamless CI/CD slide pipelines with `yumia deploy`!
   :::
-```
+
+````
 
 ---
 
@@ -159,7 +196,7 @@ npx yumiamd dev presentation.yumia.md --open
 
 # Compile presentation directly to native editable PowerPoint (.pptx)
 npx yumiamd build presentation.yumia.md --out dist/presentation.pptx
-```
+````
 
 ---
 
@@ -266,22 +303,26 @@ YumiaMD is developed as a modular monorepo and distributed as a self-contained *
 
 ## 🌐 Multi-Target Presentation Rendering
 
-| Feature / Directive               | PowerPoint (`.pptx`)                    | Vector PDF (`.pdf`)         | HTML5 Interactive (`.html`)        |
-| :-------------------------------- | :-------------------------------------- | :-------------------------- | :--------------------------------- |
-| **Output Type**                   | Native OpenXML shapes & text            | Native vector paths & text  | Responsive interactive web app     |
-| **Headings & Cards**              | Native PPTX rounded rects               | Vector rounded boxes        | Glassmorphic CSS cards             |
-| **Data Charts (`:::chart`)**      | Editable PowerPoint Chart objects       | Native vector PDF graphics  | Responsive interactive SVG charts  |
-| **Diagrams (`:::mermaid`)**       | Formatted code container                | Formatted code container    | Client-side Mermaid.js rendering   |
-| **Timelines (`:::timeline`)**     | Native vector shapes & connectors       | Vector nodes & step lines   | Responsive CSS timeline steps      |
-| **Comparisons (`:::compare`)**    | Multi-column vector containers          | Side-by-side vector boxes   | Dual-column comparison grid        |
-| **Math (`:::math` / `$$`)**       | Formatted Cambria Math box with accent  | Vector boxed equation paths | Glassmorphic math box container    |
-| **Transitions (`:::transition`)** | Native OpenXML slide transition effects | Clean page sequence         | CSS3 keyframe slide animations     |
-| **Corporate Templates**           | Native `.potx` master slide reuse       | Consistent theme layout     | Themed web layout                  |
-| **Font Embedding**                | Embedded TTF/WOFF in presentation file  | Embedded PDF fonts          | Web-safe font / webfont delivery   |
-| **Badges (`:::badge`)**           | Vector pill shapes with theme colors    | Vector badge pills          | Themed inline badge elements       |
-| **Step Reveal (`:::step`)**       | Native click transitions                | Visible print layout        | Progressive reveal keyboard clicks |
-| **Brand Watermark**               | Embedded footer watermark text          | Vector footer branding      | Subtle interactive corner mark     |
-| **Speaker View**                  | Native PPTX slide notes                 | Notes summary section       | Dedicated dual-screen window (`S`) |
+| Feature / Directive               | PowerPoint (`.pptx`)                     | Vector PDF (`.pdf`)         | HTML5 Interactive (`.html`)        |
+| :-------------------------------- | :--------------------------------------- | :-------------------------- | :--------------------------------- |
+| **Output Type**                   | Native OpenXML shapes & text             | Native vector paths & text  | Responsive interactive web app     |
+| **Headings & Cards**              | Native PPTX rounded rects                | Vector rounded boxes        | Glassmorphic CSS cards             |
+| **Data Charts (`:::chart`)**      | Editable PowerPoint Chart objects        | Native vector PDF graphics  | Responsive interactive SVG charts  |
+| **Diagrams (`:::mermaid`)**       | Formatted code container                 | Formatted code container    | Client-side Mermaid.js rendering   |
+| **Timelines (`:::timeline`)**     | Native vector shapes & connectors        | Vector nodes & step lines   | Responsive CSS timeline steps      |
+| **Comparisons (`:::compare`)**    | Multi-column vector containers           | Side-by-side vector boxes   | Dual-column comparison grid        |
+| **Math (`:::math` / `$$`)**       | Formatted Cambria Math box with accent   | Vector boxed equation paths | Glassmorphic math box container    |
+| **Transitions (`:::transition`)** | Native OpenXML slide transition effects  | Clean page sequence         | CSS3 keyframe slide animations     |
+| **Corporate Templates**           | Native `.potx` master slide reuse        | Consistent theme layout     | Themed web layout                  |
+| **Font Embedding**                | Embedded TTF/WOFF in presentation file   | Embedded PDF fonts          | Web-safe font / webfont delivery   |
+| **Badges (`:::badge`)**           | Vector pill shapes with theme colors     | Vector badge pills          | Themed inline badge elements       |
+| **Step Reveal (`:::step`)**       | Native click transitions                 | Visible print layout        | Progressive reveal keyboard clicks |
+| **Section Slides (`:::section`)** | Themed hero divider card with pill badge | Themed vector divider box   | Themed section hero card           |
+| **Table of Contents (`:::toc`)**  | 2-column numbered agenda cards           | Numbered vector list badges | Interactive responsive TOC grid    |
+| **Code Line Highlighting**        | Native line numbers & focus color        | Numbered lines & focus box  | Dimmed lines & focused step lines  |
+| **Print & PDF Export**            | Export to PPTX / PDF                     | Native vector PDF           | Clean 16:9 page print (`Ctrl+P`)   |
+| **Brand Watermark**               | Embedded footer watermark text           | Vector footer branding      | Subtle interactive corner mark     |
+| **Speaker View**                  | Native PPTX slide notes                  | Notes summary section       | Dedicated dual-screen window (`S`) |
 
 ---
 
