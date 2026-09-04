@@ -212,7 +212,7 @@ pnpm build
 # Typecheck workspace packages
 pnpm typecheck
 
-# Run test suite with Vitest (17 test suites, 50+ unit & integration tests)
+# Run test suite with Vitest (18 test files, 74 unit, visual-regression & integration tests)
 pnpm test
 
 # Lint code with ESLint
@@ -237,12 +237,13 @@ pnpm release patch
 - [x] Semantic AST model (`@yumiamd/ast`)
 - [x] Markdown and directive parser (`@yumiamd/parser`)
 - [x] Built-in themes (`default`, `cyberpunk`, `minimal`, `corporate`, `terminal`, `academic`) & custom CLI flags
-- [x] Deterministic Layout Engine (`@yumiamd/layout`)
-- [x] **Native PowerPoint generation engine (`@yumiamd/renderer-pptx`)**
-- [x] **Vector PDF document compiler (`@yumiamd/renderer-pdf`)**
+- [x] Deterministic Layout Engine (`@yumiamd/layout`) with word-wrap estimation
+- [x] **Native PowerPoint generation engine (`@yumiamd/renderer-pptx`)** with safe Office font fallback stacks
+- [x] **Vector PDF document compiler (`@yumiamd/renderer-pdf`)** with WinAnsi / Unicode emoji sanitization
 - [x] **Interactive HTML5 deck + Speaker View & Overview Grid (`@yumiamd/renderer-html`)**
-- [x] **Live-Reload Dev Server (`yumia dev`) & Watch Mode (`yumia watch`)**
-- [x] Rule-Based Presentation Linter (`yumia lint`)
+- [x] **Live-Reload Dev Server (`yumia dev`), Watch Mode (`yumia watch`), and `start.bat`**
+- [x] Rule-Based Presentation Linter (`yumia lint`) with WCAG AA contrast checking & overflow detection
+- [x] **Canonical 1920x1080 Design Token System & Visual Regression Test Suite**
 - [x] Automated NPM and GitHub release tooling (`pnpm release`)
 
 ---
