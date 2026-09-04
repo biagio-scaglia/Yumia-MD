@@ -53,16 +53,11 @@ transition: push
 embedFonts: true
 template: corporate.potx
 watermark: "YumiaMD"
-icons:
-  - lucide
-  - bootstrap
-  - remixicon
-  - fontawesome
 ---
 
-# :fa-rocket: High-Performance State Machines
+# High-Performance State Machines
 
-Deterministic reactive workflows compiled across targets with :lucide-zap: Lucide & :bi-shield-check: Bootstrap icons.
+Deterministic reactive workflows compiled across targets.
 
 :::badge text="v0.1.19" variant="primary" :::
 :::badge text="Production Ready" variant="success" :::
@@ -285,7 +280,6 @@ YumiaMD is developed as a modular monorepo and distributed as a self-contained *
 | **Font Embedding**                | Embedded TTF/WOFF in presentation file  | Embedded PDF fonts          | Web-safe font / webfont delivery   |
 | **Badges (`:::badge`)**           | Vector pill shapes with theme colors    | Vector badge pills          | Themed inline badge elements       |
 | **Step Reveal (`:::step`)**       | Native click transitions                | Visible print layout        | Progressive reveal keyboard clicks |
-| **Icon Libraries**                | Translated to native vector glyphs/emojis | Vector typography symbols   | Multi-library CDN & webfont icons  |
 | **Brand Watermark**               | Embedded footer watermark text          | Vector footer branding      | Subtle interactive corner mark     |
 | **Speaker View**                  | Native PPTX slide notes                 | Notes summary section       | Dedicated dual-screen window (`S`) |
 

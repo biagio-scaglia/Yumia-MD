@@ -202,9 +202,6 @@ export class DefaultYumiaParser implements YumiaParser {
       result.watermark = metadata['watermark'];
     }
 
-    if (metadata['icons']) {
-      result.icons = metadata['icons'] as string | string[];
-    }
     if (metadata['styles'] || metadata['stylesheets'] || metadata['css']) {
       result.styles = (metadata['styles'] || metadata['stylesheets'] || metadata['css']) as string | string[];
     }

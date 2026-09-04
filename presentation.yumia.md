@@ -6,16 +6,9 @@ theme: cyberpunk
 aspectRatio: "16:9"
 transition: push
 watermark: "YumiaMD"
-icons:
-  - lucide
-  - bootstrap
-  - remixicon
-  - fontawesome
-  - tabler
-  - material-symbols
 ---
 
-# :fa-rocket: YumiaMD Presentation Engine
+# YumiaMD Presentation Engine
 
 Universal presentation compiler designed for humans and AI agents.
 
@@ -27,42 +20,42 @@ Author in pure Markdown. Compile to native editable PowerPoint, vector PDF, and 
 
 :::notes
 Benvenuti alla presentazione di esempio di YumiaMD!
-Questa presentazione mostra tutte le funzionalità del compilatore: icone multi-libreria, formule matematiche, grafici nativi, timeline, diagrammi Mermaid e speaker notes.
+Questa presentazione mostra tutte le funzionalità del compilatore: layout deterministico a coordinate reali, formule matematiche, grafici nativi, timeline, diagrammi Mermaid e speaker notes.
 :::
 
 ---
 
-# 🎨 Supporto Universale Icone Multi-Libreria
+# 🚀 Speaker View & Controlli Interattivi
 
 :::transition type="fade" duration="0.4s"
 
 :::columns ratios="50:50"
 
 :::column
-:::card :lucide-zap: Shortcode Universali variant="primary"
+:::card Controlli per il Relatore variant="primary"
 
-- :fa-rocket: **Font Awesome**: `:fa-rocket:`, `:fa-bolt:`, `:fab-github:`
-- :lucide-sparkles: **Lucide Icons**: `:lucide-sparkles:`, `:lucide-zap:`
-- :bi-shield-check: **Bootstrap Icons**: `:bi-shield-check:`, `:bi-star:`
-- :ri-rocket-line: **Remix Icons**: `:ri-rocket-line:`, `:ri-database-line:`
-- :ti-cpu: **Tabler Icons**: `:ti-cpu:`, `:tabler-cloud:`
+- **Frecce / Spazio**: Navigazione slide fluida
+- **[ S ] Tasto Speaker**: Apre la Speaker View sincronizzata in finestra separata
+- **[ ESC / O ] Panoramica**: Griglia visiva con tutte le slide
+- **[ F ] Fullscreen**: Modalità a schermo intero
+- **[ N ] Note**: Mostra/nasconde il cassetto note
 :::
 :::
 
 :::column
-:::card :bi-code-slash: Tag HTML & CDN Personalizzati variant="success"
+:::card Hot-Reload & Dev Server variant="success"
 
-- **Material Symbols**: <span class="material-symbols-outlined">settings</span> `<span class="material-symbols-outlined">settings</span>`
-- **Tag HTML Standard**: `<i class="bi bi-bar-chart"></i>`
-- **PowerPoint (.pptx)**: Traduzione automatica in glifi vettoriali nativi
-- **HTML5**: Iniezione automatica CDN o stylesheet personalizzati
+- **Zero-Config Dev Server**: Powered by native `node:http` & SSE
+- **Instant Hot-Reload**: Modifica questo file `.yumia.md` e guarda il browser aggiornarsi in tempo reale!
+- **State Preservation**: Mantiene la posizione della slide corrente
+- **Zero Dipendenze Esterne**: Compilatore autonomo ed estremamente veloce
 :::
 :::
 
 :::
 
 :::notes
-Qualsiasi libreria di icone moderna può essere utilizzata nel testo, nelle card, nei badge e nelle tabelle!
+Premi il tasto 'O' o 'ESC' per testare la griglia di panoramica slide, oppure 'S' per aprire la finestra separata del relatore sincronizzata con BroadcastChannel.
 :::
 
 ---
@@ -201,7 +194,7 @@ Slide di confronto a 2 colonne ideale per pitch deck e presentazioni aziendali.
 :::timeline layout="horizontal"
 - [Q1 2026] Core Engine | Parser AST semantico, coordinate reali e layout deterministico
 - [Q2 2026] Multi-Format | Supporto simultaneo PowerPoint (.pptx), PDF e HTML5
-- [Q3 2026] Icone & Math | Sistema universale di icone, equazioni LaTeX e master template .potx
+- [Q3 2026] Math & Template | Equazioni LaTeX e master template aziendali .potx
 - [Q4 2026] Enterprise Scale | Deploy automatizzato su GitHub Pages e Vercel con un comando
 :::
 
@@ -216,11 +209,11 @@ La timeline mostra chiaramente i traguardi temporali e le fasi di rilascio.
 :::transition type="push" duration="0.4s"
 
 :::step
-- :fa-check: **1. Inizializzazione Istantanea**: `npx yumiamd init my-deck`
-- :fa-bolt: **2. Live Development**: `yumia dev presentation.yumia.md --open`
-- :bi-file-earmark-ppt: **3. Compilazione PowerPoint**: `yumia build presentation.yumia.md --out dist/deck.pptx`
-- :ri-file-pdf-line: **4. Compilazione PDF**: `yumia build presentation.yumia.md --format pdf`
-- :lucide-cloud-upload: **5. Deploy Web**: `yumia deploy presentation.yumia.md --provider gh-pages`
+- **1. Inizializzazione Istantanea**: `npx yumiamd init my-deck`
+- **2. Live Development**: `yumia dev presentation.yumia.md --open`
+- **3. Compilazione PowerPoint**: `yumia build presentation.yumia.md --out dist/deck.pptx`
+- **4. Compilazione PDF**: `yumia build presentation.yumia.md --format pdf`
+- **5. Deploy Web**: `yumia deploy presentation.yumia.md --provider gh-pages`
 :::
 
 :::notes

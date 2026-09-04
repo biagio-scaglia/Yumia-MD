@@ -56,36 +56,24 @@ Speaker notes for slide 1.
     expect(result.html).toContain('yumia_presentation_sync');
   });
 
-  it('supports custom icon libraries, styles, and multi-library shortcodes', async () => {
+  it('supports custom stylesheets and scripts in frontmatter', async () => {
     const source = `---
-title: Custom Icons Deck
-icons:
-  - lucide
-  - remixicon
-  - https://cdn.example.com/custom-icons.css
+title: Custom Styles Deck
 styles:
   - https://cdn.example.com/custom-theme.css
 scripts:
   - https://cdn.example.com/custom-analytics.js
 ---
 
-# :lucide-zap: Lucide Spark :ri-rocket-line:
-With :fa-shield: Font Awesome and custom <i class="bi bi-star"></i> and <span class="material-symbols-outlined">settings</span>
+# Custom Scripts Deck
+Testing custom stylesheets and scripts injection.
 `;
 
     const presentation = parseYumia(source);
     const renderer = new HtmlRenderer();
     const result = await renderer.render(presentation);
 
-    expect(result.html).toContain('https://cdn.jsdelivr.net/npm/lucide-static@latest/font/lucide.css');
-    expect(result.html).toContain('https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css');
-    expect(result.html).toContain('https://cdn.example.com/custom-icons.css');
     expect(result.html).toContain('https://cdn.example.com/custom-theme.css');
     expect(result.html).toContain('https://cdn.example.com/custom-analytics.js');
-    expect(result.html).toContain('<i class="lucide lucide-zap"></i>');
-    expect(result.html).toContain('<i class="ri-rocket-line"></i>');
-    expect(result.html).toContain('<i class="fa-solid fa-shield"></i>');
-    expect(result.html).toContain('<i class="bi bi-star"></i>');
-    expect(result.html).toContain('<span class="material-symbols-outlined">settings</span>');
   });
 });

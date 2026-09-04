@@ -209,46 +209,46 @@ Usa la barra spaziatrice o le frecce per mostrare i punti uno alla volta durante
 
 ---
 
-# 🌐 Compilazione Multi-Formato & Icone Universali
+# 🌐 Compilazione Universale Multi-Formato
 
 :::transition type="fade" duration="0.4s"
 
 :::columns ratios="33:33:34"
 
 :::column
-:::card :fa-file-powerpoint: 1. PowerPoint (.pptx) variant="primary"
+:::card 1. PowerPoint (.pptx) variant="primary"
 
-- :fa-bolt: Oggetti e forme native
-- :bi-bar-chart: Grafici e tabelle editabili
-- :ri-chat-3-line: Note relatore integrate
-- :lucide-sparkles: Icone vettoriali universali
+- Oggetti e forme native editabili
+- Grafici e tabelle integrate
+- Note per il relatore native
+- Template .potx e font embedding
 :::
 :::
 
 :::column
-:::card :fa-file-pdf: 2. Vector PDF (.pdf) variant="success"
+:::card 2. Vector PDF (.pdf) variant="success"
 
-- :bi-search: Testo ricercabile e selezionabile
-- :lucide-layers: Layout vettoriale a 600 DPI
-- :ri-printer-line: Perfetto per stampa e allegati
-- :fa-shield: Font e layout isolati
+- Testo ricercabile e selezionabile
+- Layout vettoriale a 600 DPI
+- Perfetto per stampa e allegati
+- Formattazione tipografica isolata
 :::
 :::
 
 :::column
-:::card :fa-globe: 3. HTML5 Deck (.html) variant="info"
+:::card 3. HTML5 Deck (.html) variant="info"
 
-- :lucide-zap: Lucide, FontAwesome, Bootstrap
-- :ri-slideshow-line: Speaker View con tasto **S**
-- :bi-grid-fill: Griglia con tasto **ESC** / **O**
-- :fa-cloud: Deploy GitHub Pages / Vercel
+- Zero-config dev server live
+- Speaker View dual-window con tasto **S**
+- Griglia panoramica con tasto **ESC** / **O**
+- Deploy istantaneo su GitHub Pages / Vercel
 :::
 :::
 
 :::
 
 :::notes
-Supporto per tutte le librerie di icone moderne (Font Awesome, Lucide, Bootstrap, RemixIcon, Tabler, Material Symbols e CDN personalizzati).
+Tre formati generati dallo stesso singolo sorgente Markdown.
 :::
 
 ---

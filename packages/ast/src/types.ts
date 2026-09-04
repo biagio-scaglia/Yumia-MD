@@ -52,7 +52,6 @@ export interface PresentationMetadata {
   template?: string;
   embedFonts?: boolean;
   watermark?: boolean | string;
-  icons?: string | string[];
   styles?: string | string[];
   scripts?: string | string[];
   colors?: {

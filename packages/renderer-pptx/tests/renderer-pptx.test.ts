@@ -67,22 +67,4 @@ describe('@yumiamd/renderer-pptx', () => {
     expect(result.slideCount).toBe(1);
     expect(result.data.byteLength).toBeGreaterThan(1000);
   });
-
-  it('should translate icon shortcuts and tags across multiple libraries to native text glyphs', async () => {
-    const slide = createSlide([
-      createHeading(':fa-rocket: Rocket Launch <i class="fa-solid fa-bolt"></i>', 1),
-      createParagraph(
-        'Lucide :lucide-zap: and Bootstrap :bi-shield-check: and Remix :ri-database-line: and Material <span class="material-symbols-outlined">settings</span>'
-      ),
-      createParagraph('Tabler :ti-cpu: with phosphor :ph-heart: and custom <i class="bi bi-star"></i>'),
-    ]);
-
-    const presentation = createPresentation({ title: 'Multi-Library Icons Demo' }, [slide]);
-    const renderer = new PptxRenderer();
-    const result = await renderer.render(presentation);
-
-    expect(result.format).toBe('pptx');
-    expect(result.slideCount).toBe(1);
-    expect(result.data.byteLength).toBeGreaterThan(1000);
-  });
 });

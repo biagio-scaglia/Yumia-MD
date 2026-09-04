@@ -90,194 +90,15 @@ export function cleanFontFace(fontString?: string): string {
   return 'Segoe UI';
 }
 
-export const UNIVERSAL_ICON_MAP: Record<string, string> = {
-  rocket: '🚀',
-  bolt: '⚡',
-  zap: '⚡',
-  shield: '🛡️',
-  'shield-check': '🛡️',
-  'shield-halved': '🛡️',
-  brain: '🧠',
-  'chart-line': '📈',
-  'chart-bar': '📊',
-  'chart-pie': '🥧',
-  chart: '📊',
-  activity: '📈',
-  dashboard: '📊',
-  gear: '⚙️',
-  cog: '⚙️',
-  gears: '⚙️',
-  settings: '⚙️',
-  check: '✓',
-  'check-circle': '✅',
-  'check-check': '✅',
-  star: '⭐',
-  sun: '☀️',
-  moon: '🌙',
-  code: '💻',
-  terminal: '💻',
-  database: '🗄️',
-  server: '🖥️',
-  fire: '🔥',
-  flame: '🔥',
-  lock: '🔒',
-  unlock: '🔓',
-  key: '🔑',
-  globe: '🌐',
-  cloud: '☁️',
-  microchip: '⚡',
-  cpu: '⚡',
-  envelope: '✉️',
-  mail: '✉️',
-  message: '💬',
-  chat: '💬',
-  comment: '💬',
-  'message-square': '💬',
-  users: '👥',
-  user: '👤',
-  clock: '⏱️',
-  bell: '🔔',
-  search: '🔍',
-  heart: '❤️',
-  lightbulb: '💡',
-  wrench: '🔧',
-  tool: '🔧',
-  tools: '🛠️',
-  calendar: '📅',
-  book: '📖',
-  flag: '🚩',
-  play: '▶',
-  pause: '⏸',
-  link: '🔗',
-  tag: '🏷️',
-  tags: '🏷️',
-  folder: '📁',
-  file: '📄',
-  image: '🖼️',
-  eye: '👁️',
-  compass: '🧭',
-  map: '🗺️',
-  target: '🎯',
-  trophy: '🏆',
-  medal: '🏅',
-  award: '🎖️',
-  robot: '🤖',
-  sparkles: '✨',
-  sparkle: '✨',
-  wand: '🪄',
-  magic: '🪄',
-  atom: '⚛️',
-  flask: '🧪',
-  dna: '🧬',
-  virus: '🦠',
-  gem: '💎',
-  diamond: '💎',
-  github: '🐙',
-  cube: '🧊',
-  cubes: '🧊',
-  box: '📦',
-  boxes: '📦',
-  layer: '🥞',
-  layers: '🥞',
-  network: '🌐',
-  sliders: '🎛️',
-  laptop: '💻',
-  mobile: '📱',
-  phone: '📱',
-  wifi: '📶',
-  bluetooth: 'ᛒ',
-  sync: '🔄',
-  refresh: '🔄',
-  recycle: '♻️',
-  trash: '🗑️',
-  edit: '✏️',
-  pen: '🖊️',
-  plus: '➕',
-  minus: '➖',
-  times: '✖️',
-  divide: '➗',
-  cross: '❌',
-  x: '❌',
-  close: '❌',
-  info: 'ℹ️',
-  'info-circle': 'ℹ️',
-  question: '❓',
-  'question-circle': '❓',
-  exclamation: '❗',
-  'alert-triangle': '⚠️',
-  'alert-circle': '⚠️',
-  'exclamation-triangle': '⚠️',
-  'exclamation-circle': '⚠️',
-  download: '📥',
-  upload: '📤',
-  dollar: '💲',
-  'dollar-sign': '💲',
-  euro: '💶',
-  money: '💰',
-  wallet: '👛',
-  briefcase: '💼',
-  'arrow-right': '➔',
-  'arrow-left': '⬅',
-  'arrow-up': '⬆',
-  'arrow-down': '⬇',
-};
-
-export const FONT_AWESOME_ICON_MAP = UNIVERSAL_ICON_MAP;
-
-export function replaceIconShortcuts(text: string): string {
-  if (!text) return '';
-
-  // 1. Match all shortcodes: :fa-*, :fas-*, :fab-*, :lucide-*, :lu-*, :bi-*, :ri-*, :ti-*, :tabler-*, :ph-*, :ms-*, :material-*, :icon-*
-  let res = text.replace(
-    /:(?:fa[srlbd]?|lucide|lu|bi|ri|tabler|ti|ph|material|ms|icon|glyph)-([a-z0-9-]+):/gi,
-    (_match, iconName) => {
-      const cleanName = iconName.toLowerCase().replace(/-(line|fill|solid|regular|bold|outline)$/, '');
-      return UNIVERSAL_ICON_MAP[cleanName] || UNIVERSAL_ICON_MAP[iconName.toLowerCase()] || '🔹';
-    }
-  );
-
-  // 2. Match HTML <span class="material-symbols-...">name</span> or <span class="material-icons">name</span>
-  res = res.replace(
-    /<span\s+class=["'][^"']*material-(?:symbols|icons)[^"']*["']>([a-z0-9_-]+)<\/span>/gi,
-    (_match, iconName) => {
-      const cleanName = iconName.toLowerCase().replace(/_/g, '-');
-      return UNIVERSAL_ICON_MAP[cleanName] || '🔹';
-    }
-  );
-
-  // 3. Match generic HTML <i class="..."></i> (Font Awesome, Lucide, Bootstrap, RemixIcon, Tabler, Phosphor, etc.)
-  res = res.replace(
-    /<i\s+class=["']([^"']+)["']>\s*<\/i>/gi,
-    (_match, classAttr) => {
-      // Find class token like fa-*, bi-*, ri-*, ti-*, lucide-*, ph-*, etc.
-      const tokens = classAttr.split(/\s+/);
-      for (const token of tokens) {
-        const m = token.match(/^(?:fa[srlbd]?-|bi-|ri-|ti-|lucide-|ph-|icon-)([a-z0-9-]+)$/i);
-        if (m && m[1]) {
-          const rawName = m[1].toLowerCase();
-          const cleanName = rawName.replace(/-(line|fill|solid|regular|bold|outline)$/, '');
-          return UNIVERSAL_ICON_MAP[cleanName] || UNIVERSAL_ICON_MAP[rawName] || '🔹';
-        }
-      }
-      return '🔹';
-    }
-  );
-
-  // 4. Strip inline <svg>...</svg> in PPTX to avoid raw XML markup leaking into text
-  res = res.replace(/<svg[\s\S]*?<\/svg>/gi, '🔹');
-
-  return res;
-}
-
 export function parseInlineMarkdown(
   rawText: string,
   baseOptions: Record<string, unknown>
 ): InlineChunk[] {
-  const processedText = replaceIconShortcuts(rawText);
+  if (!rawText) return [];
   const chunks: InlineChunk[] = [];
   // Tokenize bold (**text**), italic (*text* or _text_), code (`text`)
   const regex = /(\*\*.*?\*\*|\*.*?\*|`.*?`)/g;
-  const parts = processedText.split(regex);
+  const parts = rawText.split(regex);
 
   for (const part of parts) {
     if (!part) continue;
@@ -305,7 +126,7 @@ export function parseInlineMarkdown(
     }
   }
 
-  return chunks.length > 0 ? chunks : [{ text: processedText, options: baseOptions }];
+  return chunks.length > 0 ? chunks : [{ text: rawText, options: baseOptions }];
 }
 
 export class PptxRenderer implements YumiaRenderer<PptxOutput> {
@@ -567,7 +388,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     if (table.headers && table.headers.length > 0) {
       tableRows.push(
         table.headers.map((h) => ({
-          text: replaceIconShortcuts(h.replace(/\*\*/g, '')),
+          text: h.replace(/\*\*/g, ''),
           options: {
             bold: true,
             color: 'ffffff',
@@ -585,7 +406,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         const rowBg = rowIndex % 2 === 1 ? rowBg2 : rowBg1;
         tableRows.push(
           row.map((cell) => ({
-            text: replaceIconShortcuts(cell.replace(/\*\*/g, '')),
+            text: cell.replace(/\*\*/g, ''),
             options: {
               color: cellTextColor,
               fill: { color: rowBg },
@@ -769,7 +590,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     });
 
     if (card.title) {
-      pptxSlide.addText(replaceIconShortcuts(card.title), {
+      pptxSlide.addText(card.title, {
         x: rect.x + 0.25,
         y: rect.y + 0.18,
         w: rect.w - 0.5,
@@ -881,7 +702,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
   ): void {
     const colorKey = (badge.variant || 'primary') as keyof typeof theme.colors;
     const badgeColor = this.cleanHexColor(theme.colors[colorKey] || theme.colors.primary);
-    const badgeText = replaceIconShortcuts(badge.text);
+    const badgeText = badge.text;
     const badgeW = Math.min(2.5, Math.max(1.0, badgeText.length * 0.12 + 0.4));
     const badgeH = Math.min(0.38, rect.h);
 
@@ -1028,8 +849,8 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       }
 
       // Title & Description
-      const cleanTitle = replaceIconShortcuts(item.title);
-      const descText = item.description ? `\n${replaceIconShortcuts(item.description)}` : '';
+      const cleanTitle = item.title;
+      const descText = item.description ? `\n${item.description}` : '';
       pptxSlide.addText(`${cleanTitle}${descText}`, {
         x: itemX + 0.05,
         y: lineY + 0.45,
@@ -1069,7 +890,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     });
 
     if (compare.leftTitle) {
-      pptxSlide.addText(replaceIconShortcuts(compare.leftTitle), {
+      pptxSlide.addText(compare.leftTitle, {
         x: rect.x + 0.15,
         y: rect.y + 0.15,
         w: colW - 0.3,
@@ -1094,7 +915,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     });
 
     if (compare.rightTitle) {
-      pptxSlide.addText(replaceIconShortcuts(compare.rightTitle), {
+      pptxSlide.addText(compare.rightTitle, {
         x: rightX + 0.15,
         y: rect.y + 0.15,
         w: colW - 0.3,
