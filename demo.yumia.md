@@ -65,16 +65,27 @@ Con il supporto per i template .potx e l'embedding dei font, i team enterprise p
 \mathcal{L}_{\text{total}} = \mathbb{E}_{x \sim p_{\text{data}}} \left[ -\log D_\theta(x) \right] + \mathbb{E}_{z \sim p_z} \left[ -\log (1 - D_\theta(G_\phi(z))) \right] + \lambda \|\nabla \hat{D}\|_2^2
 :::
 
+:::columns ratios="50:50"
+
+:::column
+:::card Modello Quantistico variant="primary"
+
 $$
-i \hbar \frac{\partial}{\partial t} |\Psi(t)\rangle = \hat{H} |\Psi(t)\rangle \quad \Longleftrightarrow \quad \hat{H} = \sum_{k=1}^N \frac{\mathbf{p}_k^2}{2m} + \sum_{j < k} V(\mathbf{r}_j - \mathbf{r}_k)
+i \hbar \frac{\partial}{\partial t} |\Psi(t)\rangle = \hat{H} |\Psi(t)\rangle
 $$
 
+:::
+:::
+
+:::column
 :::card Garanzia Tipografica Multi-Target variant="info"
 
-- **PowerPoint**: Box equazione con bordo satinato, barra d'accento e font `Cambria Math`
-- **PDF**: Box vettoriale ad altissima definizione, stampabile e ricercabile
-- **HTML**: Contenitore glassmorphism con visualizzazione centrata
+- **PowerPoint**: Box equazione con font `Cambria Math`
+- **PDF & HTML**: KaTeX rendering e vettori 600 DPI
   :::
+  :::
+
+:::
 
 :::notes
 Le equazioni matematiche scientifiche in formato LaTeX e AsciiMath vengono compilate nativamente con tipografia corretta in tutti i formati supportati.

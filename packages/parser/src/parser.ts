@@ -158,6 +158,25 @@ export class DefaultYumiaParser implements YumiaParser {
     } else if (typeof metadata['embedFonts'] === 'boolean') {
       result.embedFonts = metadata['embedFonts'];
     }
+    if (typeof metadata['watermark'] === 'string') {
+      if (
+        metadata['watermark'] === 'false' ||
+        metadata['watermark'] === 'none' ||
+        metadata['watermark'] === 'off'
+      ) {
+        result.watermark = false;
+      } else if (
+        metadata['watermark'] === 'true' ||
+        metadata['watermark'] === 'yes' ||
+        metadata['watermark'] === 'on'
+      ) {
+        result.watermark = true;
+      } else {
+        result.watermark = metadata['watermark'];
+      }
+    } else if (typeof metadata['watermark'] === 'boolean') {
+      result.watermark = metadata['watermark'];
+    }
 
     const colors: Record<string, string> = {};
     if (typeof metadata['background'] === 'string') colors.background = metadata['background'];

@@ -87,7 +87,15 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       : '';
 
     const slidesHtml = presentation.slides
-      .map((slide, idx) => this.renderSlide(slide, idx + 1, presentation.slides.length, theme))
+      .map((slide, idx) =>
+        this.renderSlide(
+          slide,
+          idx + 1,
+          presentation.slides.length,
+          theme,
+          presentation.metadata.watermark
+        )
+      )
       .join('\n');
 
     const html = `<!DOCTYPE html>
@@ -98,6 +106,10 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
   <title>${this.escapeHtml(title)}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
     try {
@@ -698,20 +710,40 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       border: 1.5px solid var(--yumia-border);
       border-left: 4px solid var(--yumia-primary);
       border-radius: var(--yumia-radius-card);
-      padding: 1.25rem 2rem;
-      margin: 1.2rem 0;
+      padding: 0.75rem 1.4rem;
+      margin: 0.7rem 0;
       display: flex;
       align-items: center;
       justify-content: center;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+      overflow-x: auto;
+      max-width: 100%;
     }
 
     .yumia-math-equation {
-      font-family: 'Cambria Math', 'JetBrains Mono', monospace;
-      font-size: clamp(1.2rem, 2.2vw, 1.8rem);
-      font-style: italic;
+      font-size: clamp(1.1rem, 1.8vw, 1.45rem);
       color: var(--yumia-text);
-      letter-spacing: 0.05em;
+      letter-spacing: 0.03em;
+    }
+
+    /* Watermark Branding */
+    .yumia-watermark {
+      position: absolute;
+      bottom: 12px;
+      left: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--yumia-muted);
+      opacity: 0.35;
+      pointer-events: none;
+      user-select: none;
+      z-index: 10;
+      transition: opacity 0.2s ease;
+    }
+    .yumia-slide-wrapper:hover .yumia-watermark {
+      opacity: 0.65;
     }
 
     /* Slide Transitions */
@@ -1093,7 +1125,41 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
           if (window.renderMermaidInSlide && slides[currentIdx]) {
             window.renderMermaidInSlide(slides[currentIdx]);
           }
+          if (slides[currentIdx]) {
+            renderMathInSlide(slides[currentIdx]);
+          }
         }, 50);
+      }
+
+      function renderMathInSlide(slideEl) {
+        if (!slideEl) return;
+        if (window.renderMathInElement) {
+          try {
+            window.renderMathInElement(slideEl, {
+              delimiters: [
+                { left: '$$', right: '$$', display: true },
+                { left: '\\[', right: '\\]', display: true },
+                { left: '\\(', right: '\\)', display: false },
+                { left: '$', right: '$', display: false }
+              ],
+              throwOnError: false
+            });
+          } catch (e) {
+            console.warn('KaTeX auto-render notice:', e);
+          }
+        }
+        if (window.katex) {
+          slideEl.querySelectorAll('.yumia-math-equation:not([data-katex="true"])').forEach(function(el) {
+            try {
+              const rawExpr =
+                el.getAttribute('data-expr') || el.textContent.replace(/^[$]{2}|[$]{2}$/g, '').trim();
+              window.katex.render(rawExpr, el, { displayMode: true, throwOnError: false });
+              el.setAttribute('data-katex', 'true');
+            } catch (err) {
+              console.warn('KaTeX equation render notice:', err);
+            }
+          });
+        }
       }
 
       function openSpeakerWindow() {
@@ -1244,7 +1310,14 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
         const hash = window.location.hash.replace('#', '');
         const initialIdx = parseInt(hash, 10) - 1;
         goToSlide(isNaN(initialIdx) ? 0 : initialIdx, false);
+        setTimeout(() => {
+          slides.forEach(renderMathInSlide);
+        }, 100);
       }
+
+      window.addEventListener('load', () => {
+        slides.forEach(renderMathInSlide);
+      });
 
       window.deckController = {
         init: init,
@@ -1334,7 +1407,8 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     slide: Slide,
     slideNum: number,
     totalSlides: number,
-    theme: YumiaTheme
+    theme: YumiaTheme,
+    watermarkOpt?: boolean | string
   ): string {
     const activeClass = slideNum === 1 ? 'active' : '';
     const notesAttr = slide.notes ? this.escapeHtml(slide.notes.replace(/\n/g, '<br>')) : '';
@@ -1344,11 +1418,19 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     const transType = typeof transition === 'string' ? transition : transition.type;
     const transClass = `transition-${transType || 'fade'}`;
 
+    const isWatermarkEnabled = watermarkOpt !== false;
+    const watermarkText =
+      typeof watermarkOpt === 'string' && watermarkOpt.trim().length > 0 ? watermarkOpt : 'YumiaMD';
+    const watermarkHtml = isWatermarkEnabled
+      ? `<div class="yumia-watermark">${this.escapeHtml(watermarkText)}</div>`
+      : '';
+
     const elementsHtml = slide.elements.map((el) => this.renderElement(el, theme)).join('\n');
 
     return `
     <div class="yumia-slide-wrapper ${activeClass} ${transClass}" id="slide-${slideNum}" data-notes="${notesAttr}">
       ${elementsHtml}
+      ${watermarkHtml}
       <div class="yumia-progress-bar" style="width: ${progressPercent}%;"></div>
     </div>`;
   }
@@ -1467,9 +1549,10 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       }
       case 'math': {
         const mathEl = element as MathElement;
+        const expr = mathEl.expression;
         return `
         <div class="yumia-math-container">
-          <div class="yumia-math-equation">${this.escapeHtml(mathEl.expression)}</div>
+          <div class="yumia-math-equation" data-expr="${this.escapeHtml(expr)}">$$${this.escapeHtml(expr)}$$</div>
         </div>`;
       }
       case 'chart': {
@@ -1675,8 +1758,23 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
   }
 
   private formatInline(text: string): string {
-    const escaped = this.escapeHtml(text);
-    return escaped
+    let html = this.escapeHtml(text);
+    // Support font awesome icon shortcuts e.g. :fa-rocket: or :fab-github: or :fas-bolt: or :far-star:
+    html = html.replace(/:fa[srlbd]?-([a-z0-9-]+):/gi, (match, iconName) => {
+      const prefix = match.startsWith(':fab-')
+        ? 'fa-brands'
+        : match.startsWith(':far-')
+          ? 'fa-regular'
+          : 'fa-solid';
+      return `<i class="${prefix} fa-${iconName}"></i>`;
+    });
+    // Also allow raw fontawesome tags written in markdown: <i class="fa-solid fa-..."></i>
+    html = html.replace(
+      /&lt;i class=(&quot;|&#039;)(fa[srlbd]?\s+fa-[a-z0-9-]+.*?)(&quot;|&#039;)&gt;&lt;\/i&gt;/gi,
+      '<i class="$2"></i>'
+    );
+
+    return html
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/`(.*?)`/g, '<code>$1</code>');

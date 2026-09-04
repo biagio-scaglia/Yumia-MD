@@ -51,6 +51,7 @@ export interface PresentationMetadata {
   transition?: SlideTransitionType | SlideTransition;
   template?: string;
   embedFonts?: boolean;
+  watermark?: boolean | string;
   colors?: {
     primary?: string;
     secondary?: string;

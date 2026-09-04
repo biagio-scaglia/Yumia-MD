@@ -6,6 +6,10 @@
   <title>HomuraJS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
     try {
@@ -606,20 +610,40 @@
       border: 1.5px solid var(--yumia-border);
       border-left: 4px solid var(--yumia-primary);
       border-radius: var(--yumia-radius-card);
-      padding: 1.25rem 2rem;
-      margin: 1.2rem 0;
+      padding: 0.75rem 1.4rem;
+      margin: 0.7rem 0;
       display: flex;
       align-items: center;
       justify-content: center;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+      overflow-x: auto;
+      max-width: 100%;
     }
 
     .yumia-math-equation {
-      font-family: 'Cambria Math', 'JetBrains Mono', monospace;
-      font-size: clamp(1.2rem, 2.2vw, 1.8rem);
-      font-style: italic;
+      font-size: clamp(1.1rem, 1.8vw, 1.45rem);
       color: var(--yumia-text);
-      letter-spacing: 0.05em;
+      letter-spacing: 0.03em;
+    }
+
+    /* Watermark Branding */
+    .yumia-watermark {
+      position: absolute;
+      bottom: 12px;
+      left: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--yumia-muted);
+      opacity: 0.35;
+      pointer-events: none;
+      user-select: none;
+      z-index: 10;
+      transition: opacity 0.2s ease;
+    }
+    .yumia-slide-wrapper:hover .yumia-watermark {
+      opacity: 0.65;
     }
 
     /* Slide Transitions */
@@ -884,6 +908,7 @@
     <div class="yumia-slide-wrapper active transition-fade" id="slide-1" data-notes="Introduce HomuraJS as an immutable, time-travel enabled state architecture.">
       <h1>HomuraJS</h1>
 <p>Version Control for Application State.</p>
+      <div class="yumia-watermark">YumiaMD</div>
       <div class="yumia-progress-bar" style="width: 33%;"></div>
     </div>
 
@@ -893,6 +918,7 @@
 <ul><li>Complex state transitions</li>
 <li>Difficult debugging</li>
 <li>Lost state history</li></ul>
+      <div class="yumia-watermark">YumiaMD</div>
       <div class="yumia-progress-bar" style="width: 67%;"></div>
     </div>
 
@@ -910,6 +936,7 @@
           <ul><li>Linear history graph</li>
 <li>Replayable actions</li></ul>
         </div></div></div>
+      <div class="yumia-watermark">YumiaMD</div>
       <div class="yumia-progress-bar" style="width: 100%;"></div>
     </div>
     </div>
@@ -1032,7 +1059,41 @@
           if (window.renderMermaidInSlide && slides[currentIdx]) {
             window.renderMermaidInSlide(slides[currentIdx]);
           }
+          if (slides[currentIdx]) {
+            renderMathInSlide(slides[currentIdx]);
+          }
         }, 50);
+      }
+
+      function renderMathInSlide(slideEl) {
+        if (!slideEl) return;
+        if (window.renderMathInElement) {
+          try {
+            window.renderMathInElement(slideEl, {
+              delimiters: [
+                { left: '$$', right: '$$', display: true },
+                { left: '\[', right: '\]', display: true },
+                { left: '\(', right: '\)', display: false },
+                { left: '$', right: '$', display: false }
+              ],
+              throwOnError: false
+            });
+          } catch (e) {
+            console.warn('KaTeX auto-render notice:', e);
+          }
+        }
+        if (window.katex) {
+          slideEl.querySelectorAll('.yumia-math-equation:not([data-katex="true"])').forEach(function(el) {
+            try {
+              const rawExpr =
+                el.getAttribute('data-expr') || el.textContent.replace(/^[$]{2}|[$]{2}$/g, '').trim();
+              window.katex.render(rawExpr, el, { displayMode: true, throwOnError: false });
+              el.setAttribute('data-katex', 'true');
+            } catch (err) {
+              console.warn('KaTeX equation render notice:', err);
+            }
+          });
+        }
       }
 
       function openSpeakerWindow() {
@@ -1183,7 +1244,14 @@
         const hash = window.location.hash.replace('#', '');
         const initialIdx = parseInt(hash, 10) - 1;
         goToSlide(isNaN(initialIdx) ? 0 : initialIdx, false);
+        setTimeout(() => {
+          slides.forEach(renderMathInSlide);
+        }, 100);
       }
+
+      window.addEventListener('load', () => {
+        slides.forEach(renderMathInSlide);
+      });
 
       window.deckController = {
         init: init,
