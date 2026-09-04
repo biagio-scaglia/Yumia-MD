@@ -16,6 +16,9 @@ You can run YumiaMD immediately without installing anything via `npx`:
 # Initialize a starter presentation
 npx yumiamd init my-deck
 
+# Launch instant dev server with live-reload
+npx yumiamd dev presentation.yumia.md --open
+
 # Compile presentation directly to an editable PowerPoint (.pptx)
 npx yumiamd build presentation.yumia.md --out presentation.pptx
 ```
@@ -64,6 +67,9 @@ yumia build presentation.yumia.md --format pdf --out dist/presentation.pdf
 # Compile to standalone interactive HTML5 presentation deck (.html)
 yumia build presentation.yumia.md --format html --out dist/presentation.html
 
+# Deploy presentation deck (static, GitHub Pages, or Vercel)
+yumia deploy presentation.yumia.md --provider gh-pages --out public
+
 # Watch presentation file and recompile automatically on save
 yumia watch presentation.yumia.md --format pdf
 
@@ -95,6 +101,9 @@ author: Biagio Scaglia
 # High-Performance Presentation Engine
 
 Deterministic compilation from Markdown directly to native PowerPoint slides.
+
+:::badge text="v0.1.15" variant="primary" :::
+:::badge text="Multi-Target" variant="success" :::
 
 :::notes
 Opening slide introducing the core architectural vision.
@@ -128,14 +137,26 @@ Opening slide introducing the core architectural vision.
 
 ---
 
-# Feature Comparison
+# Native Charts & Data Visuals
 
-| Feature                  | YumiaMD                          | Legacy HTML Deck Tools               |
-| :----------------------- | :------------------------------- | :----------------------------------- |
-| **Output Type**          | Native OpenXML Shapes & Text     | Flat rasterized images / screenshots |
-| **Full Editability**     | ✅ 100% Editable in PowerPoint   | ❌ Read-only image slides            |
-| **Deterministic Layout** | ✅ Pixel-exact bounding boxes    | ❌ Browser rendering variance        |
-| **AI / Agent Tooling**   | ✅ Machine-readable schema & CLI | ❌ Complex DOM scraping              |
+:::chart type="bar" title="Execution Speed" labels="Parser, Layout, PDF, PPTX" data="1200, 850, 430, 680"
+
+---
+
+# Roadmap Timeline
+
+:::timeline layout="horizontal"
+
+- [Phase 1] AST & Compiler Core
+- [Phase 2] Multi-Format Renderers
+- [Phase 3] Rich Directives & Charts
+- [Phase 4] Cloud Deployments
+  :::
+
+:::step
+
+- 🚀 Seamless deployment via `yumia deploy`
+  :::
 ```
 
 ---
@@ -171,8 +192,10 @@ const schema = compiler.getSchema();
 
 ## ✨ Key Features
 
-- 🎯 **Native Object Principle**: Slides compiled to PowerPoint are **NOT** rasterized screenshot images. Headings, bullet points, cards, tables, and speaker notes are generated as **100% native vector PowerPoint shapes, tables & textboxes** that you can click, re-format, and edit in Microsoft PowerPoint or Google Slides.
-- 📊 **Native Tables & Multicolumn**: Full support for Markdown tables and semantic responsive multi-column layouts with customizable ratio splits (`ratios="50:50"` or `"30:70"`).
+- 🎯 **Native Object Principle**: Slides compiled to PowerPoint are **NOT** rasterized screenshot images. Headings, bullet points, cards, tables, charts, badges, and speaker notes are generated as **100% native vector PowerPoint shapes, tables & textboxes** that you can click, re-format, and edit in Microsoft PowerPoint or Google Slides.
+- 📊 **Native Charts & Diagrams**: Full support for `:::chart` (bar, line, pie, doughnut) and `:::mermaid` diagrams across HTML, PDF, and PowerPoint.
+- ⏳ **Timelines, Compare & Steps**: Rich layout directives including `:::timeline`, `:::compare`, and click-to-reveal `:::step` animations.
+- 🚀 **One-Command Cloud Deploy**: Instantly deploy decks to GitHub Pages, Vercel, or static web servers with `yumia deploy`.
 - 📐 **Deterministic Layout Engine**: Exact coordinate calculations for stack, columns, cards, and automatic overflow detection.
 - 🎨 **Semantic Design Tokens**: Built-in themes with typography scales, color palettes, and contrast-safe themes.
 - 🤖 **AI-Friendly Format**: Clean Markdown syntax designed for LLM prompts and agentic workflows, complete with `yumia schema` and `--json` CLI diagnostics.

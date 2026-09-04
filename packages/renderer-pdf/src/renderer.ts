@@ -453,7 +453,9 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         const badgeW = Math.min(180, Math.max(60, text.length * 7 + 20));
         const badgeH = 22;
 
-        doc.roundedRect(x, y, badgeW, badgeH, 11).fill(theme.colors.surface || 'rgba(255,255,255,0.08)');
+        doc
+          .roundedRect(x, y, badgeW, badgeH, 11)
+          .fill(theme.colors.surface || 'rgba(255,255,255,0.08)');
         doc.roundedRect(x, y, badgeW, badgeH, 11).lineWidth(1).strokeColor(variantColor).stroke();
 
         doc
@@ -473,7 +475,12 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         const itemW = (width - (items.length - 1) * 12) / items.length;
         const lineY = y + 14;
 
-        doc.moveTo(x + 10, lineY).lineTo(x + width - 10, lineY).lineWidth(2).strokeColor(theme.colors.border || 'rgba(255,255,255,0.2)').stroke();
+        doc
+          .moveTo(x + 10, lineY)
+          .lineTo(x + width - 10, lineY)
+          .lineWidth(2)
+          .strokeColor(theme.colors.border || 'rgba(255,255,255,0.2)')
+          .stroke();
 
         let maxItemH = 60;
         items.forEach((item, idx) => {
@@ -485,15 +492,36 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
           let curItemY = lineY + 12;
           if (item.date) {
-            doc.font('Helvetica-Bold').fontSize(10).fillColor(theme.colors.accent || theme.colors.primary).text(this.stripFormatting(item.date), itemX, curItemY, { width: itemW, align: 'center' });
+            doc
+              .font('Helvetica-Bold')
+              .fontSize(10)
+              .fillColor(theme.colors.accent || theme.colors.primary)
+              .text(this.stripFormatting(item.date), itemX, curItemY, {
+                width: itemW,
+                align: 'center',
+              });
             curItemY += 14;
           }
 
-          doc.font('Helvetica-Bold').fontSize(12).fillColor(theme.colors.text).text(this.stripFormatting(item.title), itemX, curItemY, { width: itemW, align: 'center' });
+          doc
+            .font('Helvetica-Bold')
+            .fontSize(12)
+            .fillColor(theme.colors.text)
+            .text(this.stripFormatting(item.title), itemX, curItemY, {
+              width: itemW,
+              align: 'center',
+            });
           curItemY += 16;
 
           if (item.description) {
-            doc.font('Helvetica').fontSize(9).fillColor(theme.colors.muted || '#888888').text(this.stripFormatting(item.description), itemX, curItemY, { width: itemW, align: 'center' });
+            doc
+              .font('Helvetica')
+              .fontSize(9)
+              .fillColor(theme.colors.muted || '#888888')
+              .text(this.stripFormatting(item.description), itemX, curItemY, {
+                width: itemW,
+                align: 'center',
+              });
             curItemY += 24;
           }
 
@@ -512,7 +540,11 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
         // Render left
         if (c.leftTitle) {
-          doc.font('Helvetica-Bold').fontSize(14).fillColor(theme.colors.primary).text(this.stripFormatting(c.leftTitle), x + 12, leftY, { width: colW - 24 });
+          doc
+            .font('Helvetica-Bold')
+            .fontSize(14)
+            .fillColor(theme.colors.primary)
+            .text(this.stripFormatting(c.leftTitle), x + 12, leftY, { width: colW - 24 });
           leftY += 22;
         }
         for (const el of c.left) {
@@ -522,7 +554,11 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         // Render right
         const rightX = x + colW + 24;
         if (c.rightTitle) {
-          doc.font('Helvetica-Bold').fontSize(14).fillColor(theme.colors.primary).text(this.stripFormatting(c.rightTitle), rightX + 12, rightY, { width: colW - 24 });
+          doc
+            .font('Helvetica-Bold')
+            .fontSize(14)
+            .fillColor(theme.colors.primary)
+            .text(this.stripFormatting(c.rightTitle), rightX + 12, rightY, { width: colW - 24 });
           rightY += 22;
         }
         for (const el of c.right) {
@@ -532,9 +568,15 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         const totalH = Math.max(leftY - y, rightY - y, 60) + 12;
 
         // Draw left box
-        doc.roundedRect(x, y, colW, totalH, 8).strokeColor(theme.colors.border || 'rgba(255,255,255,0.15)').stroke();
+        doc
+          .roundedRect(x, y, colW, totalH, 8)
+          .strokeColor(theme.colors.border || 'rgba(255,255,255,0.15)')
+          .stroke();
         // Draw right box
-        doc.roundedRect(rightX, y, colW, totalH, 8).strokeColor(theme.colors.border || 'rgba(255,255,255,0.15)').stroke();
+        doc
+          .roundedRect(rightX, y, colW, totalH, 8)
+          .strokeColor(theme.colors.border || 'rgba(255,255,255,0.15)')
+          .stroke();
 
         return y + totalH + 8;
       }
@@ -542,19 +584,28 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       case 'chart': {
         const ch = element as ChartElement;
         const boxH = 130;
-        doc.roundedRect(x, y, width, boxH, 8).fill(theme.colors.surface || 'rgba(255,255,255,0.04)');
-        doc.roundedRect(x, y, width, boxH, 8).strokeColor(theme.colors.border || 'rgba(255,255,255,0.1)').stroke();
+        doc
+          .roundedRect(x, y, width, boxH, 8)
+          .fill(theme.colors.surface || 'rgba(255,255,255,0.04)');
+        doc
+          .roundedRect(x, y, width, boxH, 8)
+          .strokeColor(theme.colors.border || 'rgba(255,255,255,0.1)')
+          .stroke();
 
         let topY = y + 10;
         if (ch.title) {
-          doc.font('Helvetica-Bold').fontSize(13).fillColor(theme.colors.text).text(this.stripFormatting(ch.title), x + 14, topY, { width: width - 28 });
+          doc
+            .font('Helvetica-Bold')
+            .fontSize(13)
+            .fillColor(theme.colors.text)
+            .text(this.stripFormatting(ch.title), x + 14, topY, { width: width - 28 });
           topY += 20;
         }
 
         const values = ch.series[0]?.values || [];
         const maxVal = Math.max(...values, 1);
         const plotH = boxH - (topY - y) - 28;
-        const barW = Math.min(40, (width - 40) / Math.max(values.length, 1) * 0.6);
+        const barW = Math.min(40, ((width - 40) / Math.max(values.length, 1)) * 0.6);
 
         values.forEach((val, idx) => {
           const barX = x + 24 + idx * ((width - 48) / Math.max(values.length, 1));
@@ -562,9 +613,20 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           const barY = topY + plotH - h;
 
           doc.rect(barX, barY, barW, h).fill(theme.colors.primary);
-          doc.font('Helvetica').fontSize(9).fillColor(theme.colors.text).text(String(val), barX, barY - 12, { width: barW, align: 'center' });
+          doc
+            .font('Helvetica')
+            .fontSize(9)
+            .fillColor(theme.colors.text)
+            .text(String(val), barX, barY - 12, { width: barW, align: 'center' });
           if (ch.labels[idx]) {
-            doc.font('Helvetica').fontSize(9).fillColor(theme.colors.muted || '#888888').text(this.stripFormatting(ch.labels[idx]!), barX - 10, topY + plotH + 4, { width: barW + 20, align: 'center' });
+            doc
+              .font('Helvetica')
+              .fontSize(9)
+              .fillColor(theme.colors.muted || '#888888')
+              .text(this.stripFormatting(ch.labels[idx]!), barX - 10, topY + plotH + 4, {
+                width: barW + 20,
+                align: 'center',
+              });
           }
         });
 
@@ -574,9 +636,15 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       case 'mermaid': {
         const m = element as MermaidElement;
         const boxH = 90;
-        doc.roundedRect(x, y, width, boxH, 8).fill(theme.colors.surface || 'rgba(255,255,255,0.04)');
+        doc
+          .roundedRect(x, y, width, boxH, 8)
+          .fill(theme.colors.surface || 'rgba(255,255,255,0.04)');
         doc.roundedRect(x, y, width, boxH, 8).strokeColor(theme.colors.primary).stroke();
-        doc.font('Courier').fontSize(11).fillColor(theme.colors.text).text(this.stripFormatting(m.code), x + 12, y + 12, { width: width - 24 });
+        doc
+          .font('Courier')
+          .fontSize(11)
+          .fillColor(theme.colors.text)
+          .text(this.stripFormatting(m.code), x + 12, y + 12, { width: width - 24 });
         return y + boxH + 8;
       }
 

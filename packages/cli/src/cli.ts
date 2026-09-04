@@ -10,7 +10,7 @@ import { HtmlRenderer } from '@yumiamd/renderer-html';
 import { PdfRenderer } from '@yumiamd/renderer-pdf';
 import { startDevServer } from './dev-server.js';
 
-export const VERSION = '0.1.15';
+export const VERSION = '0.1.16';
 
 export function printHelp(): string {
   return `
@@ -385,7 +385,8 @@ Opening slide introducing the presentation deck.
 
   if (command === 'deploy') {
     if (!target) {
-      const msg = "Error: Please specify a presentation file to deploy (e.g. 'yumia deploy presentation.yumia.md')";
+      const msg =
+        "Error: Please specify a presentation file to deploy (e.g. 'yumia deploy presentation.yumia.md')";
       return { exitCode: 1, output: isJson ? JSON.stringify({ error: msg }) : msg };
     }
 

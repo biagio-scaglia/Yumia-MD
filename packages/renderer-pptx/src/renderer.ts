@@ -805,12 +805,12 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     const lineY = rect.y + 0.25;
 
     // Connecting line
-    pptxSlide.addShape(pptx.ShapeType.line, {
+    pptxSlide.addShape(pptx.ShapeType.rect, {
       x: rect.x + 0.2,
       y: lineY,
       w: rect.w - 0.4,
-      h: 0,
-      line: { color: this.cleanHexColor(theme.colors.border), width: 2 },
+      h: 0.03,
+      fill: { color: this.cleanHexColor(theme.colors.border) },
     });
 
     items.forEach((item, idx) => {
@@ -818,13 +818,14 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       const dotX = itemX + itemW / 2 - 0.1;
 
       // Milestone dot
-      pptxSlide.addShape(pptx.ShapeType.oval, {
+      pptxSlide.addShape(pptx.ShapeType.roundRect, {
         x: dotX,
-        y: lineY - 0.1,
+        y: lineY - 0.08,
         w: 0.2,
         h: 0.2,
         fill: { color: this.cleanHexColor(theme.colors.primary) },
         line: { color: this.cleanHexColor(theme.colors.background), width: 2 },
+        rectRadius: 0.1,
       });
 
       // Date

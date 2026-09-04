@@ -384,7 +384,10 @@ export class DefaultYumiaParser implements YumiaParser {
         }
 
         // Check if single-line chart e.g. :::chart type="bar" data="Q1:100, Q2:200"
-        if (directiveHeader.startsWith('chart') && (directiveHeader.includes('data=') || directiveHeader.includes('labels='))) {
+        if (
+          directiveHeader.startsWith('chart') &&
+          (directiveHeader.includes('data=') || directiveHeader.includes('labels='))
+        ) {
           const el = this.parseChartDirective(directiveHeader, []);
           el.loc = {
             start: { line: currentLineNum, column: 1 },
@@ -409,7 +412,8 @@ export class DefaultYumiaParser implements YumiaParser {
           const isSingleLine =
             innerLine.startsWith(':::metric') ||
             innerLine.startsWith(':::layout') ||
-            (innerLine.startsWith(':::badge') && (innerLine.includes('text=') || innerLine.includes('variant='))) ||
+            (innerLine.startsWith(':::badge') &&
+              (innerLine.includes('text=') || innerLine.includes('variant='))) ||
             (innerLine.startsWith(':::chart') && innerLine.includes('data='));
           if (innerLine.startsWith(':::') && innerLine.length > 3 && !isSingleLine) {
             nestedCount++;

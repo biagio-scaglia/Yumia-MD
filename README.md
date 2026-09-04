@@ -3,9 +3,10 @@
 > **YumiaMD** — A Markdown-based presentation language and compiler designed for humans and AI.
 
 [![CI](https://github.com/biagio-scaglia/Yumia-MD/actions/workflows/ci.yml/badge.svg)](https://github.com/biagio-scaglia/Yumia-MD/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/yumiamd.svg?color=blue)](https://www.npmjs.com/package/yumiamd)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-YumiaMD is a modern presentation compiler. It provides a human-readable and AI-friendly way to author slide decks in plain Markdown with semantic presentation directives (`:::columns`, `:::card`, `:::notes`), and compiles them into **native, fully editable PowerPoint (.pptx)** presentations, clean vector PDFs, and interactive HTML5 decks.
+YumiaMD is a modern presentation compiler. It provides a human-readable and AI-friendly way to author slide decks in plain Markdown with semantic presentation directives (`:::columns`, `:::card`, `:::chart`, `:::mermaid`, `:::timeline`, `:::compare`, `:::badge`, `:::step`, `:::notes`), and compiles them into **native, fully editable PowerPoint (.pptx)** presentations, clean vector PDFs, and interactive HTML5 decks.
 
 ---
 
@@ -36,52 +37,89 @@ presentation.yumia.md
  PPTX    PDF      HTML
 ```
 
-> **Native Object Principle**: A slide compiled to PowerPoint is **not** an image or HTML/CSS screenshot. Headings, bullet lists, vector card shapes, and notes are generated as **100% native OpenXML PowerPoint objects** that you can click, edit, and re-theme in Microsoft PowerPoint or Google Slides.
+> **Native Object Principle**: A slide compiled to PowerPoint is **not** an image or HTML/CSS screenshot. Headings, bullet lists, vector card shapes, native chart objects, timelines, badges, and notes are generated as **100% native OpenXML PowerPoint objects** that you can click, edit, and re-theme in Microsoft PowerPoint or Google Slides.
 
 ---
 
-## Syntax Example
+## 🎨 Rich Directive Syntax
 
 ```markdown
 ---
-title: System Overview
+title: System Overview & Metrics
 theme: default
+aspectRatio: '16:9'
 author: Biagio Scaglia
 ---
 
 # High-Performance State Machines
 
-Deterministic reactive workflows powered by HomuraJS.
+Deterministic reactive workflows compiled across targets.
+
+:::badge text="v0.1.15" variant="primary" :::
+:::badge text="Production Ready" variant="success" :::
 
 :::notes
-Opening slide introducing deterministic workflows.
+Opening slide introducing deterministic workflows and target capabilities.
 :::
 
 ---
 
-# Architecture & Capabilities
+# Multi-Column & Comparisons
 
-:::columns ratios="50:50"
+:::compare left="Traditional Approach" right="YumiaMD Architecture"
 
-:::column
-:::card Core Engine
+- Manual slide design in GUI
+- Read-only screenshot exports
+- Inconsistent branding across decks
 
-- 100% Deterministic execution
-- Zero runtime dependencies
-- TypeScript-first typing
-  :::
-  :::
+:::vs
 
-:::column
-:::card Compiler Targets
-
-- Native editable PPTX
-- Vector PDF documents
-- Interactive HTML5 decks
-  :::
-  :::
+- Semantic Markdown + AI tooling
+- 100% Native editable PowerPoint objects
+- Deterministic layout & vector graphics
 
 :::
+
+---
+
+# Native Charts & Data Visualization
+
+:::chart type="bar" title="Performance Benchmark (ops/sec)" labels="Core Parser, Layout Engine, PDFKit, PPTX Gen" data="1200, 850, 430, 680"
+
+:::notes
+Compiled as native editable PowerPoint chart objects and crisp vector SVGs/PDFs!
+:::
+
+---
+
+# Architecture & Diagrams
+
+:::mermaid
+graph LR
+A[Markdown Source] --> B[Yumia Parser]
+B --> C[Presentation AST]
+C --> D[Layout Engine]
+D --> E[Native PPTX]
+D --> F[Vector PDF]
+D --> G[HTML5 Deck]
+:::
+
+---
+
+# Roadmap Timeline & Progressive Steps
+
+:::timeline layout="horizontal"
+
+- [Q1 2026] Core Compiler: AST parser, layout engine & PPTX generation
+- [Q2 2026] Multi-Format: Vector PDF & Interactive HTML5 Speaker View
+- [Q3 2026] Rich Directives: Native charts, Mermaid, timelines & compare
+- [Q4 2026] Cloud Deploy: Instant static, GitHub Pages & Vercel hosting
+  :::
+
+:::step
+
+- ⚡ **Next Step**: Seamless CI/CD slide pipelines with `yumia deploy`!
+  :::
 ```
 
 ---
@@ -94,13 +132,16 @@ You can run YumiaMD immediately without installing anything via `npx`:
 # Initialize a new presentation project
 npx yumiamd init my-deck
 
+# Start live-reloading dev server
+npx yumiamd dev presentation.yumia.md --open
+
 # Compile presentation directly to native editable PowerPoint (.pptx)
 npx yumiamd build presentation.yumia.md --out dist/presentation.pptx
 ```
 
 ---
 
-## 📦 Installation & Usage
+## 📦 Installation & CLI Usage
 
 ### 1. Global CLI Tool
 
@@ -127,6 +168,9 @@ yumia build presentation.yumia.md --format pdf --out dist/presentation.pdf
 
 # Compile to standalone interactive HTML5 presentation deck (.html)
 yumia build presentation.yumia.md --format html --out dist/presentation.html
+
+# Deploy presentation deck (static, GitHub Pages, or Vercel)
+yumia deploy presentation.yumia.md --provider gh-pages --out public
 
 # Watch presentation file and recompile automatically on save
 yumia watch presentation.yumia.md --format pdf
@@ -198,6 +242,22 @@ YumiaMD is developed as a modular monorepo and distributed as a self-contained *
 
 ---
 
+## 🌐 Multi-Target Presentation Rendering
+
+| Feature / Directive            | PowerPoint (`.pptx`)                 | Vector PDF (`.pdf`)        | HTML5 Interactive (`.html`)        |
+| :----------------------------- | :----------------------------------- | :------------------------- | :--------------------------------- |
+| **Output Type**                | Native OpenXML shapes & text         | Native vector paths & text | Responsive interactive web app     |
+| **Headings & Cards**           | Native PPTX rounded rects            | Vector rounded boxes       | Glassmorphic CSS cards             |
+| **Data Charts (`:::chart`)**   | Editable PowerPoint Chart objects    | Native vector PDF graphics | Responsive interactive SVG charts  |
+| **Diagrams (`:::mermaid`)**    | Formatted code container             | Formatted code container   | Client-side Mermaid.js rendering   |
+| **Timelines (`:::timeline`)**  | Native vector shapes & connectors    | Vector nodes & step lines  | Responsive CSS timeline steps      |
+| **Comparisons (`:::compare`)** | Multi-column vector containers       | Side-by-side vector boxes  | Dual-column comparison grid        |
+| **Badges (`:::badge`)**        | Vector pill shapes with theme colors | Vector badge pills         | Themed inline badge elements       |
+| **Step Reveal (`:::step`)**    | Native click transitions             | Visible print layout       | Progressive reveal keyboard clicks |
+| **Speaker View**               | Native PPTX slide notes              | Notes summary section      | Dedicated dual-screen window (`S`) |
+
+---
+
 ## Development & Testing
 
 This monorepo uses **pnpm** and **TypeScript** (strict mode).
@@ -212,7 +272,7 @@ pnpm build
 # Typecheck workspace packages
 pnpm typecheck
 
-# Run test suite with Vitest (18 test files, 74 unit, visual-regression & integration tests)
+# Run test suite with Vitest (19 test files, 80 unit & integration tests)
 pnpm test
 
 # Lint code with ESLint
@@ -228,23 +288,6 @@ pnpm format
 # Increment version, build, test, publish to NPM, commit, tag, and push to GitHub:
 pnpm release patch
 ```
-
----
-
-## Roadmap
-
-- [x] Initial monorepo setup & strict TypeScript configuration
-- [x] Semantic AST model (`@yumiamd/ast`)
-- [x] Markdown and directive parser (`@yumiamd/parser`)
-- [x] Built-in themes (`default`, `cyberpunk`, `minimal`, `corporate`, `terminal`, `academic`) & custom CLI flags
-- [x] Deterministic Layout Engine (`@yumiamd/layout`) with word-wrap estimation
-- [x] **Native PowerPoint generation engine (`@yumiamd/renderer-pptx`)** with safe Office font fallback stacks
-- [x] **Vector PDF document compiler (`@yumiamd/renderer-pdf`)** with WinAnsi / Unicode emoji sanitization
-- [x] **Interactive HTML5 deck + Speaker View & Overview Grid (`@yumiamd/renderer-html`)**
-- [x] **Live-Reload Dev Server (`yumia dev`), Watch Mode (`yumia watch`), and `start.bat`**
-- [x] Rule-Based Presentation Linter (`yumia lint`) with WCAG AA contrast checking & overflow detection
-- [x] **Canonical 1920x1080 Design Token System & Visual Regression Test Suite**
-- [x] Automated NPM and GitHub release tooling (`pnpm release`)
 
 ---
 

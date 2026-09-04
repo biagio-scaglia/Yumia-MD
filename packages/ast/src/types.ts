@@ -181,7 +181,16 @@ export interface CompareElement extends BaseElement {
 export interface BadgeElement extends BaseElement {
   type: 'badge';
   text: string;
-  variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'accent' | string | undefined;
+  variant?:
+    | 'default'
+    | 'primary'
+    | 'success'
+    | 'warning'
+    | 'danger'
+    | 'info'
+    | 'accent'
+    | string
+    | undefined;
 }
 
 export interface GroupElement extends BaseElement {
