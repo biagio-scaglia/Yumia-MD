@@ -409,7 +409,12 @@ export class DefaultYumiaParser implements YumiaParser {
 
         while (i < lines.length) {
           const innerLine = lines[i]?.trim() ?? '';
+          const isInlineClosed =
+            innerLine.startsWith(':::') && innerLine.endsWith(':::') && innerLine.length > 5;
+          const isSeparator = innerLine === ':::vs' || innerLine.startsWith(':::vs ');
           const isSingleLine =
+            isInlineClosed ||
+            isSeparator ||
             innerLine.startsWith(':::metric') ||
             innerLine.startsWith(':::layout') ||
             (innerLine.startsWith(':::badge') &&
@@ -678,8 +683,17 @@ export class DefaultYumiaParser implements YumiaParser {
 
         while (i < lines.length) {
           const innerLine = lines[i]?.trim() ?? '';
+          const isInlineClosed =
+            innerLine.startsWith(':::') && innerLine.endsWith(':::') && innerLine.length > 5;
+          const isSeparator = innerLine === ':::vs' || innerLine.startsWith(':::vs ');
           const isSingleLine =
-            innerLine.startsWith(':::metric') || innerLine.startsWith(':::layout');
+            isInlineClosed ||
+            isSeparator ||
+            innerLine.startsWith(':::metric') ||
+            innerLine.startsWith(':::layout') ||
+            (innerLine.startsWith(':::badge') &&
+              (innerLine.includes('text=') || innerLine.includes('variant='))) ||
+            (innerLine.startsWith(':::chart') && innerLine.includes('data='));
           if (innerLine.startsWith(':::') && innerLine.length > 3 && !isSingleLine) {
             nestedCount++;
           } else if (innerLine === ':::') {
