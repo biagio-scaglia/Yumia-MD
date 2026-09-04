@@ -1,6 +1,7 @@
 {
   "name": "@yumiamd/renderer",
   "version": "0.1.4",
+  "private": true,
   "description": "Base renderer abstraction and rendering context for YumiaMD",
   "type": "module",
   "main": "./dist/index.js",

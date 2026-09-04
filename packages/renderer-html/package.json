@@ -1,6 +1,7 @@
 {
   "name": "@yumiamd/renderer-html",
   "version": "0.1.4",
+  "private": true,
   "description": "HTML/Web renderer placeholder for YumiaMD presentations",
   "type": "module",
   "main": "./dist/index.js",

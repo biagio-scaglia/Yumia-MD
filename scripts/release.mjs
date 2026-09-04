@@ -101,13 +101,15 @@ function updateVersions(newVersion) {
 }
 
 function publishAllPackages(targetVersion) {
-  console.log(
-    `\n📦 Publishing ${ORDERED_PACKAGES.length} packages sequentially to NPM (v${targetVersion})...`
-  );
+  console.log(`\n📦 Publishing public packages to NPM (v${targetVersion})...`);
 
   for (const pkgDir of ORDERED_PACKAGES) {
     const fullPath = join(rootDir, 'packages', pkgDir);
     const pkgJson = JSON.parse(readFileSync(join(fullPath, 'package.json'), 'utf-8'));
+    if (pkgJson.private) {
+      console.log(`⏭️  Skipping private package: ${pkgJson.name || pkgDir}`);
+      continue;
+    }
     const pkgName = pkgJson.name;
 
     console.log(`\n🚀 [${pkgDir}] Publishing ${pkgName}@${targetVersion}...`);

@@ -16,15 +16,20 @@
     }
   },
   "dependencies": {
+    "pptxgenjs": "^4.0.1"
+  },
+  "devDependencies": {
     "@yumiamd/ast": "workspace:*",
     "@yumiamd/core": "workspace:*",
     "@yumiamd/layout": "workspace:*",
     "@yumiamd/parser": "workspace:*",
+    "@yumiamd/renderer": "workspace:*",
     "@yumiamd/renderer-pptx": "workspace:*",
-    "@yumiamd/theme": "workspace:*"
+    "@yumiamd/theme": "workspace:*",
+    "tsup": "^8.5.1"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsup src/bin.ts src/index.ts --format esm --dts --clean --external pptxgenjs",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

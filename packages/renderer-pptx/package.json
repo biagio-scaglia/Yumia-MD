@@ -1,6 +1,7 @@
 {
   "name": "@yumiamd/renderer-pptx",
   "version": "0.1.4",
+  "private": true,
   "description": "Native editable PowerPoint (PPTX) renderer placeholder for YumiaMD",
   "type": "module",
   "main": "./dist/index.js",
