@@ -97,10 +97,42 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
   <title>${this.escapeHtml(title)}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-    mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+    try {
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: 'dark',
+        securityLevel: 'loose',
+        themeVariables: {
+          darkMode: true,
+          background: '${theme.colors.background}',
+          primaryColor: '${theme.colors.primary}',
+          primaryTextColor: '#ffffff',
+          primaryBorderColor: '${theme.colors.primary}',
+          lineColor: '${theme.colors.accent || theme.colors.primary}',
+          secondaryColor: '${theme.colors.surface}',
+          tertiaryColor: '${theme.colors.surface}'
+        }
+      });
+      window.mermaid = mermaid;
+      window.renderMermaidInSlide = async function(slideEl) {
+        if (!slideEl || !window.mermaid) return;
+        const nodes = Array.from(slideEl.querySelectorAll('.mermaid:not([data-processed="true"])'));
+        if (nodes.length > 0) {
+          try {
+            await window.mermaid.run({ nodes: nodes });
+          } catch (e) {
+            console.warn('Mermaid render notice:', e);
+          }
+        }
+      };
+      // Auto-render visible slide if present
+      const cur = document.querySelector('.yumia-slide-wrapper.active');
+      if (cur) window.renderMermaidInSlide(cur);
+    } catch (err) {
+      console.warn('Mermaid load notice:', err);
+    }
   </script>
   <style>
     :root {
@@ -627,14 +659,36 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     /* Mermaid Container */
     .mermaid-container {
       background: rgba(10, 10, 18, 0.6);
-      border: 1px solid var(--yumia-border);
+      border: 1.5px solid var(--yumia-border);
       border-radius: var(--yumia-radius-card);
-      padding: 1rem;
+      padding: 1.5rem;
       margin: 1rem 0;
       display: flex;
       justify-content: center;
+      align-items: center;
       overflow: auto;
       width: 100%;
+      min-height: 240px;
+    }
+
+    .mermaid-container pre.mermaid,
+    .mermaid-container .mermaid {
+      background: transparent !important;
+      border: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      font-size: 1rem;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+
+    .mermaid-container svg {
+      max-width: 100%;
+      height: auto;
+      max-height: 420px;
     }
 
     /* Progressive Reveal (Step Builds) */
@@ -961,6 +1015,12 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
         if (broadcast && syncChannel) {
           syncChannel.postMessage({ index: currentIdx });
         }
+
+        setTimeout(() => {
+          if (window.renderMermaidInSlide && slides[currentIdx]) {
+            window.renderMermaidInSlide(slides[currentIdx]);
+          }
+        }, 50);
       }
 
       function openSpeakerWindow() {
@@ -1065,6 +1125,13 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
             const rawNotes = slides[currentIdx].getAttribute('data-notes');
             notesBox.innerHTML = rawNotes ? rawNotes : '<em style="color:var(--yumia-muted);">No notes provided for this slide.</em>';
           }
+
+          setTimeout(() => {
+            if (window.renderMermaidInSlide) {
+              if (curBox) window.renderMermaidInSlide(curBox);
+              if (nextBox) window.renderMermaidInSlide(nextBox);
+            }
+          }, 50);
         }
 
         window.addEventListener('keydown', (e) => {
