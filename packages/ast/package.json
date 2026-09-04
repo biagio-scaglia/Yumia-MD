@@ -1,6 +1,6 @@
 {
   "name": "@yumiamd/ast",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "private": true,
   "description": "Semantic AST data structures for YumiaMD presentations",
   "type": "module",
