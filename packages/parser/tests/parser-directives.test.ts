@@ -1,12 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { parseYumia } from '../src/index.js';
 import {
+  BadgeElement,
   CardElement,
+  ChartElement,
   CodeElement,
   ColumnsElement,
+  CompareElement,
   HeadingElement,
   ImageElement,
-  QuoteElement,
+  ListElement,
+  MermaidElement,
+  TimelineElement,
 } from '@yumiamd/ast';
 
 describe('Parser Directives & Semantic Elements', () => {
@@ -123,7 +128,7 @@ const compiler = new YumiaCompiler();
 :::
 `;
     const presentation = parseYumia(source);
-    const chart = presentation.slides[0]?.elements[1] as any;
+    const chart = presentation.slides[0]?.elements[1] as ChartElement;
     expect(chart.type).toBe('chart');
     expect(chart.chartType).toBe('bar');
     expect(chart.title).toBe('Quarterly Growth');
@@ -141,7 +146,7 @@ graph LR
 :::
 `;
     const presentation = parseYumia(source);
-    const mermaid = presentation.slides[0]?.elements[1] as any;
+    const mermaid = presentation.slides[0]?.elements[1] as MermaidElement;
     expect(mermaid.type).toBe('mermaid');
     expect(mermaid.code).toContain('A[Parser] --> B[AST]');
   });
@@ -157,7 +162,7 @@ graph LR
 :::
 `;
     const presentation = parseYumia(source);
-    const timeline = presentation.slides[0]?.elements[1] as any;
+    const timeline = presentation.slides[0]?.elements[1] as TimelineElement;
     expect(timeline.type).toBe('timeline');
     expect(timeline.layout).toBe('horizontal');
     expect(timeline.items).toHaveLength(3);
@@ -179,7 +184,7 @@ graph LR
 :::
 `;
     const presentation = parseYumia(source);
-    const compare = presentation.slides[0]?.elements[1] as any;
+    const compare = presentation.slides[0]?.elements[1] as CompareElement;
     expect(compare.type).toBe('compare');
     expect(compare.leftTitle).toBe('Traditional Tools');
     expect(compare.rightTitle).toBe('YumiaMD');
@@ -193,7 +198,7 @@ graph LR
 :::badge text="v0.1.15" variant="success"
 `;
     const presentation = parseYumia(source);
-    const badge = presentation.slides[0]?.elements[1] as any;
+    const badge = presentation.slides[0]?.elements[1] as BadgeElement;
     expect(badge.type).toBe('badge');
     expect(badge.text).toBe('v0.1.15');
     expect(badge.variant).toBe('success');
@@ -210,9 +215,8 @@ Introduction text
 :::
 `;
     const presentation = parseYumia(source);
-    const stepList = presentation.slides[0]?.elements[2] as any;
+    const stepList = presentation.slides[0]?.elements[2] as ListElement;
     expect(stepList.type).toBe('list');
     expect(stepList.step).toBe(1);
   });
 });
-

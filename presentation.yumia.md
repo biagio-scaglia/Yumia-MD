@@ -138,6 +138,61 @@ Il principio fondamentale di YumiaMD è il 'Native Object Principle': non creare
 
 ---
 
+---
+
+# 📊 Native Charts & Mermaid Diagrams
+
+:::columns ratios="50:50"
+
+:::column
+:::chart type="bar" title="Adozione Formati Output" labels="PPTX, PDF, HTML, Cloud" data="45, 30, 20, 5"
+:::
+:::
+
+:::column
+:::mermaid
+graph TD
+MD[Markdown Source] --> AST[Semantic AST]
+AST --> PPTX[Native PowerPoint]
+AST --> PDF[Vector PDF]
+AST --> HTML[Interactive Web Deck]
+:::
+:::
+
+:::
+
+:::notes
+I grafici e i diagrammi Mermaid vengono compilati nativamente sia nel browser che in PowerPoint come oggetti vettoriali modificabili.
+:::
+
+---
+
+# ⏳ Timeline, Compare & Progressive Steps
+
+:::badge text="Nuovo in v0.1.15" variant="success"
+
+:::timeline layout="horizontal"
+
+- [Q1] Core Compiler: Parser AST, Layout Engine e Token di Design
+- [Q2] Multi-Target: PPTX nativo, PDF vettoriale e HTML5 Speaker View
+- [Q3] Visual Power: Grafici, Mermaid, Timeline e Deploy Cloud
+  :::
+
+:::compare left="Legacy Tools" right="YumiaMD"
+
+- Slide statiche non modificabili
+- Nessuna vista relatore sincronizzata
+  :::vs
+- Oggetti nativi 100% modificabili
+- Dual-Window Speaker Mode con timer live
+  :::
+
+:::notes
+Supporto completo per build progressive con step animation e confronto di opzioni fianco a fianco.
+:::
+
+---
+
 # 🤖 API & Integrazione per Sviluppatori e Agenti AI
 
 :::card Utilizzo Programmabile in Node.js / TypeScript variant="info"
