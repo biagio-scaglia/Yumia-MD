@@ -1,6 +1,6 @@
 {
   "name": "yumia-md",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "private": true,
   "description": "A Markdown-based presentation language and compiler designed for humans and AI",
   "type": "module",

@@ -97,12 +97,14 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     :root {
       --yumia-bg: ${theme.colors.background};
       --yumia-surface: ${theme.colors.surface};
+      --yumia-elevated-surface: ${theme.colors.elevatedSurface || theme.colors.surface};
       --yumia-text: ${theme.colors.text};
       --yumia-muted: ${theme.colors.muted || '#94a3b8'};
       --yumia-primary: ${theme.colors.primary};
       --yumia-secondary: ${theme.colors.secondary || theme.colors.primary};
       --yumia-accent: ${theme.colors.accent || theme.colors.primary};
       --yumia-border: ${theme.colors.border || 'rgba(255,255,255,0.1)'};
+      --yumia-divider: ${theme.colors.divider || 'rgba(255,255,255,0.12)'};
       --yumia-success: ${theme.colors.success || '#10b981'};
       --yumia-warning: ${theme.colors.warning || '#f59e0b'};
       --yumia-danger: ${theme.colors.danger || '#ef4444'};
@@ -110,6 +112,17 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       --yumia-font-heading: ${theme.typography.headingFont};
       --yumia-font-body: ${theme.typography.bodyFont};
       --yumia-font-code: ${theme.typography.codeFont || 'monospace'};
+      --yumia-line-height-tight: ${theme.typography.lineHeights?.tight || 1.15};
+      --yumia-line-height-normal: ${theme.typography.lineHeights?.normal || 1.55};
+      --yumia-line-height-relaxed: ${theme.typography.lineHeights?.relaxed || 1.7};
+      --yumia-line-height-body: ${theme.typography.lineHeights?.normal || 1.55};
+      --yumia-letter-spacing-tight: ${theme.typography.letterSpacing?.tight || '-0.02em'};
+      --yumia-radius-sm: ${theme.radius.sm || 4}px;
+      --yumia-radius-md: ${theme.radius.md || 8}px;
+      --yumia-radius-lg: ${theme.radius.lg || 16}px;
+      --yumia-radius-default: ${theme.radius.default}px;
+      --yumia-radius-card: ${theme.components?.card?.borderRadius ?? theme.radius.default}px;
+      --yumia-shadow-glow: ${theme.shadows?.glow || 'none'};
       --yumia-ratio: ${ratioAspect};
     }
 
@@ -122,7 +135,7 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     body {
       background-color: #050508;
       color: var(--yumia-text);
-      font-family: var(--yumia-font-body);
+      font-family: var(--yumia-font-body), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       overflow: hidden;
       width: 100vw;
       height: 100vh;
@@ -147,7 +160,7 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       height: min(calc(94vw / (${is43 ? '4 / 3' : '16 / 9'})), 94vh);
       aspect-ratio: var(--yumia-ratio);
       background-color: var(--yumia-bg);
-      border-radius: 12px;
+      border-radius: var(--yumia-radius-default);
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--yumia-border);
       overflow: hidden;
       display: none;
@@ -167,11 +180,13 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
 
     /* Headings */
     h1, h2, h3, h4 {
-      font-family: var(--yumia-font-heading);
+      font-family: var(--yumia-font-heading), system-ui, -apple-system, sans-serif;
       font-weight: 700;
-      line-height: 1.15;
+      line-height: var(--yumia-line-height-tight);
       margin-bottom: 0.7em;
-      letter-spacing: -0.02em;
+      letter-spacing: var(--yumia-letter-spacing-tight);
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
 
     h1 {
@@ -197,7 +212,11 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     /* Paragraphs */
     p {
       font-size: clamp(1rem, 1.4vw, 1.25rem);
-      line-height: 1.6;
+      line-height: var(--yumia-line-height-normal);
+      color: var(--yumia-text);
+      margin-bottom: 0.8em;
+      overflow-wrap: break-word;
+    }
       color: var(--yumia-text);
       margin-bottom: 0.8em;
     }

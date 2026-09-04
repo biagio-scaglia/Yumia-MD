@@ -125,6 +125,9 @@ export class YumiaLinter {
       // YUM007 & YUM005: Image checks
       this.checkImages(slide.elements, slideNum, issues);
 
+      // YUM011 & YUM012: Tables and Code checks
+      this.checkTablesAndCode(slide.elements, slideNum, issues);
+
       // YUM008: Excessive Nesting Depth (> 2 container levels)
       const maxDepth = this.getMaxNestingDepth(slide.elements, 0);
       if (maxDepth > 2) {
@@ -149,6 +152,23 @@ export class YumiaLinter {
       }
     });
 
+    // YUM010: Custom Color Palette Contrast Validation (WCAG AA check)
+    if (presentation.metadata?.colors?.background && presentation.metadata?.colors?.text) {
+      const bg = presentation.metadata.colors.background;
+      const text = presentation.metadata.colors.text;
+      if (bg.startsWith('#') && text.startsWith('#')) {
+        const ratio = this.getContrastRatio(bg, text);
+        if (ratio < 3.0) {
+          issues.push({
+            code: 'YUM010',
+            slide: 1,
+            message: `Insufficient color contrast in custom palette: background (${bg}) vs text (${text}) has a ratio of ${ratio.toFixed(1)}:1 (minimum recommended: 4.5:1 for WCAG AA).`,
+            severity: 'warning',
+          });
+        }
+      }
+    }
+
     const errors = issues.filter((i) => i.severity === 'error');
     const warnings = issues.filter((i) => i.severity === 'warning');
     const infos = issues.filter((i) => i.severity === 'info');
@@ -161,6 +181,77 @@ export class YumiaLinter {
       warnings,
       infos,
     };
+  }
+
+  private getLuminance(hex: string): number {
+    const clean = hex.replace('#', '').trim();
+    if (clean.length !== 6 && clean.length !== 3) return 0.5;
+    const rgb =
+      clean.length === 3
+        ? clean.split('').map((c) => parseInt(c + c, 16) / 255)
+        : [
+            parseInt(clean.slice(0, 2), 16) / 255,
+            parseInt(clean.slice(2, 4), 16) / 255,
+            parseInt(clean.slice(4, 6), 16) / 255,
+          ];
+    const a = rgb.map((v) => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
+    const r = a[0] ?? 0;
+    const g = a[1] ?? 0;
+    const b = a[2] ?? 0;
+    return r * 0.2126 + g * 0.7152 + b * 0.0722;
+  }
+
+  private getContrastRatio(hex1: string, hex2: string): number {
+    const l1 = this.getLuminance(hex1);
+    const l2 = this.getLuminance(hex2);
+    const lighter = Math.max(l1, l2);
+    const darker = Math.min(l1, l2);
+    return (lighter + 0.05) / (darker + 0.05);
+  }
+
+  private checkTablesAndCode(
+    elements: SlideElement[],
+    slideNum: number,
+    issues: LintRuleResult[]
+  ): void {
+    const traverse = (els: SlideElement[]) => {
+      for (const el of els) {
+        if (el.type === 'table') {
+          const colCount = Math.max(
+            el.headers?.length || 0,
+            el.rows && el.rows[0] ? el.rows[0].length : 0
+          );
+          if (colCount > 5) {
+            issues.push({
+              code: 'YUM011',
+              slide: slideNum,
+              message: `Table contains ${colCount} columns (recommended max: 5 for 16:9 slides). Content may cause horizontal clipping.`,
+              severity: 'warning',
+              loc: el.loc,
+            });
+          }
+        } else if (el.type === 'code') {
+          const lines = el.code.split('\n');
+          const maxLineLength = Math.max(...lines.map((l) => l.length));
+          if (maxLineLength > 80) {
+            issues.push({
+              code: 'YUM012',
+              slide: slideNum,
+              message: `Code block contains lines exceeding 80 characters (max: ${maxLineLength} chars). May cause line wrapping or overflow.`,
+              severity: 'info',
+              loc: el.loc,
+            });
+          }
+        } else if (el.type === 'card' && (el as CardElement).elements) {
+          traverse((el as CardElement).elements);
+        } else if (el.type === 'columns') {
+          for (const col of (el as ColumnsElement).columns) {
+            traverse(col.elements);
+          }
+        }
+      }
+    };
+    traverse(elements);
   }
 
   private slideHasHeading(elements: SlideElement[]): boolean {

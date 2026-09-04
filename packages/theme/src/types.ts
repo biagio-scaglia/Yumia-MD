@@ -3,10 +3,12 @@ export interface ColorPalette {
   secondary?: string;
   background: string;
   surface: string;
+  elevatedSurface?: string;
   text: string;
   muted?: string;
   accent?: string;
   border?: string;
+  divider?: string;
   success?: string;
   warning?: string;
   danger?: string;
@@ -18,39 +20,65 @@ export interface TypographyConfig {
   bodyFont: string;
   codeFont: string;
   sizes?: {
+    display?: number;
     h1?: number;
     h2?: number;
     h3?: number;
     h4?: number;
     body?: number;
     small?: number;
+    caption?: number;
     code?: number;
+    quote?: number;
+    metadata?: number;
   };
   weights?: {
     normal?: number;
     medium?: number;
     bold?: number;
   };
+  lineHeights?: {
+    tight?: number;
+    snug?: number;
+    normal?: number;
+    relaxed?: number;
+  };
+  letterSpacing?: {
+    tight?: string;
+    normal?: string;
+    wide?: string;
+  };
 }
 
 export interface SpacingConfig {
   unit: number;
+  scale?: number[];
   slidePadding?: number;
   elementGap?: number;
+  safeArea?: {
+    top?: number;
+    bottom?: number;
+    left?: number;
+    right?: number;
+  };
 }
 
 export interface RadiusConfig {
   default: number;
+  none?: number;
   sm?: number;
   md?: number;
   lg?: number;
+  xl?: number;
   full?: number;
 }
 
 export interface ShadowConfig {
+  none?: string;
   sm?: string;
   md?: string;
   lg?: string;
+  glow?: string;
 }
 
 export interface ComponentThemeDefaults {

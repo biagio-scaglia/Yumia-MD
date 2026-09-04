@@ -123,7 +123,7 @@ export class DefaultLayoutEngine implements LayoutEngine {
   ): LayoutNode {
     switch (element.type) {
       case 'heading': {
-        const height = this.estimateHeadingHeight(element);
+        const height = this.estimateHeadingHeight(element, width);
         return { element, bounds: { x, y, width, height } };
       }
       case 'paragraph': {
@@ -264,17 +264,13 @@ export class DefaultLayoutEngine implements LayoutEngine {
     return parts.map((p) => p / sum);
   }
 
-  private estimateHeadingHeight(heading: HeadingElement): number {
-    switch (heading.level) {
-      case 1:
-        return 90;
-      case 2:
-        return 70;
-      case 3:
-        return 55;
-      default:
-        return 45;
-    }
+  private estimateHeadingHeight(heading: HeadingElement, width: number = 1600): number {
+    const fontSize = heading.level === 1 ? 46 : heading.level === 2 ? 36 : 28;
+    const charWidth = fontSize * 0.55;
+    const charsPerLine = Math.max(15, Math.floor(width / charWidth));
+    const lines = Math.ceil(heading.text.length / charsPerLine) || 1;
+    const lineHeight = fontSize * 1.25;
+    return Math.max(heading.level === 1 ? 90 : 70, Math.round(lines * lineHeight + 20));
   }
 
   private estimateParagraphHeight(paragraph: ParagraphElement, width: number): number {

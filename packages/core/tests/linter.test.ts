@@ -86,6 +86,58 @@ No heading here
     expect(report.warnings.length).toBeGreaterThan(0);
   });
 
+  it('detects low contrast custom color palette (YUM010)', () => {
+    const source = `---
+title: Bad Contrast Deck
+colors:
+  background: "#111111"
+  text: "#222222"
+---
+
+# Title
+Sample text with nearly invisible contrast
+`;
+    const report = compiler.lint(source);
+    const contrastIssue = report.warnings.find((w) => w.code === 'YUM010');
+    expect(contrastIssue).toBeDefined();
+    expect(contrastIssue?.message).toContain('Insufficient color contrast');
+  });
+
+  it('detects excessive table columns (YUM011)', () => {
+    const source = `---
+title: Table Deck
+---
+
+# Data Matrix
+
+| Col 1 | Col 2 | Col 3 | Col 4 | Col 5 | Col 6 | Col 7 |
+| --- | --- | --- | --- | --- | --- | --- |
+| A | B | C | D | E | F | G |
+`;
+    const report = compiler.lint(source);
+    const tableIssue = report.warnings.find((w) => w.code === 'YUM011');
+    expect(tableIssue).toBeDefined();
+    expect(tableIssue?.message).toContain('7 columns');
+  });
+
+  it('detects very long lines in code blocks (YUM012)', () => {
+    const longLine =
+      'const veryLongIdentifierThatExceedsEightyCharactersAndMightCauseOverflowInSlides = 1234567890;';
+    const source = `---
+title: Code Deck
+---
+
+# Code Snippet
+
+\`\`\`typescript
+${longLine}
+\`\`\`
+`;
+    const report = compiler.lint(source);
+    const codeIssue = report.infos.find((i) => i.code === 'YUM012');
+    expect(codeIssue).toBeDefined();
+  });
+
   it('passes a well-structured presentation without warnings', () => {
     const source = `---
 title: Perfect Deck
