@@ -6,7 +6,7 @@ import { Presentation, Slide } from '@yumiamd/ast';
 import { YumiaCompiler } from '@yumiamd/core';
 import { PptxRenderer } from '@yumiamd/renderer-pptx';
 
-export const VERSION = '0.1.5';
+export const VERSION = '0.1.6';
 
 export function printHelp(): string {
   return `
