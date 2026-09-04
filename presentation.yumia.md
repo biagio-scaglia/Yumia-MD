@@ -193,6 +193,32 @@ Supporto completo per build progressive con step animation e confronto di opzion
 
 ---
 
+# 📐 Equazioni Matematiche & Transizioni Native
+
+:::transition type="wipe" duration="0.6s"
+
+:::badge text="Scientific & Enterprise" variant="primary" :::
+
+:::math
+i \hbar \frac{\partial}{\partial t} \Psi(\mathbf{r}, t) = \hat{H} \Psi(\mathbf{r}, t)
+:::
+
+$$
+\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi} \quad \Longleftrightarrow \quad \nabla \times \mathbf{B} = \mu_0 \mathbf{J} + \mu_0 \varepsilon_0 \frac{\partial \mathbf{E}}{\partial t}
+$$
+
+:::card Typography & Master Slide Fidelity variant="success"
+
+- **Tipografia Cambria Math**: Formule scientifiche renderizzate con spaziatura ed estetica accurata
+- **Font Embedding & .potx**: I font custom viaggiano dentro il file .pptx senza dipendere dal sistema operativo
+  :::
+
+:::notes
+Supporto nativo per formule matematiche complesse in PowerPoint, PDF vettoriale e HTML.
+:::
+
+---
+
 # 🤖 API & Integrazione per Sviluppatori e Agenti AI
 
 :::card Utilizzo Programmabile in Node.js / TypeScript variant="info"

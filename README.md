@@ -6,7 +6,7 @@
 [![npm version](https://img.shields.io/npm/v/yumiamd.svg?color=blue)](https://www.npmjs.com/package/yumiamd)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-YumiaMD is a modern presentation compiler. It provides a human-readable and AI-friendly way to author slide decks in plain Markdown with semantic presentation directives (`:::columns`, `:::card`, `:::chart`, `:::mermaid`, `:::timeline`, `:::compare`, `:::badge`, `:::step`, `:::notes`), and compiles them into **native, fully editable PowerPoint (.pptx)** presentations, clean vector PDFs, and interactive HTML5 decks.
+YumiaMD is a modern presentation compiler. It provides a human-readable and AI-friendly way to author slide decks in plain Markdown with rich presentation directives (`:::columns`, `:::card`, `:::chart`, `:::mermaid`, `:::timeline`, `:::compare`, `:::math`, `:::badge`, `:::transition`, `:::step`, `:::notes`), and compiles them into **native, fully editable PowerPoint (.pptx)** presentations (with embedded fonts and corporate `.potx` template support), crisp vector PDFs, and interactive HTML5 decks.
 
 ---
 
@@ -45,17 +45,20 @@ presentation.yumia.md
 
 ```markdown
 ---
-title: System Overview & Metrics
+title: System Overview & Scientific Metrics
 theme: default
 aspectRatio: '16:9'
 author: Biagio Scaglia
+transition: push
+embedFonts: true
+template: corporate.potx
 ---
 
 # High-Performance State Machines
 
 Deterministic reactive workflows compiled across targets.
 
-:::badge text="v0.1.15" variant="primary" :::
+:::badge text="v0.1.19" variant="primary" :::
 :::badge text="Production Ready" variant="success" :::
 
 :::notes
@@ -65,6 +68,8 @@ Opening slide introducing deterministic workflows and target capabilities.
 ---
 
 # Multi-Column & Comparisons
+
+:::transition type="fade" duration="0.5s"
 
 :::compare left="Traditional Approach" right="YumiaMD Architecture"
 
@@ -78,6 +83,22 @@ Opening slide introducing deterministic workflows and target capabilities.
 - 100% Native editable PowerPoint objects
 - Deterministic layout & vector graphics
 
+:::
+
+---
+
+# Scientific Equations & Mathematical Modeling
+
+:::math
+i \hbar \frac{\partial}{\partial t} \Psi(\mathbf{r}, t) = \left[ -\frac{\hbar^2}{2m}\nabla^2 + V(\mathbf{r}, t) \right] \Psi(\mathbf{r}, t)
+:::
+
+$$
+\int_{-\infty}^{\infty} e^{-a x^2} dx = \sqrt{\frac{\pi}{a}}
+$$
+
+:::notes
+Rendered with Cambria Math in PowerPoint, vector paths in PDF, and styled math containers in HTML.
 :::
 
 ---
@@ -113,7 +134,7 @@ D --> G[HTML5 Deck]
 - [Q1 2026] Core Compiler: AST parser, layout engine & PPTX generation
 - [Q2 2026] Multi-Format: Vector PDF & Interactive HTML5 Speaker View
 - [Q3 2026] Rich Directives: Native charts, Mermaid, timelines & compare
-- [Q4 2026] Cloud Deploy: Instant static, GitHub Pages & Vercel hosting
+- [Q4 2026] Enterprise: Master templates, font embedding, math & transitions
   :::
 
 :::step
@@ -244,17 +265,21 @@ YumiaMD is developed as a modular monorepo and distributed as a self-contained *
 
 ## 🌐 Multi-Target Presentation Rendering
 
-| Feature / Directive            | PowerPoint (`.pptx`)                 | Vector PDF (`.pdf`)        | HTML5 Interactive (`.html`)        |
-| :----------------------------- | :----------------------------------- | :------------------------- | :--------------------------------- |
-| **Output Type**                | Native OpenXML shapes & text         | Native vector paths & text | Responsive interactive web app     |
-| **Headings & Cards**           | Native PPTX rounded rects            | Vector rounded boxes       | Glassmorphic CSS cards             |
-| **Data Charts (`:::chart`)**   | Editable PowerPoint Chart objects    | Native vector PDF graphics | Responsive interactive SVG charts  |
-| **Diagrams (`:::mermaid`)**    | Formatted code container             | Formatted code container   | Client-side Mermaid.js rendering   |
-| **Timelines (`:::timeline`)**  | Native vector shapes & connectors    | Vector nodes & step lines  | Responsive CSS timeline steps      |
-| **Comparisons (`:::compare`)** | Multi-column vector containers       | Side-by-side vector boxes  | Dual-column comparison grid        |
-| **Badges (`:::badge`)**        | Vector pill shapes with theme colors | Vector badge pills         | Themed inline badge elements       |
-| **Step Reveal (`:::step`)**    | Native click transitions             | Visible print layout       | Progressive reveal keyboard clicks |
-| **Speaker View**               | Native PPTX slide notes              | Notes summary section      | Dedicated dual-screen window (`S`) |
+| Feature / Directive               | PowerPoint (`.pptx`)                    | Vector PDF (`.pdf`)         | HTML5 Interactive (`.html`)        |
+| :-------------------------------- | :-------------------------------------- | :-------------------------- | :--------------------------------- |
+| **Output Type**                   | Native OpenXML shapes & text            | Native vector paths & text  | Responsive interactive web app     |
+| **Headings & Cards**              | Native PPTX rounded rects               | Vector rounded boxes        | Glassmorphic CSS cards             |
+| **Data Charts (`:::chart`)**      | Editable PowerPoint Chart objects       | Native vector PDF graphics  | Responsive interactive SVG charts  |
+| **Diagrams (`:::mermaid`)**       | Formatted code container                | Formatted code container    | Client-side Mermaid.js rendering   |
+| **Timelines (`:::timeline`)**     | Native vector shapes & connectors       | Vector nodes & step lines   | Responsive CSS timeline steps      |
+| **Comparisons (`:::compare`)**    | Multi-column vector containers          | Side-by-side vector boxes   | Dual-column comparison grid        |
+| **Math (`:::math` / `$$`)**       | Formatted Cambria Math box with accent  | Vector boxed equation paths | Glassmorphic math box container    |
+| **Transitions (`:::transition`)** | Native OpenXML slide transition effects | Clean page sequence         | CSS3 keyframe slide animations     |
+| **Corporate Templates**           | Native `.potx` master slide reuse       | Consistent theme layout     | Themed web layout                  |
+| **Font Embedding**                | Embedded TTF/WOFF in presentation file  | Embedded PDF fonts          | Web-safe font / webfont delivery   |
+| **Badges (`:::badge`)**           | Vector pill shapes with theme colors    | Vector badge pills          | Themed inline badge elements       |
+| **Step Reveal (`:::step`)**       | Native click transitions                | Visible print layout        | Progressive reveal keyboard clicks |
+| **Speaker View**                  | Native PPTX slide notes                 | Notes summary section       | Dedicated dual-screen window (`S`) |
 
 ---
 

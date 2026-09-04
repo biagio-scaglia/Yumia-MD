@@ -58,6 +58,10 @@ Unlike tools that convert slides into full-screen raster images or SVG captures,
 - **Lists**: Rendered as native PPTX bullet items with proper indentation levels.
 - **Cards**: Rendered as native vector rounded rectangle shapes with theme fill and border styling, containing child elements.
 - **Charts (`:::chart`)**: Compiled directly into native PowerPoint chart objects (`pptx.addChart()`) editable directly within Microsoft PowerPoint.
+- **Math (`:::math` / `$$`)**: Rendered with rounded equation container shapes, accent bar, and `Cambria Math` scientific typography.
+- **Transitions (`:::transition`)**: Slide transition effects (`push`, `fade`, `wipe`, `zoom`, `split`) mapped directly to OpenXML slide transition metadata.
+- **Corporate Templates (`.potx`)**: Full support for `--template` to inherit enterprise master slides and layout themes.
+- **Font Embedding**: Presentation package font embedding for perfect offline fidelity across client workstations.
 - **Timelines (`:::timeline`)**: Rendered with vector node circles, text frames, and connector line shapes.
 - **Comparisons (`:::compare`)**: Multi-column vector container shapes with headers and vs badges.
 - **Badges (`:::badge`)**: Vector pill shapes with theme color tokens.
@@ -67,6 +71,8 @@ Unlike tools that convert slides into full-screen raster images or SVG captures,
 
 - Standalone self-contained HTML single-page app with embedded CSS design tokens.
 - Dynamic responsive SVG chart rendering and client-side Mermaid.js diagram compilation.
+- Hardware-accelerated slide transitions (`fadeIn`, `pushIn`, `wipeIn`, `zoomIn`).
+- Mathematical equation container styling (`.yumia-math-container`).
 - Step animations (`:::step`) with keyboard click triggers.
 - Multi-screen Speaker View (`S` key) communicating via `BroadcastChannel` with slide timer, notes, and preview.
 - Overview grid (`ESC` key) and full-screen presentation mode (`F` key).
@@ -76,3 +82,4 @@ Unlike tools that convert slides into full-screen raster images or SVG captures,
 - Direct vector rendering via PDFKit at 1920x1080 canonical slide dimensions.
 - High-resolution typography with Unicode and emoji fallback sanitization.
 - Vector chart bars, lines, and pie slices drawn directly on PDF vector canvas.
+- Vector boxed mathematical formulas with accent indicator bars and italicized typesetting.

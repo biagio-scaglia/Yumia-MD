@@ -352,7 +352,8 @@ export class DefaultYumiaParser implements YumiaParser {
             type: cleanType,
           };
           if (durationMatch && durationMatch[1]) transObj.duration = durationMatch[1];
-          if (dirMatch && dirMatch[1]) transObj.direction = dirMatch[1] as 'left' | 'right' | 'up' | 'down';
+          if (dirMatch && dirMatch[1])
+            transObj.direction = dirMatch[1] as 'left' | 'right' | 'up' | 'down';
           transition = transObj;
           i++;
           continue;

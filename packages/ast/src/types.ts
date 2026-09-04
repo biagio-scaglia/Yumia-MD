@@ -33,14 +33,7 @@ export interface ThemeReference {
 }
 
 export type SlideTransitionType =
-  | 'none'
-  | 'fade'
-  | 'push'
-  | 'wipe'
-  | 'split'
-  | 'cover'
-  | 'zoom'
-  | string;
+  'none' | 'fade' | 'push' | 'wipe' | 'split' | 'cover' | 'zoom' | string;
 
 export interface SlideTransition {
   type: SlideTransitionType;

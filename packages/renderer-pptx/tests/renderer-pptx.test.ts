@@ -47,7 +47,11 @@ describe('@yumiamd/renderer-pptx', () => {
     const slide1 = createSlide(
       [
         createHeading('Quantum Physics', 1),
-        { type: 'math', expression: 'i \\hbar \\frac{\\partial}{\\partial t} \\Psi = \\hat{H} \\Psi', displayMode: true },
+        {
+          type: 'math',
+          expression: 'i \\hbar \\frac{\\partial}{\\partial t} \\Psi = \\hat{H} \\Psi',
+          displayMode: true,
+        },
       ],
       { transition: 'push' }
     );
