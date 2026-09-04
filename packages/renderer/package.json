@@ -1,6 +1,6 @@
 {
   "name": "@yumiamd/renderer",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "private": true,
   "description": "Base renderer abstraction and rendering context for YumiaMD",
   "type": "module",
