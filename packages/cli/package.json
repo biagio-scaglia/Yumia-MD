@@ -16,6 +16,7 @@
     }
   },
   "dependencies": {
+    "pdfkit": "^0.20.2",
     "pptxgenjs": "^4.0.1"
   },
   "devDependencies": {
@@ -25,12 +26,13 @@
     "@yumiamd/parser": "workspace:*",
     "@yumiamd/renderer": "workspace:*",
     "@yumiamd/renderer-html": "workspace:*",
+    "@yumiamd/renderer-pdf": "workspace:*",
     "@yumiamd/renderer-pptx": "workspace:*",
     "@yumiamd/theme": "workspace:*",
     "tsup": "^8.5.1"
   },
   "scripts": {
-    "build": "tsup src/bin.ts src/index.ts --format esm --dts --clean --external pptxgenjs",
+    "build": "tsup src/bin.ts src/index.ts --format esm --dts --clean --external pptxgenjs,pdfkit",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

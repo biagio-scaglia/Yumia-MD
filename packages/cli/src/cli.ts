@@ -7,6 +7,7 @@ import { YumiaCompiler } from '@yumiamd/core';
 import { resolveTheme } from '@yumiamd/theme';
 import { PptxRenderer } from '@yumiamd/renderer-pptx';
 import { HtmlRenderer } from '@yumiamd/renderer-html';
+import { PdfRenderer } from '@yumiamd/renderer-pdf';
 import { startDevServer } from './dev-server.js';
 
 export const VERSION = '0.1.10';
@@ -26,7 +27,7 @@ Commands:
   lint <file>        Analyze presentation for layout overflows and accessibility
   inspect <file>     Inspect the AST and geometric layout tree
   schema             Output machine-readable JSON schema for AI agents
-  build <file>       Compile a presentation to PowerPoint (.pptx) or HTML (.html)
+  build <file>       Compile a presentation to PowerPoint (.pptx), PDF (.pdf), or HTML (.html)
 
 Theming & Color Options:
   --theme, -t <name> Base theme: default | cyberpunk | minimal | corporate | terminal | academic
@@ -41,7 +42,7 @@ Server & Compiler Options:
   --open             Open default browser automatically in dev mode
   --watch, -w        Watch for file changes during compilation
   --out, -o <file>   Specify output file path (default: dist/<name>.<format>)
-  --format, -f <fmt> Target output format: pptx (default) | html
+  --format, -f <fmt> Target output format: pptx (default) | pdf | html
   --strict           Enforce zero warnings in 'lint' (exits with code 1 on warning)
   --json             Output results formatted as JSON for CI/CD and AI tools
   --layout           Show computed geometric bounding boxes in 'inspect'
@@ -387,7 +388,8 @@ Opening slide introducing the presentation deck.
     try {
       const resolvedInput = resolve(process.cwd(), target);
       const isHtml = cliFormat === 'html';
-      const targetExtension = isHtml ? '.html' : '.pptx';
+      const isPdf = cliFormat === 'pdf';
+      const targetExtension = isHtml ? '.html' : isPdf ? '.pdf' : '.pptx';
 
       // Determine output path
       let outputPath = '';
@@ -426,6 +428,17 @@ Opening slide introducing the presentation deck.
             ...(renderTheme ? { renderContext: { theme: renderTheme } } : {}),
           });
           writeFileSync(outputPath, result.html, 'utf-8');
+          return { slideCount: result.slideCount, format: result.format };
+        } else if (isPdf) {
+          const pdfRenderer = new PdfRenderer();
+          const result = await compiler.compile(source, pdfRenderer, {
+            ...(renderTheme ? { renderContext: { theme: renderTheme } } : {}),
+          });
+          const buffer =
+            result.data instanceof Uint8Array
+              ? Buffer.from(result.data)
+              : Buffer.from(new Uint8Array(result.data));
+          writeFileSync(outputPath, buffer);
           return { slideCount: result.slideCount, format: result.format };
         } else {
           const pptxRenderer = new PptxRenderer();
@@ -472,9 +485,14 @@ Opening slide introducing the presentation deck.
       }
 
       const watchMsg = command === 'watch' || isWatch ? ' [Watching for changes...]' : '';
+      const formatDesc = isHtml
+        ? 'interactive HTML slides'
+        : isPdf
+          ? 'vector PDF slides'
+          : 'native editable slides';
       return {
         exitCode: 0,
-        output: `✓ Successfully compiled '${target}' ➔ '${outputPath}' (${result.slideCount} ${isHtml ? 'interactive HTML slides' : 'native editable slides'})${watchMsg}`,
+        output: `✓ Successfully compiled '${target}' ➔ '${outputPath}' (${result.slideCount} ${formatDesc})${watchMsg}`,
       };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

@@ -113,23 +113,35 @@ pnpm add -g yumiamd
 ```
 
 ```bash
-# Initialize a starter project
-yumia init my-deck
+# Initialize a starter project (optionally with custom theme & colors)
+yumia init my-deck --theme cyberpunk --primary "#FF2E88"
+
+# Start instant live-reload dev server with HTML preview (zero config!)
+yumia dev presentation.yumia.md --open
+
+# Compile to native editable PowerPoint (.pptx)
+yumia build presentation.yumia.md --out dist/presentation.pptx
+
+# Compile to crisp vector PDF document (.pdf)
+yumia build presentation.yumia.md --format pdf --out dist/presentation.pdf
+
+# Compile to standalone interactive HTML5 presentation deck (.html)
+yumia build presentation.yumia.md --format html --out dist/presentation.html
+
+# Watch presentation file and recompile automatically on save
+yumia watch presentation.yumia.md --format pdf
 
 # Validate markdown syntax and AST structure (supports --json for CI/CD & AI agents)
 yumia validate presentation.yumia.md --json
 
-# Lint presentation for vertical overflow and accessibility
-yumia lint presentation.yumia.md --json
+# Lint presentation for overflow, high density, and accessibility
+yumia lint presentation.yumia.md --strict
 
 # Inspect AST and deterministic layout bounding boxes
 yumia inspect presentation.yumia.md --layout
 
 # Export machine-readable JSON schema for LLMs & AI agents
 yumia schema
-
-# Compile to native editable PowerPoint (.pptx)
-yumia build presentation.yumia.md --out dist/presentation.pptx
 ```
 
 ### 2. Node.js & TypeScript Library
@@ -151,12 +163,15 @@ const compiler = new YumiaCompiler();
 const validation = compiler.validate(markdown);
 console.log(`Valid: ${validation.valid}, Slides: ${validation.slideCount}`);
 
-// 2. Compile directly to PPTX buffer
-const { buffer, errors } = await compile(markdown, { format: 'pptx' });
+// 2. Compile directly to PPTX, PDF, or HTML
+const { buffer } = await compile(markdown, { format: 'pptx' });
+fs.writeFileSync('output.pptx', buffer);
 
-if (errors.length === 0) {
-  fs.writeFileSync('output.pptx', buffer);
-}
+const { data: pdfBuffer } = await compile(markdown, { format: 'pdf' });
+fs.writeFileSync('output.pdf', Buffer.from(pdfBuffer));
+
+const { html } = await compile(markdown, { format: 'html' });
+fs.writeFileSync('output.html', html);
 
 // 3. Export JSON schema for LLM generation
 const schema = compiler.getSchema();
@@ -172,13 +187,13 @@ YumiaMD is developed as a modular monorepo and distributed as a self-contained *
 | :----------------------- | :---------------------------------------------------------------- |
 | `@yumiamd/ast`           | Pure semantic presentation AST data structures with locations     |
 | `@yumiamd/parser`        | Converts Markdown + Presentation DSL & Tables into AST            |
-| `@yumiamd/theme`         | Semantic design tokens (colors, typography, spacing)              |
+| `@yumiamd/theme`         | Semantic design tokens (6 themes + custom colors & typography)    |
 | `@yumiamd/layout`        | Deterministic geometric placement (stack, columns, cards, bounds) |
 | `@yumiamd/renderer`      | Base renderer abstractions and rendering context                  |
 | `@yumiamd/renderer-pptx` | **Native editable PowerPoint (`.pptx`) generation engine**        |
-| `@yumiamd/renderer-pdf`  | Vector PDF document compiler _(in development)_                   |
-| `@yumiamd/renderer-html` | Interactive HTML5 presentation deck compiler _(in development)_   |
-| `@yumiamd/core`          | Compiler pipeline coordinator & schema generation                 |
+| `@yumiamd/renderer-pdf`  | **Crisp Vector PDF (`.pdf`) document compiler**                   |
+| `@yumiamd/renderer-html` | **Interactive HTML5 deck + Dual-Window Speaker View (`.html`)**   |
+| `@yumiamd/core`          | Compiler pipeline coordinator, linter & schema generation         |
 | **`yumiamd`**            | **Unified All-in-One package & CLI published to NPM**             |
 
 ---
@@ -197,7 +212,7 @@ pnpm build
 # Typecheck workspace packages
 pnpm typecheck
 
-# Run test suite with Vitest (34 unit, integration, & fuzz tests)
+# Run test suite with Vitest (17 test suites, 50+ unit & integration tests)
 pnpm test
 
 # Lint code with ESLint
@@ -221,13 +236,14 @@ pnpm release patch
 - [x] Initial monorepo setup & strict TypeScript configuration
 - [x] Semantic AST model (`@yumiamd/ast`)
 - [x] Markdown and directive parser (`@yumiamd/parser`)
-- [x] Theme token interfaces and default theme (`@yumiamd/theme`)
+- [x] Built-in themes (`default`, `cyberpunk`, `minimal`, `corporate`, `terminal`, `academic`) & custom CLI flags
 - [x] Deterministic Layout Engine (`@yumiamd/layout`)
 - [x] **Native PowerPoint generation engine (`@yumiamd/renderer-pptx`)**
-- [x] Full CLI toolchain (`yumia init`, `validate`, `lint`, `inspect`, `build`)
+- [x] **Vector PDF document compiler (`@yumiamd/renderer-pdf`)**
+- [x] **Interactive HTML5 deck + Speaker View & Overview Grid (`@yumiamd/renderer-html`)**
+- [x] **Live-Reload Dev Server (`yumia dev`) & Watch Mode (`yumia watch`)**
+- [x] Rule-Based Presentation Linter (`yumia lint`)
 - [x] Automated NPM and GitHub release tooling (`pnpm release`)
-- [ ] HTML live preview dev server (`yumia dev`)
-- [ ] Vector PDF renderer (`@yumiamd/renderer-pdf`)
 
 ---
 

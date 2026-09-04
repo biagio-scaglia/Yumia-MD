@@ -49,23 +49,35 @@ pnpm add yumiamd
 Once installed globally or locally, the `yumia` / `yumiamd` commands are available in your terminal:
 
 ```bash
-# Initialize a new presentation template
-yumia init my-presentation
+# Initialize a new presentation template (supports --theme and custom color overrides)
+yumia init my-presentation --theme cyberpunk --primary "#FF2E88"
+
+# Start instant live-reload dev server with HTML preview (zero config!)
+yumia dev presentation.yumia.md --open
+
+# Compile to native editable PowerPoint (.pptx)
+yumia build presentation.yumia.md --out dist/presentation.pptx
+
+# Compile to crisp vector PDF document (.pdf)
+yumia build presentation.yumia.md --format pdf --out dist/presentation.pdf
+
+# Compile to standalone interactive HTML5 presentation deck (.html)
+yumia build presentation.yumia.md --format html --out dist/presentation.html
+
+# Watch presentation file and recompile automatically on save
+yumia watch presentation.yumia.md --format pdf
 
 # Validate markdown syntax and AST structure (supports --json for CI & AI agents)
 yumia validate presentation.yumia.md --json
 
-# Lint presentation for vertical overflow and layout issues
-yumia lint presentation.yumia.md --json
+# Lint presentation for overflow, high density, and layout issues
+yumia lint presentation.yumia.md --strict
 
 # Inspect parsed AST and computed layout bounding boxes
 yumia inspect presentation.yumia.md --layout
 
 # Export machine-readable JSON schema for LLMs & AI prompt generation
 yumia schema
-
-# Compile to native editable PowerPoint (.pptx)
-yumia build presentation.yumia.md --out dist/presentation.pptx
 ```
 
 ---

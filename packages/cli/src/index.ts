@@ -8,3 +8,4 @@ export * from '@yumiamd/layout';
 export * from '@yumiamd/renderer';
 export * from '@yumiamd/renderer-pptx';
 export * from '@yumiamd/renderer-html';
+export * from '@yumiamd/renderer-pdf';

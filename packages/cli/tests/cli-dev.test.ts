@@ -29,6 +29,28 @@ describe('yumia CLI dev server and HTML format', () => {
     }
   });
 
+  it('should compile presentation to vector PDF', async () => {
+    const tempPdfOut = path.resolve(__dirname, '../../../examples/basic/dist/test-deck.pdf');
+    const buildRes = await runCli([
+      'node',
+      'yumia',
+      'build',
+      samplePath,
+      '--format',
+      'pdf',
+      '--out',
+      tempPdfOut,
+    ]);
+
+    expect(buildRes.exitCode).toBe(0);
+    expect(buildRes.output).toContain('vector PDF slides');
+    expect(existsSync(tempPdfOut)).toBe(true);
+
+    if (existsSync(tempPdfOut)) {
+      unlinkSync(tempPdfOut);
+    }
+  });
+
   it('should start dev server, respond to HTTP GET and SSE live-reload', async () => {
     const testPort = 3891;
     const serverInstance = await startDevServer(samplePath, { port: testPort });
