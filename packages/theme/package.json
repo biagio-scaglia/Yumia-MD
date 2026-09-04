@@ -1,6 +1,6 @@
 {
   "name": "@yumiamd/theme",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "private": true,
   "description": "Semantic theme definitions and tokens for YumiaMD presentations",
   "type": "module",
