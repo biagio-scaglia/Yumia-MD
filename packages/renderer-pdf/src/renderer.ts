@@ -696,6 +696,8 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
   private stripFormatting(text: string): string {
     return text
+      .replace(/<i\s+class="[^"]*"><\/i>/gi, '')
+      .replace(/:fa[srbld]?-[a-z0-9-]+:/gi, '')
       .replace(/\*\*(.*?)\*\*/g, '$1')
       .replace(/\*(.*?)\*/g, '$1')
       .replace(/`(.*?)`/g, '$1')

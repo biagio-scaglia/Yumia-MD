@@ -90,14 +90,133 @@ export function cleanFontFace(fontString?: string): string {
   return 'Segoe UI';
 }
 
+export const FONT_AWESOME_ICON_MAP: Record<string, string> = {
+  rocket: '🚀',
+  bolt: '⚡',
+  zap: '⚡',
+  shield: '🛡️',
+  'shield-halved': '🛡️',
+  brain: '🧠',
+  'chart-line': '📈',
+  'chart-bar': '📊',
+  'chart-pie': '🥧',
+  chart: '📊',
+  gear: '⚙️',
+  cog: '⚙️',
+  gears: '⚙️',
+  check: '✓',
+  'check-circle': '✅',
+  star: '⭐',
+  code: '💻',
+  terminal: '💻',
+  database: '🗄️',
+  server: '🖥️',
+  fire: '🔥',
+  lock: '🔒',
+  unlock: '🔓',
+  key: '🔑',
+  globe: '🌐',
+  cloud: '☁️',
+  microchip: '⚡',
+  cpu: '⚡',
+  envelope: '✉️',
+  mail: '✉️',
+  users: '👥',
+  user: '👤',
+  clock: '⏱️',
+  bell: '🔔',
+  search: '🔍',
+  heart: '❤️',
+  lightbulb: '💡',
+  wrench: '🔧',
+  calendar: '📅',
+  book: '📖',
+  flag: '🚩',
+  play: '▶',
+  pause: '⏸',
+  link: '🔗',
+  tag: '🏷️',
+  tags: '🏷️',
+  folder: '📁',
+  file: '📄',
+  image: '🖼️',
+  eye: '👁️',
+  compass: '🧭',
+  map: '🗺️',
+  target: '🎯',
+  trophy: '🏆',
+  medal: '🏅',
+  award: '🎖️',
+  robot: '🤖',
+  sparkles: '✨',
+  wand: '🪄',
+  magic: '🪄',
+  atom: '⚛️',
+  flask: '🧪',
+  dna: '🧬',
+  virus: '🦠',
+  gem: '💎',
+  diamond: '💎',
+  github: '🐙',
+  cube: '🧊',
+  cubes: '🧊',
+  box: '📦',
+  boxes: '📦',
+  layer: '🥞',
+  layers: '🥞',
+  network: '🌐',
+  sliders: '🎛️',
+  laptop: '💻',
+  mobile: '📱',
+  phone: '📱',
+  wifi: '📶',
+  bluetooth: 'ᛒ',
+  sync: '🔄',
+  refresh: '🔄',
+  recycle: '♻️',
+  trash: '🗑️',
+  edit: '✏️',
+  pen: '🖊️',
+  plus: '➕',
+  minus: '➖',
+  times: '✖️',
+  divide: '➗',
+  info: 'ℹ️',
+  'info-circle': 'ℹ️',
+  question: '❓',
+  'question-circle': '❓',
+  exclamation: '❗',
+  'exclamation-triangle': '⚠️',
+  'exclamation-circle': '⚠️',
+};
+
+export function replaceIconShortcuts(text: string): string {
+  if (!text) return '';
+  // Replace :fa-xxx:, :fas-xxx:, :fab-xxx:, :far-xxx:
+  let res = text.replace(/:fa[srlbd]?-([a-z0-9-]+):/gi, (_match, iconName) => {
+    const cleanName = iconName.toLowerCase();
+    return FONT_AWESOME_ICON_MAP[cleanName] || '🔹';
+  });
+  // Replace <i class="fa... fa-xxx"></i>
+  res = res.replace(
+    /<i class=["'](?:fa[srlbd]?\s+)?fa-([a-z0-9-]+).*?["']>\s*<\/i>/gi,
+    (_match, iconName) => {
+      const cleanName = iconName.toLowerCase();
+      return FONT_AWESOME_ICON_MAP[cleanName] || '🔹';
+    }
+  );
+  return res;
+}
+
 export function parseInlineMarkdown(
   rawText: string,
   baseOptions: Record<string, unknown>
 ): InlineChunk[] {
+  const processedText = replaceIconShortcuts(rawText);
   const chunks: InlineChunk[] = [];
   // Tokenize bold (**text**), italic (*text* or _text_), code (`text`)
   const regex = /(\*\*.*?\*\*|\*.*?\*|`.*?`)/g;
-  const parts = rawText.split(regex);
+  const parts = processedText.split(regex);
 
   for (const part of parts) {
     if (!part) continue;
@@ -125,7 +244,7 @@ export function parseInlineMarkdown(
     }
   }
 
-  return chunks.length > 0 ? chunks : [{ text: rawText, options: baseOptions }];
+  return chunks.length > 0 ? chunks : [{ text: processedText, options: baseOptions }];
 }
 
 export class PptxRenderer implements YumiaRenderer<PptxOutput> {
@@ -387,7 +506,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     if (table.headers && table.headers.length > 0) {
       tableRows.push(
         table.headers.map((h) => ({
-          text: h.replace(/\*\*/g, ''),
+          text: replaceIconShortcuts(h.replace(/\*\*/g, '')),
           options: {
             bold: true,
             color: 'ffffff',
@@ -405,7 +524,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         const rowBg = rowIndex % 2 === 1 ? rowBg2 : rowBg1;
         tableRows.push(
           row.map((cell) => ({
-            text: cell.replace(/\*\*/g, ''),
+            text: replaceIconShortcuts(cell.replace(/\*\*/g, '')),
             options: {
               color: cellTextColor,
               fill: { color: rowBg },
@@ -589,7 +708,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     });
 
     if (card.title) {
-      pptxSlide.addText(card.title, {
+      pptxSlide.addText(replaceIconShortcuts(card.title), {
         x: rect.x + 0.25,
         y: rect.y + 0.18,
         w: rect.w - 0.5,
@@ -701,7 +820,8 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
   ): void {
     const colorKey = (badge.variant || 'primary') as keyof typeof theme.colors;
     const badgeColor = this.cleanHexColor(theme.colors[colorKey] || theme.colors.primary);
-    const badgeW = Math.min(2.5, Math.max(1.0, badge.text.length * 0.12 + 0.4));
+    const badgeText = replaceIconShortcuts(badge.text);
+    const badgeW = Math.min(2.5, Math.max(1.0, badgeText.length * 0.12 + 0.4));
     const badgeH = Math.min(0.38, rect.h);
 
     pptxSlide.addShape(pptx.ShapeType.roundRect, {
@@ -714,7 +834,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       rectRadius: 0.15,
     });
 
-    pptxSlide.addText(badge.text.toUpperCase(), {
+    pptxSlide.addText(badgeText.toUpperCase(), {
       x: rect.x,
       y: rect.y,
       w: badgeW,
@@ -847,8 +967,9 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       }
 
       // Title & Description
-      const descText = item.description ? `\n${item.description}` : '';
-      pptxSlide.addText(`${item.title}${descText}`, {
+      const cleanTitle = replaceIconShortcuts(item.title);
+      const descText = item.description ? `\n${replaceIconShortcuts(item.description)}` : '';
+      pptxSlide.addText(`${cleanTitle}${descText}`, {
         x: itemX + 0.05,
         y: lineY + 0.45,
         w: itemW - 0.1,
@@ -887,7 +1008,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     });
 
     if (compare.leftTitle) {
-      pptxSlide.addText(compare.leftTitle, {
+      pptxSlide.addText(replaceIconShortcuts(compare.leftTitle), {
         x: rect.x + 0.15,
         y: rect.y + 0.15,
         w: colW - 0.3,
@@ -912,7 +1033,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     });
 
     if (compare.rightTitle) {
-      pptxSlide.addText(compare.rightTitle, {
+      pptxSlide.addText(replaceIconShortcuts(compare.rightTitle), {
         x: rightX + 0.15,
         y: rect.y + 0.15,
         w: colW - 0.3,

@@ -63,6 +63,20 @@ describe('@yumiamd/renderer-pptx', () => {
 
     const renderer = new PptxRenderer();
     const result = await renderer.render(presentation);
+    expect(result.format).toBe('pptx');
+    expect(result.slideCount).toBe(1);
+    expect(result.data.byteLength).toBeGreaterThan(1000);
+  });
+
+  it('should translate Font Awesome icon shortcuts and tags to native text glyphs', async () => {
+    const slide = createSlide([
+      createHeading(':fa-rocket: Rocket Launch <i class="fa-solid fa-bolt"></i>', 1),
+      createParagraph('High throughput :fa-chart-line: with zero downtime :fa-shield:'),
+    ]);
+
+    const presentation = createPresentation({ title: 'Icons Demo' }, [slide]);
+    const renderer = new PptxRenderer();
+    const result = await renderer.render(presentation);
 
     expect(result.format).toBe('pptx');
     expect(result.slideCount).toBe(1);
