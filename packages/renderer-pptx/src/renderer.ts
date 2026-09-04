@@ -1,15 +1,20 @@
 import pptxgen from 'pptxgenjs';
 import {
+  BadgeElement,
   CardElement,
+  ChartElement,
   CodeElement,
+  CompareElement,
   HeadingElement,
   ImageElement,
   ListElement,
+  MermaidElement,
   MetricElement,
   ParagraphElement,
   Presentation,
   QuoteElement,
   TableElement,
+  TimelineElement,
 } from '@yumiamd/ast';
 import { DefaultLayoutEngine, LayoutNode, Rect, Size, SlideLayoutResult } from '@yumiamd/layout';
 import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
@@ -236,6 +241,21 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         break;
       case 'columns':
         this.renderColumns(pptxSlide, pptx, node, scaleX, scaleY, theme);
+        break;
+      case 'badge':
+        this.renderBadge(pptxSlide, pptx, element as BadgeElement, rect, theme);
+        break;
+      case 'chart':
+        this.renderChart(pptxSlide, pptx, element as ChartElement, rect, theme);
+        break;
+      case 'timeline':
+        this.renderTimeline(pptxSlide, pptx, element as TimelineElement, rect, theme);
+        break;
+      case 'compare':
+        this.renderCompare(pptxSlide, pptx, node, scaleX, scaleY, theme);
+        break;
+      case 'mermaid':
+        this.renderMermaid(pptxSlide, pptx, element as MermaidElement, rect, theme);
         break;
       default:
         break;
@@ -665,6 +685,268 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       italic: true,
       color: this.cleanHexColor(theme.colors.muted || theme.colors.text),
       fontFace: cleanFontFace(theme.typography.bodyFont),
+      valign: 'middle',
+    });
+  }
+
+  private renderBadge(
+    pptxSlide: PptxSlide,
+    pptx: PptxInstance,
+    badge: BadgeElement,
+    rect: { x: number; y: number; w: number; h: number },
+    theme: YumiaTheme
+  ): void {
+    const colorKey = (badge.variant || 'primary') as keyof typeof theme.colors;
+    const badgeColor = this.cleanHexColor(theme.colors[colorKey] || theme.colors.primary);
+    const badgeW = Math.min(2.5, Math.max(1.0, badge.text.length * 0.12 + 0.4));
+    const badgeH = Math.min(0.38, rect.h);
+
+    pptxSlide.addShape(pptx.ShapeType.roundRect, {
+      x: rect.x,
+      y: rect.y,
+      w: badgeW,
+      h: badgeH,
+      fill: { color: this.cleanHexColor(theme.colors.surface) },
+      line: { color: badgeColor, width: 1.5 },
+      rectRadius: 0.15,
+    });
+
+    pptxSlide.addText(badge.text.toUpperCase(), {
+      x: rect.x,
+      y: rect.y,
+      w: badgeW,
+      h: badgeH,
+      fontSize: 10,
+      bold: true,
+      color: badgeColor,
+      fontFace: cleanFontFace(theme.typography.headingFont),
+      align: 'center',
+      valign: 'middle',
+    });
+  }
+
+  private renderChart(
+    pptxSlide: PptxSlide,
+    pptx: PptxInstance,
+    chart: ChartElement,
+    rect: { x: number; y: number; w: number; h: number },
+    theme: YumiaTheme
+  ): void {
+    const series = chart.series || [];
+    const labels = chart.labels || [];
+
+    const chartData = series.map((s) => ({
+      name: s.name || 'Data',
+      labels,
+      values: s.values,
+    }));
+
+    let pptxChartType = pptx.ChartType.bar;
+    if (chart.chartType === 'line') pptxChartType = pptx.ChartType.line;
+    if (chart.chartType === 'pie') pptxChartType = pptx.ChartType.pie;
+    if (chart.chartType === 'doughnut') pptxChartType = pptx.ChartType.doughnut;
+
+    const chartColors = [
+      this.cleanHexColor(theme.colors.primary),
+      this.cleanHexColor(theme.colors.accent),
+      this.cleanHexColor(theme.colors.secondary),
+      this.cleanHexColor(theme.colors.success),
+      this.cleanHexColor(theme.colors.warning),
+    ];
+
+    try {
+      pptxSlide.addChart(pptxChartType, chartData, {
+        x: rect.x,
+        y: rect.y,
+        w: rect.w,
+        h: rect.h,
+        showTitle: Boolean(chart.title),
+        title: chart.title || '',
+        titleColor: this.cleanHexColor(theme.colors.text),
+        titleFontFace: cleanFontFace(theme.typography.headingFont),
+        showLegend: true,
+        legendPos: 'b',
+        legendColor: this.cleanHexColor(theme.colors.muted || theme.colors.text),
+        chartColors,
+      });
+    } catch {
+      // Fallback container if chart generation fails
+      pptxSlide.addShape(pptx.ShapeType.roundRect, {
+        x: rect.x,
+        y: rect.y,
+        w: rect.w,
+        h: rect.h,
+        fill: { color: this.cleanHexColor(theme.colors.surface) },
+        line: { color: this.cleanHexColor(theme.colors.border), width: 1 },
+      });
+      pptxSlide.addText(`[Chart: ${chart.title || chart.chartType}]`, {
+        x: rect.x,
+        y: rect.y,
+        w: rect.w,
+        h: rect.h,
+        color: this.cleanHexColor(theme.colors.primary),
+        align: 'center',
+        valign: 'middle',
+      });
+    }
+  }
+
+  private renderTimeline(
+    pptxSlide: PptxSlide,
+    pptx: PptxInstance,
+    timeline: TimelineElement,
+    rect: { x: number; y: number; w: number; h: number },
+    theme: YumiaTheme
+  ): void {
+    const items = timeline.items || [];
+    if (items.length === 0) return;
+
+    const itemW = rect.w / items.length;
+    const lineY = rect.y + 0.25;
+
+    // Connecting line
+    pptxSlide.addShape(pptx.ShapeType.line, {
+      x: rect.x + 0.2,
+      y: lineY,
+      w: rect.w - 0.4,
+      h: 0,
+      line: { color: this.cleanHexColor(theme.colors.border), width: 2 },
+    });
+
+    items.forEach((item, idx) => {
+      const itemX = rect.x + idx * itemW;
+      const dotX = itemX + itemW / 2 - 0.1;
+
+      // Milestone dot
+      pptxSlide.addShape(pptx.ShapeType.oval, {
+        x: dotX,
+        y: lineY - 0.1,
+        w: 0.2,
+        h: 0.2,
+        fill: { color: this.cleanHexColor(theme.colors.primary) },
+        line: { color: this.cleanHexColor(theme.colors.background), width: 2 },
+      });
+
+      // Date
+      if (item.date) {
+        pptxSlide.addText(item.date, {
+          x: itemX,
+          y: lineY + 0.18,
+          w: itemW,
+          h: 0.25,
+          fontSize: 11,
+          bold: true,
+          color: this.cleanHexColor(theme.colors.accent || theme.colors.primary),
+          fontFace: cleanFontFace(theme.typography.codeFont),
+          align: 'center',
+        });
+      }
+
+      // Title & Description
+      const descText = item.description ? `\n${item.description}` : '';
+      pptxSlide.addText(`${item.title}${descText}`, {
+        x: itemX + 0.05,
+        y: lineY + 0.45,
+        w: itemW - 0.1,
+        h: rect.h - 0.55,
+        fontSize: 12,
+        color: this.cleanHexColor(theme.colors.text),
+        fontFace: cleanFontFace(theme.typography.bodyFont),
+        align: 'center',
+        valign: 'top',
+      });
+    });
+  }
+
+  private renderCompare(
+    pptxSlide: PptxSlide,
+    pptx: PptxInstance,
+    node: LayoutNode,
+    scaleX: number,
+    scaleY: number,
+    theme: YumiaTheme
+  ): void {
+    const { element, bounds } = node;
+    const compare = element as CompareElement;
+    const rect = this.toInches(bounds, scaleX, scaleY);
+    const colW = (rect.w - 0.4) / 2;
+
+    // Left container
+    pptxSlide.addShape(pptx.ShapeType.roundRect, {
+      x: rect.x,
+      y: rect.y,
+      w: colW,
+      h: rect.h,
+      fill: { color: this.cleanHexColor(theme.colors.surface) },
+      line: { color: this.cleanHexColor(theme.colors.border), width: 1 },
+      rectRadius: 0.1,
+    });
+
+    if (compare.leftTitle) {
+      pptxSlide.addText(compare.leftTitle, {
+        x: rect.x + 0.15,
+        y: rect.y + 0.15,
+        w: colW - 0.3,
+        h: 0.4,
+        fontSize: 14,
+        bold: true,
+        color: this.cleanHexColor(theme.colors.primary),
+        fontFace: cleanFontFace(theme.typography.headingFont),
+      });
+    }
+
+    // Right container
+    const rightX = rect.x + colW + 0.4;
+    pptxSlide.addShape(pptx.ShapeType.roundRect, {
+      x: rightX,
+      y: rect.y,
+      w: colW,
+      h: rect.h,
+      fill: { color: this.cleanHexColor(theme.colors.surface) },
+      line: { color: this.cleanHexColor(theme.colors.border), width: 1 },
+      rectRadius: 0.1,
+    });
+
+    if (compare.rightTitle) {
+      pptxSlide.addText(compare.rightTitle, {
+        x: rightX + 0.15,
+        y: rect.y + 0.15,
+        w: colW - 0.3,
+        h: 0.4,
+        fontSize: 14,
+        bold: true,
+        color: this.cleanHexColor(theme.colors.primary),
+        fontFace: cleanFontFace(theme.typography.headingFont),
+      });
+    }
+  }
+
+  private renderMermaid(
+    pptxSlide: PptxSlide,
+    pptx: PptxInstance,
+    mermaid: MermaidElement,
+    rect: { x: number; y: number; w: number; h: number },
+    theme: YumiaTheme
+  ): void {
+    pptxSlide.addShape(pptx.ShapeType.roundRect, {
+      x: rect.x,
+      y: rect.y,
+      w: rect.w,
+      h: rect.h,
+      fill: { color: this.cleanHexColor(theme.colors.surface) },
+      line: { color: this.cleanHexColor(theme.colors.primary), width: 1 },
+      rectRadius: 0.1,
+    });
+
+    pptxSlide.addText(`[Diagram: Mermaid]\n\n${mermaid.code}`, {
+      x: rect.x + 0.2,
+      y: rect.y + 0.2,
+      w: rect.w - 0.4,
+      h: rect.h - 0.4,
+      fontSize: 12,
+      color: this.cleanHexColor(theme.colors.text),
+      fontFace: cleanFontFace(theme.typography.codeFont),
+      align: 'center',
       valign: 'middle',
     });
   }
