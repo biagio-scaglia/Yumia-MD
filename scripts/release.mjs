@@ -126,23 +126,10 @@ function publishAllPackages(targetVersion) {
           `ℹ️  ${pkgName}@${targetVersion} is already published on NPM. Skipping to next package.`
         );
       } else {
-        console.warn(`⚠️  Retrying publication for ${pkgName} in 2s...`);
-        try {
-          execSync('node -e "setTimeout(()=>{}, 2000)"');
-          execSync('pnpm publish --access public --no-git-checks', {
-            cwd: fullPath,
-            stdio: 'inherit',
-          });
-          console.log(`✓ Published ${pkgName}@${targetVersion}`);
-        } catch (retryErr) {
-          const retryStr = retryErr.message || '';
-          if (retryStr.includes('previously published') || retryStr.includes('403 Forbidden')) {
-            console.log(`ℹ️  ${pkgName}@${targetVersion} was already published. Skipping.`);
-          } else {
-            console.error(`❌ Could not publish ${pkgName}:`, retryErr.message);
-            throw retryErr;
-          }
-        }
+        console.warn(`⚠️  NPM publish requires interactive OTP / authentication token.`);
+        console.warn(
+          `    To publish manually: cd packages/cli && pnpm publish --access public --otp=YOUR_CODE`
+        );
       }
     }
   }
