@@ -55,6 +55,9 @@ importers:
       '@yumiamd/renderer':
         specifier: workspace:*
         version: link:../renderer
+      '@yumiamd/renderer-html':
+        specifier: workspace:*
+        version: link:../renderer-html
       '@yumiamd/renderer-pptx':
         specifier: workspace:*
         version: link:../renderer-pptx
@@ -115,6 +118,9 @@ importers:
       '@yumiamd/renderer':
         specifier: workspace:*
         version: link:../renderer
+      '@yumiamd/theme':
+        specifier: workspace:*
+        version: link:../theme
 
   packages/renderer-pdf:
     dependencies:

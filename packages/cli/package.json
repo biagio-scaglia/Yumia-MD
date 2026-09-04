@@ -1,6 +1,6 @@
 {
   "name": "yumiamd",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Command line interface and compiler for YumiaMD presentations",
   "type": "module",
   "main": "./dist/index.js",
@@ -24,6 +24,7 @@
     "@yumiamd/layout": "workspace:*",
     "@yumiamd/parser": "workspace:*",
     "@yumiamd/renderer": "workspace:*",
+    "@yumiamd/renderer-html": "workspace:*",
     "@yumiamd/renderer-pptx": "workspace:*",
     "@yumiamd/theme": "workspace:*",
     "tsup": "^8.5.1"

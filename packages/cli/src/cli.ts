@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, watch as fsWatch, writeFileSync } from 'node:fs';
 import { basename, dirname, extname, join, resolve } from 'node:path';
 import { parseYumia } from '@yumiamd/parser';
 import { DefaultLayoutEngine } from '@yumiamd/layout';
@@ -6,8 +6,10 @@ import { Presentation } from '@yumiamd/ast';
 import { YumiaCompiler } from '@yumiamd/core';
 import { resolveTheme } from '@yumiamd/theme';
 import { PptxRenderer } from '@yumiamd/renderer-pptx';
+import { HtmlRenderer } from '@yumiamd/renderer-html';
+import { startDevServer } from './dev-server.js';
 
-export const VERSION = '0.1.9';
+export const VERSION = '0.1.10';
 
 export function printHelp(): string {
   return `
@@ -18,11 +20,13 @@ Usage:
 
 Commands:
   init [name]        Scaffold a new YumiaMD presentation project
+  dev <file>         Start live-reload dev server with instant HTML preview
+  watch <file>       Watch presentation file and recompile automatically on save
   validate <file>    Validate a .yumia.md presentation syntax and structure
   lint <file>        Analyze presentation for layout overflows and accessibility
   inspect <file>     Inspect the AST and geometric layout tree
   schema             Output machine-readable JSON schema for AI agents
-  build <file>       Compile a presentation to editable PowerPoint (.pptx)
+  build <file>       Compile a presentation to PowerPoint (.pptx) or HTML (.html)
 
 Theming & Color Options:
   --theme, -t <name> Base theme: default | cyberpunk | minimal | corporate | terminal | academic
@@ -32,9 +36,12 @@ Theming & Color Options:
   --text             Hex text color (e.g. "#FFFFFF" or "#0F172A")
   --accent           Hex accent bar & highlight color
 
-Compiler & Output Options:
-  --out, -o <file>   Specify output file path (default: dist/<name>.pptx)
-  --format, -f <fmt> Target output format: pptx (default)
+Server & Compiler Options:
+  --port <num>       Port for live dev server (default: 3000)
+  --open             Open default browser automatically in dev mode
+  --watch, -w        Watch for file changes during compilation
+  --out, -o <file>   Specify output file path (default: dist/<name>.<format>)
+  --format, -f <fmt> Target output format: pptx (default) | html
   --strict           Enforce zero warnings in 'lint' (exits with code 1 on warning)
   --json             Output results formatted as JSON for CI/CD and AI tools
   --layout           Show computed geometric bounding boxes in 'inspect'
@@ -72,6 +79,7 @@ export async function runCli(argv: string[]): Promise<{ exitCode: number; output
 
   const isJson = args.includes('--json');
   const isStrict = args.includes('--strict');
+  const isWatch = args.includes('--watch') || args.includes('-w');
   const nonFlagArgs = args.filter((a) => !a.startsWith('-'));
   const command = nonFlagArgs[0];
   const target = nonFlagArgs[1];
@@ -83,6 +91,7 @@ export async function runCli(argv: string[]): Promise<{ exitCode: number; output
   const cliSecondary = getFlagValue(args, ['--secondary']);
   const cliText = getFlagValue(args, ['--text']);
   const cliAccent = getFlagValue(args, ['--accent']);
+  const cliFormat = (getFlagValue(args, ['--format', '-f']) || 'pptx').toLowerCase();
 
   if (command === 'schema') {
     const compiler = new YumiaCompiler();
@@ -175,11 +184,56 @@ Opening slide introducing the presentation deck.
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       if (isJson) {
-        return { exitCode: 1, output: JSON.stringify({ success: false, error: msg }, null, 2) };
+        return { exitCode: 1, output: JSON.stringify({ success: false, error: msg }) };
       }
       return {
         exitCode: 1,
         output: `✗ Initialization failed: ${msg}`,
+      };
+    }
+  }
+
+  if (command === 'dev') {
+    if (!target) {
+      const msg = 'Error: Please specify a presentation file to preview in dev server.';
+      return { exitCode: 1, output: isJson ? JSON.stringify({ error: msg }) : msg };
+    }
+    try {
+      const resolvedInput = resolve(process.cwd(), target);
+      const portStr = getFlagValue(args, ['--port']);
+      const port = portStr ? parseInt(portStr, 10) : 3000;
+      const open = args.includes('--open');
+
+      const devInstance = await startDevServer(resolvedInput, { port, open });
+
+      if (isJson) {
+        return {
+          exitCode: 0,
+          output: JSON.stringify(
+            {
+              success: true,
+              url: devInstance.url,
+              port: devInstance.port,
+              file: resolvedInput,
+            },
+            null,
+            2
+          ),
+        };
+      }
+
+      return {
+        exitCode: 0,
+        output: `🚀 YumiaMD Live Dev Server running at: ${devInstance.url}\n  Watching: ${target}\n  Hot-reloading active via SSE. Press Ctrl+C to stop.`,
+      };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (isJson) {
+        return { exitCode: 1, output: JSON.stringify({ success: false, error: msg }) };
+      }
+      return {
+        exitCode: 1,
+        output: `✗ Dev server failed: ${msg}`,
       };
     }
   }
@@ -324,15 +378,16 @@ Opening slide introducing the presentation deck.
     }
   }
 
-  if (command === 'build') {
+  if (command === 'build' || command === 'watch') {
     if (!target) {
-      const msg = 'Error: Please specify a presentation file to build.';
+      const msg = `Error: Please specify a presentation file to ${command}.`;
       return { exitCode: 1, output: isJson ? JSON.stringify({ error: msg }) : msg };
     }
 
     try {
       const resolvedInput = resolve(process.cwd(), target);
-      const source = readFileSync(resolvedInput, 'utf-8');
+      const isHtml = cliFormat === 'html';
+      const targetExtension = isHtml ? '.html' : '.pptx';
 
       // Determine output path
       let outputPath = '';
@@ -341,13 +396,12 @@ Opening slide introducing the presentation deck.
         outputPath = resolve(process.cwd(), args[outFlagIndex + 1]!);
       } else {
         const fileBase = basename(resolvedInput, extname(resolvedInput)).replace(/\.yumia$/, '');
-        outputPath = join(dirname(resolvedInput), 'dist', `${fileBase}.pptx`);
+        outputPath = join(dirname(resolvedInput), 'dist', `${fileBase}${targetExtension}`);
       }
 
       mkdirSync(dirname(outputPath), { recursive: true });
 
       const compiler = new YumiaCompiler();
-      const renderer = new PptxRenderer();
 
       // Assemble CLI color / theme overrides
       const cliColorOverrides: Record<string, string> = {};
@@ -364,15 +418,40 @@ Opening slide introducing the presentation deck.
             })
           : undefined;
 
-      const result = await compiler.compile(source, renderer, {
-        ...(renderTheme ? { renderContext: { theme: renderTheme } } : {}),
-      });
+      const compileFile = async () => {
+        const source = readFileSync(resolvedInput, 'utf-8');
+        if (isHtml) {
+          const htmlRenderer = new HtmlRenderer();
+          const result = await compiler.compile(source, htmlRenderer, {
+            ...(renderTheme ? { renderContext: { theme: renderTheme } } : {}),
+          });
+          writeFileSync(outputPath, result.html, 'utf-8');
+          return { slideCount: result.slideCount, format: result.format };
+        } else {
+          const pptxRenderer = new PptxRenderer();
+          const result = await compiler.compile(source, pptxRenderer, {
+            ...(renderTheme ? { renderContext: { theme: renderTheme } } : {}),
+          });
+          const buffer =
+            result.data instanceof Uint8Array
+              ? Buffer.from(result.data)
+              : Buffer.from(new Uint8Array(result.data));
+          writeFileSync(outputPath, buffer);
+          return { slideCount: result.slideCount, format: result.format };
+        }
+      };
 
-      const buffer =
-        result.data instanceof Uint8Array
-          ? Buffer.from(result.data)
-          : Buffer.from(new Uint8Array(result.data));
-      writeFileSync(outputPath, buffer);
+      const result = await compileFile();
+
+      if (command === 'watch' || isWatch) {
+        fsWatch(resolvedInput, async () => {
+          try {
+            await compileFile();
+          } catch {
+            // Keep watching on transient error
+          }
+        });
+      }
 
       if (isJson) {
         return {
@@ -384,6 +463,7 @@ Opening slide introducing the presentation deck.
               output: outputPath,
               slideCount: result.slideCount,
               format: result.format,
+              watching: command === 'watch' || isWatch,
             },
             null,
             2
@@ -391,9 +471,10 @@ Opening slide introducing the presentation deck.
         };
       }
 
+      const watchMsg = command === 'watch' || isWatch ? ' [Watching for changes...]' : '';
       return {
         exitCode: 0,
-        output: `✓ Successfully compiled '${target}' ➔ '${outputPath}' (${result.slideCount} native editable slides)`,
+        output: `✓ Successfully compiled '${target}' ➔ '${outputPath}' (${result.slideCount} ${isHtml ? 'interactive HTML slides' : 'native editable slides'})${watchMsg}`,
       };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

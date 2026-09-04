@@ -1,4 +1,5 @@
 export * from './cli.js';
+export * from './dev-server.js';
 export * from '@yumiamd/core';
 export * from '@yumiamd/ast';
 export * from '@yumiamd/parser';
@@ -6,3 +7,4 @@ export * from '@yumiamd/theme';
 export * from '@yumiamd/layout';
 export * from '@yumiamd/renderer';
 export * from '@yumiamd/renderer-pptx';
+export * from '@yumiamd/renderer-html';

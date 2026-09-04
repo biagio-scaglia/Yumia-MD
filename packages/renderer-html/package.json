@@ -1,6 +1,6 @@
 {
   "name": "@yumiamd/renderer-html",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": true,
   "description": "HTML/Web renderer placeholder for YumiaMD presentations",
   "type": "module",
@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "@yumiamd/ast": "workspace:*",
-    "@yumiamd/renderer": "workspace:*"
+    "@yumiamd/renderer": "workspace:*",
+    "@yumiamd/theme": "workspace:*"
   },
   "scripts": {
     "build": "tsc",
