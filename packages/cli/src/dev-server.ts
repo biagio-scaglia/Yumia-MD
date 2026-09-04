@@ -49,9 +49,16 @@ export function startDevServer(
     }
 
     const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
-      const url = req.url || '/';
+      const rawUrl = req.url || '/';
+      let pathname = '/';
+      try {
+        const parsed = new URL(rawUrl, `http://localhost:${port}`);
+        pathname = parsed.pathname;
+      } catch {
+        pathname = rawUrl.split('?')[0] || '/';
+      }
 
-      if (url === '/__yumia_live_reload') {
+      if (pathname === '/__yumia_live_reload') {
         res.writeHead(200, {
           'Content-Type': 'text/event-stream',
           'Cache-Control': 'no-cache',
@@ -67,7 +74,7 @@ export function startDevServer(
         return;
       }
 
-      if (url === '/' || url.startsWith('/#')) {
+      if (pathname === '/' || pathname === '/index.html' || pathname.startsWith('/#')) {
         const html = await getCompiledHtml();
         res.writeHead(200, {
           'Content-Type': 'text/html; charset=utf-8',

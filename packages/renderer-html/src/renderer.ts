@@ -483,7 +483,7 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       padding: 6px 14px;
       border-radius: 30px;
       border: 1px solid rgba(255, 255, 255, 0.15);
-      z-index: 1000;
+      z-index: 2500;
       font-size: 13px;
       color: #e2e8f0;
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
@@ -760,11 +760,11 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       bottom: 0;
       left: 0;
       right: 0;
-      max-height: 240px;
+      max-height: 260px;
       background: rgba(10, 10, 18, 0.96);
       backdrop-filter: blur(16px);
       border-top: 2px solid var(--yumia-primary);
-      padding: 18px 28px;
+      padding: 14px 24px 18px 24px;
       overflow-y: auto;
       display: none;
       z-index: 2000;
@@ -776,6 +776,22 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
 
     .yumia-notes-drawer.open {
       display: block;
+    }
+
+    .yumia-notes-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--yumia-primary);
+    }
+
+    .yumia-notes-content {
+      padding-right: 200px;
     }
 
     /* Slide Overview Modal */
@@ -969,7 +985,13 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       <button class="yumia-btn" id="btn-fs" title="Fullscreen (F)">⛶</button>
     </div>
 
-    <div id="notes-drawer" class="yumia-notes-drawer"></div>
+    <div id="notes-drawer" class="yumia-notes-drawer">
+      <div class="yumia-notes-header">
+        <span>📝 Speaker Notes</span>
+        <button class="yumia-btn" id="btn-close-notes" title="Close Notes (N / ESC)" style="font-size: 13px; padding: 2px 8px; border: 1px solid rgba(255,255,255,0.2);">✕ Close</button>
+      </div>
+      <div id="notes-drawer-content" class="yumia-notes-content"></div>
+    </div>
 
     <div id="overview-modal" class="yumia-overview-modal">
       <div class="yumia-overview-header">
@@ -1056,8 +1078,9 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
 
         const currentSlide = slides[currentIdx];
         const notes = currentSlide ? currentSlide.getAttribute('data-notes') : '';
-        if (notesDrawer) {
-          notesDrawer.innerHTML = notes ? '<strong>Speaker Notes:</strong><br>' + notes : '<em>No speaker notes for this slide.</em>';
+        const notesContent = document.getElementById('notes-drawer-content');
+        if (notesContent) {
+          notesContent.innerHTML = notes ? notes : '<em>No speaker notes for this slide.</em>';
         }
 
         window.location.hash = '#' + (currentIdx + 1);
@@ -1242,6 +1265,9 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       document.getElementById('btn-next')?.addEventListener('click', window.deckController.next);
       document.getElementById('btn-prev')?.addEventListener('click', window.deckController.prev);
       document.getElementById('btn-notes')?.addEventListener('click', window.deckController.toggleNotes);
+      document.getElementById('btn-close-notes')?.addEventListener('click', () => {
+        notesDrawer?.classList.remove('open');
+      });
       document.getElementById('btn-overview')?.addEventListener('click', window.deckController.toggleOverview);
       document.getElementById('btn-close-overview')?.addEventListener('click', () => toggleOverview(false));
       document.getElementById('btn-speaker')?.addEventListener('click', window.deckController.openSpeaker);
@@ -1253,6 +1279,13 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
             toggleOverview(false);
           }
           return;
+        }
+
+        if (e.key === 'Escape') {
+          if (notesDrawer && notesDrawer.classList.contains('open')) {
+            notesDrawer.classList.remove('open');
+            return;
+          }
         }
 
         if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown' || e.key.toLowerCase() === 'l') {
