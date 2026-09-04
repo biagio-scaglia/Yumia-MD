@@ -130,17 +130,41 @@ export class DefaultYumiaParser implements YumiaParser {
   private parseYamlMetadata(block: string): PresentationMetadata {
     const metadata: Record<string, unknown> = {};
     const lines = block.split('\n');
+    let currentKey: string | null = null;
 
     for (const line of lines) {
       const trimmed = line.trim();
       if (!trimmed || trimmed.startsWith('#')) continue;
 
+      if (trimmed.startsWith('- ') && currentKey) {
+        const itemVal = trimmed.slice(2).trim().replace(/^['"](.*)['"]$/, '$1');
+        if (Array.isArray(metadata[currentKey])) {
+          (metadata[currentKey] as string[]).push(itemVal);
+        } else {
+          metadata[currentKey] = [itemVal];
+        }
+        continue;
+      }
+
       const colonIndex = trimmed.indexOf(':');
       if (colonIndex > 0) {
         const key = trimmed.slice(0, colonIndex).trim();
         const rawVal = trimmed.slice(colonIndex + 1).trim();
-        const unquoted = rawVal.replace(/^['"](.*)['"]$/, '$1');
-        metadata[key] = unquoted;
+        currentKey = key;
+
+        if (rawVal.startsWith('[') && rawVal.endsWith(']')) {
+          const listItems = rawVal
+            .slice(1, -1)
+            .split(',')
+            .map((item) => item.trim().replace(/^['"](.*)['"]$/, '$1'))
+            .filter(Boolean);
+          metadata[key] = listItems;
+        } else if (rawVal) {
+          const unquoted = rawVal.replace(/^['"](.*)['"]$/, '$1');
+          metadata[key] = unquoted;
+        } else {
+          metadata[key] = [];
+        }
       }
     }
 
@@ -176,6 +200,16 @@ export class DefaultYumiaParser implements YumiaParser {
       }
     } else if (typeof metadata['watermark'] === 'boolean') {
       result.watermark = metadata['watermark'];
+    }
+
+    if (metadata['icons']) {
+      result.icons = metadata['icons'] as string | string[];
+    }
+    if (metadata['styles'] || metadata['stylesheets'] || metadata['css']) {
+      result.styles = (metadata['styles'] || metadata['stylesheets'] || metadata['css']) as string | string[];
+    }
+    if (metadata['scripts'] || metadata['js']) {
+      result.scripts = (metadata['scripts'] || metadata['js']) as string | string[];
     }
 
     const colors: Record<string, string> = {};

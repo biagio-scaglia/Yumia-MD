@@ -90,28 +90,36 @@ export function cleanFontFace(fontString?: string): string {
   return 'Segoe UI';
 }
 
-export const FONT_AWESOME_ICON_MAP: Record<string, string> = {
+export const UNIVERSAL_ICON_MAP: Record<string, string> = {
   rocket: '🚀',
   bolt: '⚡',
   zap: '⚡',
   shield: '🛡️',
+  'shield-check': '🛡️',
   'shield-halved': '🛡️',
   brain: '🧠',
   'chart-line': '📈',
   'chart-bar': '📊',
   'chart-pie': '🥧',
   chart: '📊',
+  activity: '📈',
+  dashboard: '📊',
   gear: '⚙️',
   cog: '⚙️',
   gears: '⚙️',
+  settings: '⚙️',
   check: '✓',
   'check-circle': '✅',
+  'check-check': '✅',
   star: '⭐',
+  sun: '☀️',
+  moon: '🌙',
   code: '💻',
   terminal: '💻',
   database: '🗄️',
   server: '🖥️',
   fire: '🔥',
+  flame: '🔥',
   lock: '🔒',
   unlock: '🔓',
   key: '🔑',
@@ -121,6 +129,10 @@ export const FONT_AWESOME_ICON_MAP: Record<string, string> = {
   cpu: '⚡',
   envelope: '✉️',
   mail: '✉️',
+  message: '💬',
+  chat: '💬',
+  comment: '💬',
+  'message-square': '💬',
   users: '👥',
   user: '👤',
   clock: '⏱️',
@@ -129,6 +141,8 @@ export const FONT_AWESOME_ICON_MAP: Record<string, string> = {
   heart: '❤️',
   lightbulb: '💡',
   wrench: '🔧',
+  tool: '🔧',
+  tools: '🛠️',
   calendar: '📅',
   book: '📖',
   flag: '🚩',
@@ -149,6 +163,7 @@ export const FONT_AWESOME_ICON_MAP: Record<string, string> = {
   award: '🎖️',
   robot: '🤖',
   sparkles: '✨',
+  sparkle: '✨',
   wand: '🪄',
   magic: '🪄',
   atom: '⚛️',
@@ -181,30 +196,76 @@ export const FONT_AWESOME_ICON_MAP: Record<string, string> = {
   minus: '➖',
   times: '✖️',
   divide: '➗',
+  cross: '❌',
+  x: '❌',
+  close: '❌',
   info: 'ℹ️',
   'info-circle': 'ℹ️',
   question: '❓',
   'question-circle': '❓',
   exclamation: '❗',
+  'alert-triangle': '⚠️',
+  'alert-circle': '⚠️',
   'exclamation-triangle': '⚠️',
   'exclamation-circle': '⚠️',
+  download: '📥',
+  upload: '📤',
+  dollar: '💲',
+  'dollar-sign': '💲',
+  euro: '💶',
+  money: '💰',
+  wallet: '👛',
+  briefcase: '💼',
+  'arrow-right': '➔',
+  'arrow-left': '⬅',
+  'arrow-up': '⬆',
+  'arrow-down': '⬇',
 };
+
+export const FONT_AWESOME_ICON_MAP = UNIVERSAL_ICON_MAP;
 
 export function replaceIconShortcuts(text: string): string {
   if (!text) return '';
-  // Replace :fa-xxx:, :fas-xxx:, :fab-xxx:, :far-xxx:
-  let res = text.replace(/:fa[srlbd]?-([a-z0-9-]+):/gi, (_match, iconName) => {
-    const cleanName = iconName.toLowerCase();
-    return FONT_AWESOME_ICON_MAP[cleanName] || '🔹';
-  });
-  // Replace <i class="fa... fa-xxx"></i>
-  res = res.replace(
-    /<i class=["'](?:fa[srlbd]?\s+)?fa-([a-z0-9-]+).*?["']>\s*<\/i>/gi,
+
+  // 1. Match all shortcodes: :fa-*, :fas-*, :fab-*, :lucide-*, :lu-*, :bi-*, :ri-*, :ti-*, :tabler-*, :ph-*, :ms-*, :material-*, :icon-*
+  let res = text.replace(
+    /:(?:fa[srlbd]?|lucide|lu|bi|ri|tabler|ti|ph|material|ms|icon|glyph)-([a-z0-9-]+):/gi,
     (_match, iconName) => {
-      const cleanName = iconName.toLowerCase();
-      return FONT_AWESOME_ICON_MAP[cleanName] || '🔹';
+      const cleanName = iconName.toLowerCase().replace(/-(line|fill|solid|regular|bold|outline)$/, '');
+      return UNIVERSAL_ICON_MAP[cleanName] || UNIVERSAL_ICON_MAP[iconName.toLowerCase()] || '🔹';
     }
   );
+
+  // 2. Match HTML <span class="material-symbols-...">name</span> or <span class="material-icons">name</span>
+  res = res.replace(
+    /<span\s+class=["'][^"']*material-(?:symbols|icons)[^"']*["']>([a-z0-9_-]+)<\/span>/gi,
+    (_match, iconName) => {
+      const cleanName = iconName.toLowerCase().replace(/_/g, '-');
+      return UNIVERSAL_ICON_MAP[cleanName] || '🔹';
+    }
+  );
+
+  // 3. Match generic HTML <i class="..."></i> (Font Awesome, Lucide, Bootstrap, RemixIcon, Tabler, Phosphor, etc.)
+  res = res.replace(
+    /<i\s+class=["']([^"']+)["']>\s*<\/i>/gi,
+    (_match, classAttr) => {
+      // Find class token like fa-*, bi-*, ri-*, ti-*, lucide-*, ph-*, etc.
+      const tokens = classAttr.split(/\s+/);
+      for (const token of tokens) {
+        const m = token.match(/^(?:fa[srlbd]?-|bi-|ri-|ti-|lucide-|ph-|icon-)([a-z0-9-]+)$/i);
+        if (m && m[1]) {
+          const rawName = m[1].toLowerCase();
+          const cleanName = rawName.replace(/-(line|fill|solid|regular|bold|outline)$/, '');
+          return UNIVERSAL_ICON_MAP[cleanName] || UNIVERSAL_ICON_MAP[rawName] || '🔹';
+        }
+      }
+      return '🔹';
+    }
+  );
+
+  // 4. Strip inline <svg>...</svg> in PPTX to avoid raw XML markup leaking into text
+  res = res.replace(/<svg[\s\S]*?<\/svg>/gi, '🔹');
+
   return res;
 }
 

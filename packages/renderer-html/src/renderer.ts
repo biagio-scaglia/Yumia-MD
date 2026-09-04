@@ -98,6 +98,75 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       )
       .join('\n');
 
+    const ICON_PRESETS: Record<string, string> = {
+      fontawesome: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
+      'font-awesome': 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
+      fa: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
+      lucide: 'https://cdn.jsdelivr.net/npm/lucide-static@latest/font/lucide.css',
+      bootstrap: 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css',
+      'bootstrap-icons': 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css',
+      bi: 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css',
+      remixicon: 'https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css',
+      remix: 'https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css',
+      ri: 'https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css',
+      tabler: 'https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css',
+      'tabler-icons': 'https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css',
+      'material-symbols':
+        'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0',
+      'material-icons': 'https://fonts.googleapis.com/icon?family=Material+Icons',
+      phosphor: 'https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css',
+      'phosphor-icons': 'https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css',
+    };
+
+    const iconUrls: string[] = [];
+    if (presentation.metadata.icons) {
+      const rawIcons = Array.isArray(presentation.metadata.icons)
+        ? presentation.metadata.icons
+        : [presentation.metadata.icons];
+      for (const item of rawIcons) {
+        const key = item.toLowerCase().trim();
+        if (ICON_PRESETS[key]) {
+          iconUrls.push(ICON_PRESETS[key]!);
+        } else if (item.startsWith('http://') || item.startsWith('https://') || item.endsWith('.css')) {
+          iconUrls.push(item);
+        }
+      }
+    }
+
+    // Default icon CDNs if none explicitly specified: Font Awesome, Bootstrap, RemixIcon, Tabler, Material Symbols, Lucide
+    if (iconUrls.length === 0) {
+      iconUrls.push(
+        ICON_PRESETS['fontawesome']!,
+        ICON_PRESETS['bootstrap']!,
+        ICON_PRESETS['remixicon']!,
+        ICON_PRESETS['tabler']!,
+        ICON_PRESETS['material-symbols']!,
+        ICON_PRESETS['lucide']!
+      );
+    }
+
+    const iconLinks = Array.from(new Set(iconUrls))
+      .map((url) => `<link rel="stylesheet" href="${url}" crossorigin="anonymous">`)
+      .join('\n  ');
+
+    const customStyles = presentation.metadata.styles
+      ? (Array.isArray(presentation.metadata.styles)
+          ? presentation.metadata.styles
+          : [presentation.metadata.styles]
+        )
+          .map((url) => `<link rel="stylesheet" href="${url}">`)
+          .join('\n  ')
+      : '';
+
+    const customScripts = presentation.metadata.scripts
+      ? (Array.isArray(presentation.metadata.scripts)
+          ? presentation.metadata.scripts
+          : [presentation.metadata.scripts]
+        )
+          .map((url) => `<script src="${url}"></script>`)
+          .join('\n  ')
+      : '';
+
     const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -106,7 +175,9 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
   <title>${this.escapeHtml(title)}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous">
+  ${iconLinks}
+  ${customStyles}
+  ${customScripts}
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
@@ -1759,7 +1830,8 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
 
   private formatInline(text: string): string {
     let html = this.escapeHtml(text);
-    // Support font awesome icon shortcuts e.g. :fa-rocket: or :fab-github: or :fas-bolt: or :far-star:
+
+    // 1. Font Awesome shortcodes (:fa-xxx:, :fab-xxx:, :fas-xxx:, :far-xxx:)
     html = html.replace(/:fa[srlbd]?-([a-z0-9-]+):/gi, (match, iconName) => {
       const prefix = match.startsWith(':fab-')
         ? 'fa-brands'
@@ -1768,10 +1840,49 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
           : 'fa-solid';
       return `<i class="${prefix} fa-${iconName}"></i>`;
     });
-    // Also allow raw fontawesome tags written in markdown: <i class="fa-solid fa-..."></i>
+
+    // 2. Lucide shortcodes (:lucide-xxx:, :lu-xxx:)
+    html = html.replace(/:(?:lucide|lu)-([a-z0-9-]+):/gi, (_match, iconName) => {
+      return `<i class="lucide lucide-${iconName}"></i>`;
+    });
+
+    // 3. Bootstrap icon shortcodes (:bi-xxx:)
+    html = html.replace(/:bi-([a-z0-9-]+):/gi, (_match, iconName) => {
+      return `<i class="bi bi-${iconName}"></i>`;
+    });
+
+    // 4. Remix Icon shortcodes (:ri-xxx:)
+    html = html.replace(/:ri-([a-z0-9-]+):/gi, (_match, iconName) => {
+      return `<i class="ri-${iconName}"></i>`;
+    });
+
+    // 5. Tabler Icons shortcodes (:tabler-xxx:, :ti-xxx:)
+    html = html.replace(/:(?:tabler|ti)-([a-z0-9-]+):/gi, (_match, iconName) => {
+      return `<i class="ti ti-${iconName}"></i>`;
+    });
+
+    // 6. Phosphor Icons shortcodes (:ph-xxx:)
+    html = html.replace(/:ph-([a-z0-9-]+):/gi, (_match, iconName) => {
+      return `<i class="ph ph-${iconName}"></i>`;
+    });
+
+    // 7. Material Symbols shortcodes (:ms-xxx:, :material-xxx:)
+    html = html.replace(/:(?:material|ms)-([a-z0-9-]+):/gi, (_match, iconName) => {
+      return `<span class="material-symbols-outlined">${iconName}</span>`;
+    });
+
+    // 8. Restore arbitrary user-written <i class="..."></i>, <span class="...">...</span>, and <svg>...</svg>
     html = html.replace(
-      /&lt;i class=(&quot;|&#039;)(fa[srlbd]?\s+fa-[a-z0-9-]+.*?)(&quot;|&#039;)&gt;&lt;\/i&gt;/gi,
-      '<i class="$2"></i>'
+      /&lt;i class=(&quot;|&#039;)(.*?)(&quot;|&#039;)&gt;(.*?)&lt;\/i&gt;/gi,
+      '<i class="$2">$4</i>'
+    );
+    html = html.replace(
+      /&lt;span class=(&quot;|&#039;)(.*?)(&quot;|&#039;)&gt;(.*?)&lt;\/span&gt;/gi,
+      '<span class="$2">$4</span>'
+    );
+    html = html.replace(
+      /&lt;svg(.*?)&gt;(.*?)&lt;\/svg&gt;/gi,
+      '<svg$1>$2</svg>'
     );
 
     return html
