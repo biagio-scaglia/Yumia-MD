@@ -9,4 +9,6 @@ if (result.output) {
     console.error(result.output);
   }
 }
-process.exit(result.exitCode);
+if (!result.keepAlive) {
+  process.exit(result.exitCode);
+}

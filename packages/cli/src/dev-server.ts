@@ -88,6 +88,20 @@ export function startDevServer(
     server.listen(port, () => {
       const url = `http://localhost:${port}`;
 
+      if (options.open) {
+        const startCmd =
+          process.platform === 'win32'
+            ? `start ${url}`
+            : process.platform === 'darwin'
+              ? `open ${url}`
+              : `xdg-open ${url}`;
+        import('node:child_process')
+          .then(({ exec }) => {
+            exec(startCmd, () => {});
+          })
+          .catch(() => {});
+      }
+
       // Start file watcher
       try {
         watcher = watch(resolvedPath, () => {

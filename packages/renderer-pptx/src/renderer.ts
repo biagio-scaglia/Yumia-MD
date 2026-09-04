@@ -54,22 +54,35 @@ interface InlineChunk {
 
 export function cleanFontFace(fontString?: string): string {
   if (!fontString) return 'Segoe UI';
-  const first =
-    fontString
-      .split(',')[0]
-      ?.trim()
-      .replace(/^['"]|['"]$/g, '') || '';
-  if (
-    !first ||
-    first === 'system-ui' ||
-    first === '-apple-system' ||
-    first === 'sans-serif' ||
-    first === 'monospace' ||
-    first === 'serif'
-  ) {
-    return 'Segoe UI';
+  const fonts = fontString.split(',').map((f) => f.trim().replace(/^['"]|['"]$/g, ''));
+  const safeList = [
+    'Segoe UI',
+    'Arial',
+    'Calibri',
+    'Helvetica',
+    'Verdana',
+    'Tahoma',
+    'Trebuchet MS',
+    'Consolas',
+    'Courier New',
+    'Courier',
+    'Georgia',
+    'Times New Roman',
+  ];
+
+  for (const font of fonts) {
+    if (safeList.includes(font)) {
+      return font;
+    }
   }
-  return first;
+
+  if (fontString.toLowerCase().includes('mono') || fontString.toLowerCase().includes('code')) {
+    return 'Consolas';
+  }
+  if (fontString.toLowerCase().includes('serif') && !fontString.toLowerCase().includes('sans')) {
+    return 'Georgia';
+  }
+  return 'Segoe UI';
 }
 
 export function parseInlineMarkdown(

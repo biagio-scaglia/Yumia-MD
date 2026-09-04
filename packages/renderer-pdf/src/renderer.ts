@@ -466,6 +466,16 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
     return text
       .replace(/\*\*(.*?)\*\*/g, '$1')
       .replace(/\*(.*?)\*/g, '$1')
-      .replace(/`(.*?)`/g, '$1');
+      .replace(/`(.*?)`/g, '$1')
+      .replace(
+        /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2300}-\u{23FF}\u{2B50}]/gu,
+        ''
+      )
+      .replace(/\u200D/g, '')
+      .replace(/\uFE0F/g, '')
+      .replace(/[“”]/g, '"')
+      .replace(/[‘’]/g, "'")
+      .replace(/[—–]/g, '-')
+      .trim();
   }
 }

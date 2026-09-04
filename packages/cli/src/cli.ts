@@ -67,7 +67,9 @@ function getFlagValue(args: string[], flagNames: string[]): string | undefined {
   return undefined;
 }
 
-export async function runCli(argv: string[]): Promise<{ exitCode: number; output: string }> {
+export async function runCli(
+  argv: string[]
+): Promise<{ exitCode: number; output: string; keepAlive?: boolean }> {
   const args = argv.slice(2);
 
   if (args.length === 0 || args.includes('-h') || args.includes('--help')) {
@@ -226,6 +228,7 @@ Opening slide introducing the presentation deck.
       return {
         exitCode: 0,
         output: `🚀 YumiaMD Live Dev Server running at: ${devInstance.url}\n  Watching: ${target}\n  Hot-reloading active via SSE. Press Ctrl+C to stop.`,
+        keepAlive: true,
       };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -493,6 +496,7 @@ Opening slide introducing the presentation deck.
       return {
         exitCode: 0,
         output: `✓ Successfully compiled '${target}' ➔ '${outputPath}' (${result.slideCount} ${formatDesc})${watchMsg}`,
+        keepAlive: command === 'watch' || isWatch,
       };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
