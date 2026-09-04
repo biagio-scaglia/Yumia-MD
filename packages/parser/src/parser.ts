@@ -137,7 +137,10 @@ export class DefaultYumiaParser implements YumiaParser {
       if (!trimmed || trimmed.startsWith('#')) continue;
 
       if (trimmed.startsWith('- ') && currentKey) {
-        const itemVal = trimmed.slice(2).trim().replace(/^['"](.*)['"]$/, '$1');
+        const itemVal = trimmed
+          .slice(2)
+          .trim()
+          .replace(/^['"](.*)['"]$/, '$1');
         if (Array.isArray(metadata[currentKey])) {
           (metadata[currentKey] as string[]).push(itemVal);
         } else {
@@ -203,7 +206,8 @@ export class DefaultYumiaParser implements YumiaParser {
     }
 
     if (metadata['styles'] || metadata['stylesheets'] || metadata['css']) {
-      result.styles = (metadata['styles'] || metadata['stylesheets'] || metadata['css']) as string | string[];
+      result.styles = (metadata['styles'] || metadata['stylesheets'] || metadata['css']) as
+        string | string[];
     }
     if (metadata['scripts'] || metadata['js']) {
       result.scripts = (metadata['scripts'] || metadata['js']) as string | string[];

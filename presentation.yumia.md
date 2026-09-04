@@ -1,11 +1,11 @@
 ---
-title: "YumiaMD Presentation Engine"
-subtitle: "Universal Compiler for Native PowerPoint, Vector PDF & Interactive HTML5"
-author: "Biagio Scaglia"
+title: 'YumiaMD Presentation Engine'
+subtitle: 'Universal Compiler for Native PowerPoint, Vector PDF & Interactive HTML5'
+author: 'Biagio Scaglia'
 theme: cyberpunk
-aspectRatio: "16:9"
+aspectRatio: '16:9'
 transition: push
-watermark: "YumiaMD"
+watermark: 'YumiaMD'
 ---
 
 # YumiaMD Presentation Engine
@@ -39,8 +39,8 @@ Questa presentazione mostra tutte le funzionalità del compilatore: layout deter
 - **[ ESC / O ] Panoramica**: Griglia visiva con tutte le slide
 - **[ F ] Fullscreen**: Modalità a schermo intero
 - **[ N ] Note**: Mostra/nasconde il cassetto note
-:::
-:::
+  :::
+  :::
 
 :::column
 :::card Hot-Reload & Dev Server variant="success"
@@ -49,8 +49,8 @@ Questa presentazione mostra tutte le funzionalità del compilatore: layout deter
 - **Instant Hot-Reload**: Modifica questo file `.yumia.md` e guarda il browser aggiornarsi in tempo reale!
 - **State Preservation**: Mantiene la posizione della slide corrente
 - **Zero Dipendenze Esterne**: Compilatore autonomo ed estremamente veloce
-:::
-:::
+  :::
+  :::
 
 :::
 
@@ -106,10 +106,11 @@ $$
 $$
 
 :::card Resa Matematica sui Diversi Target variant="info"
+
 - **HTML5**: Rendering client-side KaTeX ad alta risoluzione
 - **PowerPoint (.pptx)**: Visualizzazione tipografica Cambria Math ad alto contrasto
 - **Vector PDF**: Percorsi vettoriali precisi isolati dai font di sistema
-:::
+  :::
 
 :::notes
 Formule matematiche complesse per paper scientifici e documentazione tecnica.
@@ -147,12 +148,12 @@ In PowerPoint i grafici sono veri oggetti chart nativi modificabili in Excel/Pow
 
 :::mermaid
 graph LR
-  A[Markdown Source .yumia.md] --> B[@yumiamd/parser]
-  B --> C[Presentation AST]
-  C --> D[Deterministic Layout Engine]
-  D --> E[Native PPTX Generator]
-  D --> F[Vector PDF Compiler]
-  D --> G[HTML5 Interactive Deck]
+A[Markdown Source .yumia.md] --> B[@yumiamd/parser]
+B --> C[Presentation AST]
+C --> D[Deterministic Layout Engine]
+D --> E[Native PPTX Generator]
+D --> F[Vector PDF Compiler]
+D --> G[HTML5 Interactive Deck]
 :::
 
 :::notes
@@ -192,11 +193,12 @@ Slide di confronto a 2 colonne ideale per pitch deck e presentazioni aziendali.
 :::transition type="wipe" duration="0.4s"
 
 :::timeline layout="horizontal"
+
 - [Q1 2026] Core Engine | Parser AST semantico, coordinate reali e layout deterministico
 - [Q2 2026] Multi-Format | Supporto simultaneo PowerPoint (.pptx), PDF e HTML5
 - [Q3 2026] Math & Template | Equazioni LaTeX e master template aziendali .potx
 - [Q4 2026] Enterprise Scale | Deploy automatizzato su GitHub Pages e Vercel con un comando
-:::
+  :::
 
 :::notes
 La timeline mostra chiaramente i traguardi temporali e le fasi di rilascio.
@@ -209,12 +211,13 @@ La timeline mostra chiaramente i traguardi temporali e le fasi di rilascio.
 :::transition type="push" duration="0.4s"
 
 :::step
+
 - **1. Inizializzazione Istantanea**: `npx yumiamd init my-deck`
 - **2. Live Development**: `yumia dev presentation.yumia.md --open`
 - **3. Compilazione PowerPoint**: `yumia build presentation.yumia.md --out dist/deck.pptx`
 - **4. Compilazione PDF**: `yumia build presentation.yumia.md --format pdf`
 - **5. Deploy Web**: `yumia deploy presentation.yumia.md --provider gh-pages`
-:::
+  :::
 
 :::notes
 Durante la presentazione, i punti compaiono progressivamente ad ogni pressione di tasto o click.
@@ -227,6 +230,7 @@ Durante la presentazione, i punti compaiono progressivamente ad ogni pressione d
 :::transition type="zoom" duration="0.4s"
 
 :::card Comandi Rapidi da Terminale variant="primary"
+
 ```bash
 # Avvia il dev server con hot-reload e preview istantanea
 yumia dev presentation.yumia.md --open
@@ -236,9 +240,10 @@ yumia build presentation.yumia.md --out dist/presentation.pptx
 yumia build presentation.yumia.md --format pdf --out dist/presentation.pdf
 yumia build presentation.yumia.md --format html --out dist/presentation.html
 ```
+
 :::
 
-> *"Author in Markdown. Present with perfection. Integrate with everything."*
+> _"Author in Markdown. Present with perfection. Integrate with everything."_
 
 :::notes
 Grazie per aver utilizzato YumiaMD!

@@ -222,8 +222,8 @@ Usa la barra spaziatrice o le frecce per mostrare i punti uno alla volta durante
 - Grafici e tabelle integrate
 - Note per il relatore native
 - Template .potx e font embedding
-:::
-:::
+  :::
+  :::
 
 :::column
 :::card 2. Vector PDF (.pdf) variant="success"
@@ -232,8 +232,8 @@ Usa la barra spaziatrice o le frecce per mostrare i punti uno alla volta durante
 - Layout vettoriale a 600 DPI
 - Perfetto per stampa e allegati
 - Formattazione tipografica isolata
-:::
-:::
+  :::
+  :::
 
 :::column
 :::card 3. HTML5 Deck (.html) variant="info"
@@ -242,8 +242,8 @@ Usa la barra spaziatrice o le frecce per mostrare i punti uno alla volta durante
 - Speaker View dual-window con tasto **S**
 - Griglia panoramica con tasto **ESC** / **O**
 - Deploy istantaneo su GitHub Pages / Vercel
-:::
-:::
+  :::
+  :::
 
 :::
 

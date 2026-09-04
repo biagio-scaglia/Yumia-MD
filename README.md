@@ -52,7 +52,7 @@ author: Biagio Scaglia
 transition: push
 embedFonts: true
 template: corporate.potx
-watermark: "YumiaMD"
+watermark: 'YumiaMD'
 ---
 
 # High-Performance State Machines
