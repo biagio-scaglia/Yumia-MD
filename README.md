@@ -116,16 +116,19 @@ pnpm add -g yumiamd
 # Initialize a starter project
 yumia init my-deck
 
-# Validate markdown syntax and AST structure
-yumia validate presentation.yumia.md
+# Validate markdown syntax and AST structure (supports --json for CI/CD & AI agents)
+yumia validate presentation.yumia.md --json
 
 # Lint presentation for vertical overflow and accessibility
-yumia lint presentation.yumia.md
+yumia lint presentation.yumia.md --json
 
 # Inspect AST and deterministic layout bounding boxes
 yumia inspect presentation.yumia.md --layout
 
-# Compile to PowerPoint (.pptx)
+# Export machine-readable JSON schema for LLMs & AI agents
+yumia schema
+
+# Compile to native editable PowerPoint (.pptx)
 yumia build presentation.yumia.md --out dist/presentation.pptx
 ```
 
@@ -138,15 +141,25 @@ npm install yumiamd
 ```
 
 ```typescript
-import { compile, parse } from 'yumiamd';
+import { compile, parse, YumiaCompiler } from 'yumiamd';
 import fs from 'node:fs';
 
 const markdown = fs.readFileSync('presentation.yumia.md', 'utf-8');
+
+// 1. Validate syntax & inspect diagnostics
+const compiler = new YumiaCompiler();
+const validation = compiler.validate(markdown);
+console.log(`Valid: ${validation.valid}, Slides: ${validation.slideCount}`);
+
+// 2. Compile directly to PPTX buffer
 const { buffer, errors } = await compile(markdown, { format: 'pptx' });
 
 if (errors.length === 0) {
   fs.writeFileSync('output.pptx', buffer);
 }
+
+// 3. Export JSON schema for LLM generation
+const schema = compiler.getSchema();
 ```
 
 ---
@@ -155,18 +168,18 @@ if (errors.length === 0) {
 
 YumiaMD is developed as a modular monorepo and distributed as a self-contained **All-in-One package (`yumiamd`)**:
 
-| Module                   | Responsibility                                                  |
-| :----------------------- | :-------------------------------------------------------------- |
-| `@yumiamd/ast`           | Pure semantic presentation AST data structures                  |
-| `@yumiamd/parser`        | Converts Markdown + Presentation DSL into AST                   |
-| `@yumiamd/theme`         | Semantic design tokens (colors, typography, spacing)            |
-| `@yumiamd/layout`        | Deterministic geometric placement (stack, columns, cards)       |
-| `@yumiamd/renderer`      | Base renderer abstractions and rendering context                |
-| `@yumiamd/renderer-pptx` | **Native editable PowerPoint (`.pptx`) generation engine**      |
-| `@yumiamd/renderer-pdf`  | Vector PDF document compiler _(in development)_                 |
-| `@yumiamd/renderer-html` | Interactive HTML5 presentation deck compiler _(in development)_ |
-| `@yumiamd/core`          | Compiler pipeline coordinator                                   |
-| **`yumiamd`**            | **Unified All-in-One package & CLI published to NPM**           |
+| Module                   | Responsibility                                                    |
+| :----------------------- | :---------------------------------------------------------------- |
+| `@yumiamd/ast`           | Pure semantic presentation AST data structures with locations     |
+| `@yumiamd/parser`        | Converts Markdown + Presentation DSL & Tables into AST            |
+| `@yumiamd/theme`         | Semantic design tokens (colors, typography, spacing)              |
+| `@yumiamd/layout`        | Deterministic geometric placement (stack, columns, cards, bounds) |
+| `@yumiamd/renderer`      | Base renderer abstractions and rendering context                  |
+| `@yumiamd/renderer-pptx` | **Native editable PowerPoint (`.pptx`) generation engine**        |
+| `@yumiamd/renderer-pdf`  | Vector PDF document compiler _(in development)_                   |
+| `@yumiamd/renderer-html` | Interactive HTML5 presentation deck compiler _(in development)_   |
+| `@yumiamd/core`          | Compiler pipeline coordinator & schema generation                 |
+| **`yumiamd`**            | **Unified All-in-One package & CLI published to NPM**             |
 
 ---
 
@@ -184,7 +197,7 @@ pnpm build
 # Typecheck workspace packages
 pnpm typecheck
 
-# Run test suite with Vitest (24 unit & integration tests)
+# Run test suite with Vitest (34 unit, integration, & fuzz tests)
 pnpm test
 
 # Lint code with ESLint
