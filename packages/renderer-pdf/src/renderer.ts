@@ -1,11 +1,15 @@
 import PDFDocument from 'pdfkit';
 import {
+  BadgeElement,
   CardElement,
+  ChartElement,
   CodeElement,
   ColumnElement,
   ColumnsElement,
+  CompareElement,
   HeadingElement,
   ListElement,
+  MermaidElement,
   MetricElement,
   ParagraphElement,
   Presentation,
@@ -13,6 +17,7 @@ import {
   Slide,
   SlideElement,
   TableElement,
+  TimelineElement,
 } from '@yumiamd/ast';
 import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
 import { defaultTheme, resolveTheme, ThemeOverrides, YumiaTheme } from '@yumiamd/theme';
@@ -439,6 +444,140 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           .stroke();
 
         return curY;
+      }
+
+      case 'badge': {
+        const b = element as BadgeElement;
+        const variantColor = this.getVariantColor(b.variant, theme);
+        const text = this.stripFormatting(b.text).toUpperCase();
+        const badgeW = Math.min(180, Math.max(60, text.length * 7 + 20));
+        const badgeH = 22;
+
+        doc.roundedRect(x, y, badgeW, badgeH, 11).fill(theme.colors.surface || 'rgba(255,255,255,0.08)');
+        doc.roundedRect(x, y, badgeW, badgeH, 11).lineWidth(1).strokeColor(variantColor).stroke();
+
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(10)
+          .fillColor(variantColor)
+          .text(text, x, y + 6, { width: badgeW, align: 'center' });
+
+        return y + badgeH + 6;
+      }
+
+      case 'timeline': {
+        const t = element as TimelineElement;
+        const items = t.items || [];
+        if (items.length === 0) return y;
+
+        const itemW = (width - (items.length - 1) * 12) / items.length;
+        const lineY = y + 14;
+
+        doc.moveTo(x + 10, lineY).lineTo(x + width - 10, lineY).lineWidth(2).strokeColor(theme.colors.border || 'rgba(255,255,255,0.2)').stroke();
+
+        let maxItemH = 60;
+        items.forEach((item, idx) => {
+          const itemX = x + idx * (itemW + 12);
+          const dotX = itemX + itemW / 2;
+
+          // Milestone dot
+          doc.circle(dotX, lineY, 6).fill(theme.colors.primary);
+
+          let curItemY = lineY + 12;
+          if (item.date) {
+            doc.font('Helvetica-Bold').fontSize(10).fillColor(theme.colors.accent || theme.colors.primary).text(this.stripFormatting(item.date), itemX, curItemY, { width: itemW, align: 'center' });
+            curItemY += 14;
+          }
+
+          doc.font('Helvetica-Bold').fontSize(12).fillColor(theme.colors.text).text(this.stripFormatting(item.title), itemX, curItemY, { width: itemW, align: 'center' });
+          curItemY += 16;
+
+          if (item.description) {
+            doc.font('Helvetica').fontSize(9).fillColor(theme.colors.muted || '#888888').text(this.stripFormatting(item.description), itemX, curItemY, { width: itemW, align: 'center' });
+            curItemY += 24;
+          }
+
+          if (curItemY - y > maxItemH) maxItemH = curItemY - y;
+        });
+
+        return y + maxItemH + 8;
+      }
+
+      case 'compare': {
+        const c = element as CompareElement;
+        const colW = (width - 24) / 2;
+
+        let leftY = y + 12;
+        let rightY = y + 12;
+
+        // Render left
+        if (c.leftTitle) {
+          doc.font('Helvetica-Bold').fontSize(14).fillColor(theme.colors.primary).text(this.stripFormatting(c.leftTitle), x + 12, leftY, { width: colW - 24 });
+          leftY += 22;
+        }
+        for (const el of c.left) {
+          leftY = this.renderElement(doc, el, x + 12, leftY, colW - 24, theme) + 6;
+        }
+
+        // Render right
+        const rightX = x + colW + 24;
+        if (c.rightTitle) {
+          doc.font('Helvetica-Bold').fontSize(14).fillColor(theme.colors.primary).text(this.stripFormatting(c.rightTitle), rightX + 12, rightY, { width: colW - 24 });
+          rightY += 22;
+        }
+        for (const el of c.right) {
+          rightY = this.renderElement(doc, el, rightX + 12, rightY, colW - 24, theme) + 6;
+        }
+
+        const totalH = Math.max(leftY - y, rightY - y, 60) + 12;
+
+        // Draw left box
+        doc.roundedRect(x, y, colW, totalH, 8).strokeColor(theme.colors.border || 'rgba(255,255,255,0.15)').stroke();
+        // Draw right box
+        doc.roundedRect(rightX, y, colW, totalH, 8).strokeColor(theme.colors.border || 'rgba(255,255,255,0.15)').stroke();
+
+        return y + totalH + 8;
+      }
+
+      case 'chart': {
+        const ch = element as ChartElement;
+        const boxH = 130;
+        doc.roundedRect(x, y, width, boxH, 8).fill(theme.colors.surface || 'rgba(255,255,255,0.04)');
+        doc.roundedRect(x, y, width, boxH, 8).strokeColor(theme.colors.border || 'rgba(255,255,255,0.1)').stroke();
+
+        let topY = y + 10;
+        if (ch.title) {
+          doc.font('Helvetica-Bold').fontSize(13).fillColor(theme.colors.text).text(this.stripFormatting(ch.title), x + 14, topY, { width: width - 28 });
+          topY += 20;
+        }
+
+        const values = ch.series[0]?.values || [];
+        const maxVal = Math.max(...values, 1);
+        const plotH = boxH - (topY - y) - 28;
+        const barW = Math.min(40, (width - 40) / Math.max(values.length, 1) * 0.6);
+
+        values.forEach((val, idx) => {
+          const barX = x + 24 + idx * ((width - 48) / Math.max(values.length, 1));
+          const h = (val / maxVal) * plotH;
+          const barY = topY + plotH - h;
+
+          doc.rect(barX, barY, barW, h).fill(theme.colors.primary);
+          doc.font('Helvetica').fontSize(9).fillColor(theme.colors.text).text(String(val), barX, barY - 12, { width: barW, align: 'center' });
+          if (ch.labels[idx]) {
+            doc.font('Helvetica').fontSize(9).fillColor(theme.colors.muted || '#888888').text(this.stripFormatting(ch.labels[idx]!), barX - 10, topY + plotH + 4, { width: barW + 20, align: 'center' });
+          }
+        });
+
+        return y + boxH + 8;
+      }
+
+      case 'mermaid': {
+        const m = element as MermaidElement;
+        const boxH = 90;
+        doc.roundedRect(x, y, width, boxH, 8).fill(theme.colors.surface || 'rgba(255,255,255,0.04)');
+        doc.roundedRect(x, y, width, boxH, 8).strokeColor(theme.colors.primary).stroke();
+        doc.font('Courier').fontSize(11).fillColor(theme.colors.text).text(this.stripFormatting(m.code), x + 12, y + 12, { width: width - 24 });
+        return y + boxH + 8;
       }
 
       default:
