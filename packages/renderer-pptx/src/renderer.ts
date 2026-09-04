@@ -35,9 +35,8 @@ export interface PptxOutput {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PptxInstance = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PptxSlide = any;
+type PptxInstance = typeof pptxgen extends new (...args: any[]) => infer R ? R : any;
+type PptxSlide = ReturnType<PptxInstance['addSlide']>;
 
 const CSS_NAMED_COLORS: Record<string, string> = {
   white: 'ffffff',

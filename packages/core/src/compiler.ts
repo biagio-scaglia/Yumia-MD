@@ -125,6 +125,34 @@ export class YumiaCompiler {
         directives: {
           type: 'object',
           properties: {
+            chart: {
+              syntax: ':::chart type="bar|line|pie|doughnut" title="..." labels="..." data="..."',
+              description:
+                'Native editable chart for PowerPoint, PDF vector paths, and interactive SVG',
+            },
+            mermaid: {
+              syntax: ':::mermaid\\ngraph LR\\n  A --> B\\n:::',
+              description: 'Flowcharts, sequence diagrams, and architecture maps via Mermaid',
+            },
+            timeline: {
+              syntax:
+                ':::timeline [layout="horizontal|vertical"]\\n- [Date] Title: Description\\n:::',
+              description: 'Roadmap and milestone timeline nodes with connector lines',
+            },
+            compare: {
+              syntax:
+                ':::compare left="Left Title" right="Right Title"\\n- Left Item\\n:::vs\\n- Right Item\\n:::',
+              description: 'Side-by-side comparison boxes with versus badge',
+            },
+            badge: {
+              syntax:
+                ':::badge text="..." [variant="primary|success|warning|danger|info|accent"] :::',
+              description: 'Compact inline status pill element',
+            },
+            step: {
+              syntax: ':::step\\nProgressive reveal content\\n:::',
+              description: 'Click-to-reveal fragment step animation',
+            },
             columns: {
               syntax: ':::columns [ratios="50:50"]\\n:::column\\n...\\n:::\\n:::',
               description: 'Multi-column grid layout',
@@ -154,4 +182,22 @@ export class YumiaCompiler {
       },
     };
   }
+}
+
+// Top-level convenience exports
+const defaultCompiler = new YumiaCompiler();
+
+export function parse(source: string, options?: ParserOptions): Presentation {
+  return defaultCompiler.parse(source, options);
+}
+
+export function validate(source: string): ValidationResult {
+  return defaultCompiler.validate(source);
+}
+
+export function lint(
+  sourceOrPresentation: string | Presentation,
+  options?: LintOptions
+): LintReport {
+  return defaultCompiler.lint(sourceOrPresentation, options);
 }
