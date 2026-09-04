@@ -1,5 +1,5 @@
 {
-  "name": "@biagioscaglia/yumia-theme",
+  "name": "@yumiamd/theme",
   "version": "0.1.4",
   "description": "Semantic theme definitions and tokens for YumiaMD presentations",
   "type": "module",

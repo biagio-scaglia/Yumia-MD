@@ -1,5 +1,5 @@
 {
-  "name": "@biagioscaglia/yumia-ast",
+  "name": "@yumiamd/ast",
   "version": "0.1.4",
   "description": "Semantic AST data structures for YumiaMD presentations",
   "type": "module",

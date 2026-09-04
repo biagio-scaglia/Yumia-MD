@@ -10,10 +10,10 @@ import {
   createPresentation,
   createQuote,
   createSlide,
-} from '@biagioscaglia/yumia-ast';
+} from '@yumiamd/ast';
 import { PptxRenderer } from '../src/index.js';
 
-describe('@biagioscaglia/yumia-renderer-pptx', () => {
+describe('@yumiamd/renderer-pptx', () => {
   it('should compile presentation AST with headings, cards, and columns to native PPTX buffer', async () => {
     const slide1 = createSlide(
       [createHeading('Title Slide', 1), createParagraph('Subtitle description here.')],

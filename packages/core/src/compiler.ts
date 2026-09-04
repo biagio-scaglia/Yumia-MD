@@ -1,13 +1,8 @@
-import { Presentation } from '@biagioscaglia/yumia-ast';
-import {
-  DefaultLayoutEngine,
-  LayoutEngine,
-  PresentationLayoutResult,
-  Size,
-} from '@biagioscaglia/yumia-layout';
-import { DefaultYumiaParser, ParserOptions, YumiaParser } from '@biagioscaglia/yumia-parser';
-import { RenderContext, YumiaRenderer } from '@biagioscaglia/yumia-renderer';
-import { defaultTheme, YumiaTheme } from '@biagioscaglia/yumia-theme';
+import { Presentation } from '@yumiamd/ast';
+import { DefaultLayoutEngine, LayoutEngine, PresentationLayoutResult, Size } from '@yumiamd/layout';
+import { DefaultYumiaParser, ParserOptions, YumiaParser } from '@yumiamd/parser';
+import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
+import { defaultTheme, YumiaTheme } from '@yumiamd/theme';
 
 export interface CompilerConfig {
   parser?: YumiaParser;

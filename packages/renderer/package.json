@@ -1,5 +1,5 @@
 {
-  "name": "@biagioscaglia/yumia-renderer",
+  "name": "@yumiamd/renderer",
   "version": "0.1.4",
   "description": "Base renderer abstraction and rendering context for YumiaMD",
   "type": "module",
@@ -12,9 +12,9 @@
     }
   },
   "dependencies": {
-    "@biagioscaglia/yumia-ast": "workspace:*",
-    "@biagioscaglia/yumia-layout": "workspace:*",
-    "@biagioscaglia/yumia-theme": "workspace:*"
+    "@yumiamd/ast": "workspace:*",
+    "@yumiamd/layout": "workspace:*",
+    "@yumiamd/theme": "workspace:*"
   },
   "scripts": {
     "build": "tsc",

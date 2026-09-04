@@ -16,12 +16,12 @@
     }
   },
   "dependencies": {
-    "@biagioscaglia/yumia-ast": "workspace:*",
-    "@biagioscaglia/yumia-core": "workspace:*",
-    "@biagioscaglia/yumia-layout": "workspace:*",
-    "@biagioscaglia/yumia-parser": "workspace:*",
-    "@biagioscaglia/yumia-renderer-pptx": "workspace:*",
-    "@biagioscaglia/yumia-theme": "workspace:*"
+    "@yumiamd/ast": "workspace:*",
+    "@yumiamd/core": "workspace:*",
+    "@yumiamd/layout": "workspace:*",
+    "@yumiamd/parser": "workspace:*",
+    "@yumiamd/renderer-pptx": "workspace:*",
+    "@yumiamd/theme": "workspace:*"
   },
   "scripts": {
     "build": "tsc",

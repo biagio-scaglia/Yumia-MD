@@ -1,6 +1,6 @@
-import { Presentation } from '@biagioscaglia/yumia-ast';
-import { PresentationLayoutResult } from '@biagioscaglia/yumia-layout';
-import { YumiaTheme } from '@biagioscaglia/yumia-theme';
+import { Presentation } from '@yumiamd/ast';
+import { PresentationLayoutResult } from '@yumiamd/layout';
+import { YumiaTheme } from '@yumiamd/theme';
 
 export interface RenderContext {
   theme?: YumiaTheme;

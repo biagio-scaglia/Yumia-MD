@@ -35,18 +35,18 @@ Source (.yumia.md)
 
 ## Packages Overview
 
-| Package                              | Responsibility                                                  | Dependencies                                                                                                                          |
-| :----------------------------------- | :-------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
-| `@biagioscaglia/yumia-ast`           | Pure semantic presentation AST data structures                  | None                                                                                                                                  |
-| `@biagioscaglia/yumia-parser`        | Parses frontmatter, slides, and presentation markdown into AST  | `@biagioscaglia/yumia-ast`                                                                                                            |
-| `@biagioscaglia/yumia-theme`         | Theme definitions, tokens, and default palettes                 | None                                                                                                                                  |
-| `@biagioscaglia/yumia-layout`        | Computes geometry, bounding boxes, overflow, and coordinates    | `@biagioscaglia/yumia-ast`                                                                                                            |
-| `@biagioscaglia/yumia-renderer`      | Core renderer abstraction and rendering context                 | `@biagioscaglia/yumia-ast`, `@biagioscaglia/yumia-layout`, `@biagioscaglia/yumia-theme`                                               |
-| `@biagioscaglia/yumia-renderer-pptx` | **Native editable PowerPoint (`.pptx`) presentation compiler**  | `@biagioscaglia/yumia-ast`, `@biagioscaglia/yumia-renderer`, `@biagioscaglia/yumia-layout`, `@biagioscaglia/yumia-theme`, `pptxgenjs` |
-| `@biagioscaglia/yumia-renderer-pdf`  | Vector PDF document compiler _(in development)_                 | `@biagioscaglia/yumia-ast`, `@biagioscaglia/yumia-renderer`                                                                           |
-| `@biagioscaglia/yumia-renderer-html` | Interactive HTML5 presentation deck compiler _(in development)_ | `@biagioscaglia/yumia-ast`, `@biagioscaglia/yumia-renderer`                                                                           |
-| `@biagioscaglia/yumia-core`          | High-level orchestration layer coordinating all stages          | All core packages                                                                                                                     |
-| `yumiamd`                            | Command-line developer tool (`yumia`)                           | `@biagioscaglia/yumia-core`, `@biagioscaglia/yumia-ast`, `@biagioscaglia/yumia-parser`, `@biagioscaglia/yumia-renderer-pptx`          |
+| Package                  | Responsibility                                                  | Dependencies                                                                          |
+| :----------------------- | :-------------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| `@yumiamd/ast`           | Pure semantic presentation AST data structures                  | None                                                                                  |
+| `@yumiamd/parser`        | Parses frontmatter, slides, and presentation markdown into AST  | `@yumiamd/ast`                                                                        |
+| `@yumiamd/theme`         | Theme definitions, tokens, and default palettes                 | None                                                                                  |
+| `@yumiamd/layout`        | Computes geometry, bounding boxes, overflow, and coordinates    | `@yumiamd/ast`                                                                        |
+| `@yumiamd/renderer`      | Core renderer abstraction and rendering context                 | `@yumiamd/ast`, `@yumiamd/layout`, `@yumiamd/theme`                                   |
+| `@yumiamd/renderer-pptx` | **Native editable PowerPoint (`.pptx`) presentation compiler**  | `@yumiamd/ast`, `@yumiamd/renderer`, `@yumiamd/layout`, `@yumiamd/theme`, `pptxgenjs` |
+| `@yumiamd/renderer-pdf`  | Vector PDF document compiler _(in development)_                 | `@yumiamd/ast`, `@yumiamd/renderer`                                                   |
+| `@yumiamd/renderer-html` | Interactive HTML5 presentation deck compiler _(in development)_ | `@yumiamd/ast`, `@yumiamd/renderer`                                                   |
+| `@yumiamd/core`          | High-level orchestration layer coordinating all stages          | All core packages                                                                     |
+| `yumiamd`                | Command-line developer tool (`yumia`)                           | `@yumiamd/core`, `@yumiamd/ast`, `@yumiamd/parser`, `@yumiamd/renderer-pptx`          |
 
 ## Native Object Philosophy (PPTX)
 

@@ -1,4 +1,4 @@
-import { Presentation } from '@biagioscaglia/yumia-ast';
+import { Presentation } from '@yumiamd/ast';
 
 export interface ParserOptions {
   strict?: boolean;

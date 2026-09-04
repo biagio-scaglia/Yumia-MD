@@ -1,10 +1,10 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, extname, join, resolve } from 'node:path';
-import { parseYumia } from '@biagioscaglia/yumia-parser';
-import { DefaultLayoutEngine } from '@biagioscaglia/yumia-layout';
-import { Presentation, Slide } from '@biagioscaglia/yumia-ast';
-import { YumiaCompiler } from '@biagioscaglia/yumia-core';
-import { PptxRenderer } from '@biagioscaglia/yumia-renderer-pptx';
+import { parseYumia } from '@yumiamd/parser';
+import { DefaultLayoutEngine } from '@yumiamd/layout';
+import { Presentation, Slide } from '@yumiamd/ast';
+import { YumiaCompiler } from '@yumiamd/core';
+import { PptxRenderer } from '@yumiamd/renderer-pptx';
 
 export const VERSION = '0.1.4';
 

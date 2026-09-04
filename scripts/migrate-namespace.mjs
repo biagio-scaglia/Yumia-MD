@@ -7,16 +7,15 @@ const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
 const NAME_MAP = {
-  '@biagioscaglia/yumia-ast': '@biagioscaglia/yumia-ast',
-  '@biagioscaglia/yumia-parser': '@biagioscaglia/yumia-parser',
-  '@biagioscaglia/yumia-theme': '@biagioscaglia/yumia-theme',
-  '@biagioscaglia/yumia-layout': '@biagioscaglia/yumia-layout',
-  '@biagioscaglia/yumia-renderer': '@biagioscaglia/yumia-renderer',
-  '@biagioscaglia/yumia-renderer-pptx': '@biagioscaglia/yumia-renderer-pptx',
-  '@biagioscaglia/yumia-renderer-pdf': '@biagioscaglia/yumia-renderer-pdf',
-  '@biagioscaglia/yumia-renderer-html': '@biagioscaglia/yumia-renderer-html',
-  '@biagioscaglia/yumia-core': '@biagioscaglia/yumia-core',
-  yumiamd: 'yumiamd',
+  '@yumiamd/ast': '@yumiamd/ast',
+  '@yumiamd/parser': '@yumiamd/parser',
+  '@yumiamd/theme': '@yumiamd/theme',
+  '@yumiamd/layout': '@yumiamd/layout',
+  '@yumiamd/renderer': '@yumiamd/renderer',
+  '@yumiamd/renderer-pptx': '@yumiamd/renderer-pptx',
+  '@yumiamd/renderer-pdf': '@yumiamd/renderer-pdf',
+  '@yumiamd/renderer-html': '@yumiamd/renderer-html',
+  '@yumiamd/core': '@yumiamd/core',
 };
 
 function replaceInFile(filePath) {

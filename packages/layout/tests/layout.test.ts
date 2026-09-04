@@ -8,10 +8,10 @@ import {
   createParagraph,
   createPresentation,
   createSlide,
-} from '@biagioscaglia/yumia-ast';
+} from '@yumiamd/ast';
 import { DefaultLayoutEngine } from '../src/index.js';
 
-describe('@biagioscaglia/yumia-layout', () => {
+describe('@yumiamd/layout', () => {
   it('should compute element bounds for stacked slides', () => {
     const slide = createSlide([
       createHeading('Main Title', 1),

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { DefaultYumiaParser, parseYumia } from '../src/index.js';
-import { HeadingElement, ListElement, ParagraphElement } from '@biagioscaglia/yumia-ast';
+import { HeadingElement, ListElement, ParagraphElement } from '@yumiamd/ast';
 
-describe('@biagioscaglia/yumia-parser', () => {
+describe('@yumiamd/parser', () => {
   it('should parse frontmatter metadata and slide separation', () => {
     const source = `---
 title: Test Deck

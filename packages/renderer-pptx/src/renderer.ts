@@ -7,16 +7,10 @@ import {
   ParagraphElement,
   Presentation,
   QuoteElement,
-} from '@biagioscaglia/yumia-ast';
-import {
-  DefaultLayoutEngine,
-  LayoutNode,
-  Rect,
-  Size,
-  SlideLayoutResult,
-} from '@biagioscaglia/yumia-layout';
-import { RenderContext, YumiaRenderer } from '@biagioscaglia/yumia-renderer';
-import { defaultTheme, YumiaTheme } from '@biagioscaglia/yumia-theme';
+} from '@yumiamd/ast';
+import { DefaultLayoutEngine, LayoutNode, Rect, Size, SlideLayoutResult } from '@yumiamd/layout';
+import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
+import { defaultTheme, YumiaTheme } from '@yumiamd/theme';
 
 export interface PptxRenderOptions {
   author?: string;

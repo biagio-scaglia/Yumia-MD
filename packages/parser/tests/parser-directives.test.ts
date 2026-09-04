@@ -7,7 +7,7 @@ import {
   HeadingElement,
   ImageElement,
   QuoteElement,
-} from '@biagioscaglia/yumia-ast';
+} from '@yumiamd/ast';
 
 describe('Parser Directives & Semantic Elements', () => {
   it('should parse :::card blocks with title and children', () => {

@@ -1,5 +1,5 @@
 {
-  "name": "@biagioscaglia/yumia-core",
+  "name": "@yumiamd/core",
   "version": "0.1.4",
   "description": "Core orchestration and compiler pipeline for YumiaMD presentations",
   "type": "module",
@@ -12,11 +12,11 @@
     }
   },
   "dependencies": {
-    "@biagioscaglia/yumia-ast": "workspace:*",
-    "@biagioscaglia/yumia-layout": "workspace:*",
-    "@biagioscaglia/yumia-parser": "workspace:*",
-    "@biagioscaglia/yumia-renderer": "workspace:*",
-    "@biagioscaglia/yumia-theme": "workspace:*"
+    "@yumiamd/ast": "workspace:*",
+    "@yumiamd/layout": "workspace:*",
+    "@yumiamd/parser": "workspace:*",
+    "@yumiamd/renderer": "workspace:*",
+    "@yumiamd/theme": "workspace:*"
   },
   "scripts": {
     "build": "tsc",

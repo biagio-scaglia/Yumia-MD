@@ -1,5 +1,5 @@
-import { Presentation } from '@biagioscaglia/yumia-ast';
-import { RenderContext, YumiaRenderer } from '@biagioscaglia/yumia-renderer';
+import { Presentation } from '@yumiamd/ast';
+import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
 
 export interface HtmlOutput {
   format: 'html';

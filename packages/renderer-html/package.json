@@ -1,5 +1,5 @@
 {
-  "name": "@biagioscaglia/yumia-renderer-html",
+  "name": "@yumiamd/renderer-html",
   "version": "0.1.4",
   "description": "HTML/Web renderer placeholder for YumiaMD presentations",
   "type": "module",
@@ -12,8 +12,8 @@
     }
   },
   "dependencies": {
-    "@biagioscaglia/yumia-ast": "workspace:*",
-    "@biagioscaglia/yumia-renderer": "workspace:*"
+    "@yumiamd/ast": "workspace:*",
+    "@yumiamd/renderer": "workspace:*"
   },
   "scripts": {
     "build": "tsc",

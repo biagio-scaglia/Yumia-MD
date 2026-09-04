@@ -22,7 +22,7 @@ YumiaMD provides a true compiler architecture designed around **semantic decoupl
 presentation.yumia.md
           │
           ▼
-   @biagioscaglia/yumia-parser
+   @yumiamd/parser
           │
           ▼
     Presentation AST
@@ -111,18 +111,18 @@ yumia build presentation.yumia.md --out dist/presentation.pptx
 
 ## Packages Overview
 
-| Package                              | Responsibility                                                  |
-| :----------------------------------- | :-------------------------------------------------------------- |
-| `@biagioscaglia/yumia-ast`           | Pure semantic presentation AST data structures                  |
-| `@biagioscaglia/yumia-parser`        | Converts Markdown + Presentation DSL into AST                   |
-| `@biagioscaglia/yumia-theme`         | Semantic design tokens (colors, typography, spacing)            |
-| `@biagioscaglia/yumia-layout`        | Deterministic geometric placement (stack, columns, cards)       |
-| `@biagioscaglia/yumia-renderer`      | Base renderer abstractions and rendering context                |
-| `@biagioscaglia/yumia-renderer-pptx` | **Native editable PowerPoint (`.pptx`) generation engine**      |
-| `@biagioscaglia/yumia-renderer-pdf`  | Vector PDF document compiler _(in development)_                 |
-| `@biagioscaglia/yumia-renderer-html` | Interactive HTML5 presentation deck compiler _(in development)_ |
-| `@biagioscaglia/yumia-core`          | Compiler pipeline coordinator                                   |
-| `yumiamd`                            | Command-line interface and compiler runner (`yumia`)            |
+| Package                  | Responsibility                                                  |
+| :----------------------- | :-------------------------------------------------------------- |
+| `@yumiamd/ast`           | Pure semantic presentation AST data structures                  |
+| `@yumiamd/parser`        | Converts Markdown + Presentation DSL into AST                   |
+| `@yumiamd/theme`         | Semantic design tokens (colors, typography, spacing)            |
+| `@yumiamd/layout`        | Deterministic geometric placement (stack, columns, cards)       |
+| `@yumiamd/renderer`      | Base renderer abstractions and rendering context                |
+| `@yumiamd/renderer-pptx` | **Native editable PowerPoint (`.pptx`) generation engine**      |
+| `@yumiamd/renderer-pdf`  | Vector PDF document compiler _(in development)_                 |
+| `@yumiamd/renderer-html` | Interactive HTML5 presentation deck compiler _(in development)_ |
+| `@yumiamd/core`          | Compiler pipeline coordinator                                   |
+| `yumiamd`                | Command-line interface and compiler runner (`yumia`)            |
 
 ---
 
@@ -162,15 +162,15 @@ pnpm release patch
 ## Roadmap
 
 - [x] Initial monorepo setup & strict TypeScript configuration
-- [x] Semantic AST model (`@biagioscaglia/yumia-ast`)
-- [x] Markdown and directive parser (`@biagioscaglia/yumia-parser`)
-- [x] Theme token interfaces and default theme (`@biagioscaglia/yumia-theme`)
-- [x] Deterministic Layout Engine (`@biagioscaglia/yumia-layout`)
-- [x] **Native PowerPoint generation engine (`@biagioscaglia/yumia-renderer-pptx`)**
+- [x] Semantic AST model (`@yumiamd/ast`)
+- [x] Markdown and directive parser (`@yumiamd/parser`)
+- [x] Theme token interfaces and default theme (`@yumiamd/theme`)
+- [x] Deterministic Layout Engine (`@yumiamd/layout`)
+- [x] **Native PowerPoint generation engine (`@yumiamd/renderer-pptx`)**
 - [x] Full CLI toolchain (`yumia init`, `validate`, `lint`, `inspect`, `build`)
 - [x] Automated NPM and GitHub release tooling (`pnpm release`)
 - [ ] HTML live preview dev server (`yumia dev`)
-- [ ] Vector PDF renderer (`@biagioscaglia/yumia-renderer-pdf`)
+- [ ] Vector PDF renderer (`@yumiamd/renderer-pdf`)
 
 ---
 
