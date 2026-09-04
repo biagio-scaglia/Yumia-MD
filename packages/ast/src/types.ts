@@ -32,6 +32,22 @@ export interface ThemeReference {
   overrides?: Record<string, unknown>;
 }
 
+export type SlideTransitionType =
+  | 'none'
+  | 'fade'
+  | 'push'
+  | 'wipe'
+  | 'split'
+  | 'cover'
+  | 'zoom'
+  | string;
+
+export interface SlideTransition {
+  type: SlideTransitionType;
+  duration?: number | string;
+  direction?: 'left' | 'right' | 'up' | 'down';
+}
+
 export interface PresentationMetadata {
   title?: string;
   subtitle?: string;
@@ -39,6 +55,9 @@ export interface PresentationMetadata {
   date?: string;
   theme?: string | ThemeReference;
   aspectRatio?: '16:9' | '4:3' | '16:10' | string;
+  transition?: SlideTransitionType | SlideTransition;
+  template?: string;
+  embedFonts?: boolean;
   colors?: {
     primary?: string;
     secondary?: string;
@@ -219,6 +238,12 @@ export interface LayoutDirectiveElement extends BaseElement {
   attributes?: Record<string, string>;
 }
 
+export interface MathElement extends BaseElement {
+  type: 'math';
+  expression: string;
+  displayMode?: boolean;
+}
+
 export type SlideElement =
   | HeadingElement
   | ParagraphElement
@@ -234,6 +259,7 @@ export type SlideElement =
   | TimelineElement
   | CompareElement
   | BadgeElement
+  | MathElement
   | GroupElement
   | ColumnElement
   | ColumnsElement
@@ -242,6 +268,7 @@ export type SlideElement =
 export interface Slide extends BaseElement {
   id?: string;
   layout?: SlideLayout;
+  transition?: SlideTransitionType | SlideTransition;
   background?: SlideBackground;
   elements: SlideElement[];
   notes?: string;

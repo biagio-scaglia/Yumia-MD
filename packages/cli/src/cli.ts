@@ -37,6 +37,9 @@ Theming & Color Options:
   --secondary        Hex secondary color (e.g. "#00F0FF")
   --text             Hex text color (e.g. "#FFFFFF" or "#0F172A")
   --accent           Hex accent bar & highlight color
+  --transition       Default transition: push | fade | wipe | zoom
+  --template, -T     Master template file (.potx) or custom layout
+  --embed-fonts      Embed custom TrueType fonts in presentation package
 
 Server & Compiler Options:
   --port <num>       Port for live dev server (default: 3000)

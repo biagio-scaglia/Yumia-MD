@@ -9,6 +9,7 @@ import {
   CompareElement,
   HeadingElement,
   ListElement,
+  MathElement,
   MermaidElement,
   MetricElement,
   ParagraphElement,
@@ -645,6 +646,30 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           .fontSize(11)
           .fillColor(theme.colors.text)
           .text(this.stripFormatting(m.code), x + 12, y + 12, { width: width - 24 });
+        return y + boxH + 8;
+      }
+
+      case 'math': {
+        const mathEl = element as MathElement;
+        const boxH = 50;
+        doc
+          .roundedRect(x, y, width, boxH, 6)
+          .fill(theme.colors.surface || 'rgba(255,255,255,0.06)');
+        doc
+          .roundedRect(x, y, width, boxH, 6)
+          .lineWidth(1)
+          .strokeColor(theme.colors.border || theme.colors.primary)
+          .stroke();
+        doc.rect(x, y, 4, boxH).fill(theme.colors.primary);
+
+        doc
+          .font('Helvetica-Oblique')
+          .fontSize(14)
+          .fillColor(theme.colors.text)
+          .text(this.stripFormatting(mathEl.expression), x + 16, y + 18, {
+            width: width - 32,
+            align: 'center',
+          });
         return y + boxH + 8;
       }
 

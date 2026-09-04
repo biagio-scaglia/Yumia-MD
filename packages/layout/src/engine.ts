@@ -154,6 +154,10 @@ export class DefaultLayoutEngine implements LayoutEngine {
         const height = this.estimateMetricHeight(element);
         return { element, bounds: { x, y, width, height } };
       }
+      case 'math': {
+        const height = 90;
+        return { element, bounds: { x, y, width, height } };
+      }
       case 'card': {
         return this.layoutCard(element, x, y, width, gap);
       }

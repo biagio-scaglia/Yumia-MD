@@ -13,6 +13,7 @@ import {
   LayoutDirectiveElement,
   ListElement,
   ListItem,
+  MathElement,
   MermaidElement,
   MetricElement,
   ParagraphElement,
@@ -231,6 +232,14 @@ export function createColumns(
     columns,
     ...(ratios ? { ratios } : {}),
     ...(gap !== undefined ? { gap } : {}),
+  };
+}
+
+export function createMath(expression: string, displayMode: boolean = true): MathElement {
+  return {
+    type: 'math',
+    expression,
+    displayMode,
   };
 }
 

@@ -8,6 +8,8 @@ import {
   PresentationMetadata,
   Slide,
   SlideElement,
+  SlideTransition,
+  SlideTransitionType,
   TimelineElement,
   TimelineItem,
   createBadge,
@@ -21,6 +23,7 @@ import {
   createImage,
   createLayoutDirective,
   createList,
+  createMath,
   createMermaid,
   createMetric,
   createParagraph,
@@ -148,6 +151,13 @@ export class DefaultYumiaParser implements YumiaParser {
     if (typeof metadata['date'] === 'string') result.date = metadata['date'];
     if (typeof metadata['theme'] === 'string') result.theme = metadata['theme'];
     if (typeof metadata['aspectRatio'] === 'string') result.aspectRatio = metadata['aspectRatio'];
+    if (typeof metadata['transition'] === 'string') result.transition = metadata['transition'];
+    if (typeof metadata['template'] === 'string') result.template = metadata['template'];
+    if (typeof metadata['embedFonts'] === 'string') {
+      result.embedFonts = metadata['embedFonts'] === 'true' || metadata['embedFonts'] === 'yes';
+    } else if (typeof metadata['embedFonts'] === 'boolean') {
+      result.embedFonts = metadata['embedFonts'];
+    }
 
     const colors: Record<string, string> = {};
     if (typeof metadata['background'] === 'string') colors.background = metadata['background'];
@@ -202,11 +212,12 @@ export class DefaultYumiaParser implements YumiaParser {
 
   private parseSlide(slideContent: string, startLine: number): Slide {
     const lines = slideContent.split('\n');
-    const { elements, notes, layout } = this.parseLines(lines, startLine);
+    const { elements, notes, layout, transition } = this.parseLines(lines, startLine);
 
     const slideOptions: Partial<Slide> = {};
     if (notes) slideOptions.notes = notes;
     if (layout) slideOptions.layout = layout;
+    if (transition) slideOptions.transition = transition;
     slideOptions.loc = {
       start: { line: startLine, column: 1 },
       end: {
@@ -225,10 +236,12 @@ export class DefaultYumiaParser implements YumiaParser {
     elements: SlideElement[];
     notes?: string;
     layout?: string;
+    transition?: SlideTransitionType | SlideTransition;
   } {
     const elements: SlideElement[] = [];
     let notes: string | undefined;
     let layout: string | undefined;
+    let transition: SlideTransitionType | SlideTransition | undefined;
 
     let i = 0;
     let currentParagraph: string[] = [];
@@ -325,6 +338,26 @@ export class DefaultYumiaParser implements YumiaParser {
         const directiveHeader = line.slice(3).trim();
         const directiveStartLine = currentLineNum;
 
+        // Check if transition directive e.g. :::transition push or :::transition type="fade" duration="1s"
+        if (directiveHeader.startsWith('transition')) {
+          const transArg = directiveHeader.slice(10).trim();
+          const typeMatch = transArg.match(/type=['"](.*?)['"]/);
+          const durationMatch = transArg.match(/duration=['"](.*?)['"]/);
+          const dirMatch = transArg.match(/direction=['"](.*?)['"]/);
+          const rawType = typeMatch
+            ? typeMatch[1]
+            : transArg.replace(/duration=['"].*?['"]|direction=['"].*?['"]/, '').trim() || 'fade';
+          const cleanType = (rawType || 'fade').replace(/^['"](.*)['"]$/, '$1');
+          const transObj: SlideTransition = {
+            type: cleanType,
+          };
+          if (durationMatch && durationMatch[1]) transObj.duration = durationMatch[1];
+          if (dirMatch && dirMatch[1]) transObj.direction = dirMatch[1] as 'left' | 'right' | 'up' | 'down';
+          transition = transObj;
+          i++;
+          continue;
+        }
+
         // Check if single line directive e.g. :::layout hero
         if (directiveHeader.startsWith('layout')) {
           const layoutMatch = directiveHeader.match(/^layout\s*(.*)$/);
@@ -415,6 +448,7 @@ export class DefaultYumiaParser implements YumiaParser {
           const isSingleLine =
             isInlineClosed ||
             isSeparator ||
+            innerLine.startsWith(':::transition') ||
             innerLine.startsWith(':::metric') ||
             innerLine.startsWith(':::layout') ||
             (innerLine.startsWith(':::badge') &&
@@ -532,7 +566,52 @@ export class DefaultYumiaParser implements YumiaParser {
             sEl.step = 1;
             elements.push(sEl);
           }
+        } else if (directiveName === 'math') {
+          const expr = blockLines.join('\n').trim();
+          const el = createMath(expr, true);
+          el.loc = {
+            start: { line: directiveStartLine, column: 1 },
+            end: { line: baseLine + i - 1, column: 1 },
+          };
+          elements.push(el);
         }
+        continue;
+      }
+
+      // Math Block ($$ ... $$)
+      if (line.startsWith('$$')) {
+        flushAll();
+        const mathStartLine = currentLineNum;
+        if (line.length > 2 && line.endsWith('$$') && line.length > 4) {
+          const expr = line.slice(2, -2).trim();
+          const el = createMath(expr, true);
+          el.loc = {
+            start: { line: currentLineNum, column: 1 },
+            end: { line: currentLineNum, column: rawLine.length + 1 },
+          };
+          elements.push(el);
+          i++;
+          continue;
+        }
+
+        const mathLines: string[] = [];
+        i++;
+        while (i < lines.length) {
+          const mLine = lines[i] ?? '';
+          if (mLine.trim() === '$$') {
+            i++;
+            break;
+          }
+          mathLines.push(mLine);
+          i++;
+        }
+
+        const el = createMath(mathLines.join('\n').trim(), true);
+        el.loc = {
+          start: { line: mathStartLine, column: 1 },
+          end: { line: baseLine + i - 1, column: 1 },
+        };
+        elements.push(el);
         continue;
       }
 
@@ -660,6 +739,7 @@ export class DefaultYumiaParser implements YumiaParser {
       elements,
       ...(notes ? { notes } : {}),
       ...(layout ? { layout } : {}),
+      ...(transition ? { transition } : {}),
     };
   }
 
@@ -689,6 +769,7 @@ export class DefaultYumiaParser implements YumiaParser {
           const isSingleLine =
             isInlineClosed ||
             isSeparator ||
+            innerLine.startsWith(':::transition') ||
             innerLine.startsWith(':::metric') ||
             innerLine.startsWith(':::layout') ||
             (innerLine.startsWith(':::badge') &&

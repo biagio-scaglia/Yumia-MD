@@ -42,4 +42,26 @@ describe('@yumiamd/renderer-pptx', () => {
     expect(result.slideCount).toBe(2);
     expect(result.data.byteLength).toBeGreaterThan(1000); // Valid zip / pptx file size
   });
+
+  it('should compile mathematical formulas and slide transitions to native PPTX buffer', async () => {
+    const slide1 = createSlide(
+      [
+        createHeading('Quantum Physics', 1),
+        { type: 'math', expression: 'i \\hbar \\frac{\\partial}{\\partial t} \\Psi = \\hat{H} \\Psi', displayMode: true },
+      ],
+      { transition: 'push' }
+    );
+
+    const presentation = createPresentation(
+      { title: 'Physics Talk', author: 'Biagio', transition: 'fade', embedFonts: true },
+      [slide1]
+    );
+
+    const renderer = new PptxRenderer();
+    const result = await renderer.render(presentation);
+
+    expect(result.format).toBe('pptx');
+    expect(result.slideCount).toBe(1);
+    expect(result.data.byteLength).toBeGreaterThan(1000);
+  });
 });

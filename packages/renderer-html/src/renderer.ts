@@ -9,6 +9,7 @@ import {
   HeadingElement,
   ImageElement,
   ListElement,
+  MathElement,
   MermaidElement,
   MetricElement,
   ParagraphElement,
@@ -691,6 +692,55 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       max-height: 420px;
     }
 
+    /* Math Equation Container */
+    .yumia-math-container {
+      background: var(--yumia-surface);
+      border: 1.5px solid var(--yumia-border);
+      border-left: 4px solid var(--yumia-primary);
+      border-radius: var(--yumia-radius-card);
+      padding: 1.25rem 2rem;
+      margin: 1.2rem 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    }
+
+    .yumia-math-equation {
+      font-family: 'Cambria Math', 'JetBrains Mono', monospace;
+      font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+      font-style: italic;
+      color: var(--yumia-text);
+      letter-spacing: 0.05em;
+    }
+
+    /* Slide Transitions */
+    .yumia-slide-wrapper.transition-fade.active {
+      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .yumia-slide-wrapper.transition-push.active {
+      animation: pushIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .yumia-slide-wrapper.transition-wipe.active {
+      animation: wipeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .yumia-slide-wrapper.transition-zoom.active {
+      animation: zoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes pushIn {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes wipeIn {
+      from { clip-path: polygon(0 0, 0 0, 0 100%, 0% 100%); }
+      to { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+    }
+    @keyframes zoomIn {
+      from { opacity: 0; transform: scale(0.92); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
     /* Progressive Reveal (Step Builds) */
     .yumia-slide-wrapper [data-step] {
       transition: opacity 0.25s ease, transform 0.25s ease;
@@ -1257,10 +1307,14 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     const notesAttr = slide.notes ? this.escapeHtml(slide.notes.replace(/\n/g, '<br>')) : '';
     const progressPercent = Math.round((slideNum / totalSlides) * 100);
 
+    const transition = slide.transition || 'fade';
+    const transType = typeof transition === 'string' ? transition : transition.type;
+    const transClass = `transition-${transType || 'fade'}`;
+
     const elementsHtml = slide.elements.map((el) => this.renderElement(el, theme)).join('\n');
 
     return `
-    <div class="yumia-slide-wrapper ${activeClass}" id="slide-${slideNum}" data-notes="${notesAttr}">
+    <div class="yumia-slide-wrapper ${activeClass} ${transClass}" id="slide-${slideNum}" data-notes="${notesAttr}">
       ${elementsHtml}
       <div class="yumia-progress-bar" style="width: ${progressPercent}%;"></div>
     </div>`;
@@ -1376,6 +1430,13 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
         return `
         <div class="mermaid-container">
           <pre class="mermaid">${this.escapeHtml(m.code)}</pre>
+        </div>`;
+      }
+      case 'math': {
+        const mathEl = element as MathElement;
+        return `
+        <div class="yumia-math-container">
+          <div class="yumia-math-equation">${this.escapeHtml(mathEl.expression)}</div>
         </div>`;
       }
       case 'chart': {

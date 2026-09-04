@@ -10,6 +10,7 @@ import {
   HeadingElement,
   ImageElement,
   ListElement,
+  MathElement,
   MermaidElement,
   TimelineElement,
 } from '@yumiamd/ast';
@@ -218,5 +219,53 @@ Introduction text
     const stepList = presentation.slides[0]?.elements[2] as ListElement;
     expect(stepList.type).toBe('list');
     expect(stepList.step).toBe(1);
+  });
+
+  it('should parse :::math and $$ equation blocks', () => {
+    const source = `
+# Mathematics Slide
+
+:::math
+E = mc^2
+:::
+
+$$
+\\int_{0}^{\\infty} e^{-x^2} dx = \\frac{\\sqrt{\\pi}}{2}
+$$
+`;
+    const presentation = parseYumia(source);
+    expect(presentation.slides[0]?.elements).toHaveLength(3);
+    expect(presentation.slides[0]?.elements[1]?.type).toBe('math');
+    expect((presentation.slides[0]?.elements[1] as MathElement).expression).toBe('E = mc^2');
+    expect(presentation.slides[0]?.elements[2]?.type).toBe('math');
+    expect((presentation.slides[0]?.elements[2] as MathElement).expression).toContain('\\int');
+  });
+
+  it('should parse slide transitions, template, and embedFonts frontmatter', () => {
+    const source = `---
+title: Scientific Presentation
+transition: push
+template: corporate.potx
+embedFonts: true
+---
+
+# Slide 1
+:::transition type="fade" duration="1s"
+Slide content
+
+---
+
+# Slide 2
+Default transition from frontmatter
+`;
+    const presentation = parseYumia(source);
+    expect(presentation.metadata.transition).toBe('push');
+    expect(presentation.metadata.template).toBe('corporate.potx');
+    expect(presentation.metadata.embedFonts).toBe(true);
+
+    expect(presentation.slides[0]?.transition).toEqual({
+      type: 'fade',
+      duration: '1s',
+    });
   });
 });

@@ -8,6 +8,7 @@ import {
   HeadingElement,
   ImageElement,
   ListElement,
+  MathElement,
   MermaidElement,
   MetricElement,
   ParagraphElement,
@@ -255,6 +256,9 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         break;
       case 'mermaid':
         this.renderMermaid(pptxSlide, pptx, element as MermaidElement, rect, theme);
+        break;
+      case 'math':
+        this.renderMath(pptxSlide, pptx, element as MathElement, rect, theme);
         break;
       default:
         break;
@@ -978,6 +982,64 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       default:
         return 18;
     }
+  }
+
+  private renderMath(
+    pptxSlide: PptxSlide,
+    pptx: PptxInstance,
+    math: MathElement,
+    rect: { x: number; y: number; w: number; h: number },
+    theme: YumiaTheme
+  ): void {
+    const surfaceColor = this.cleanHexColor(theme.colors.surface || '11111b');
+    const borderColor = this.cleanHexColor(theme.colors.border || theme.colors.primary);
+    const accentColor = this.cleanHexColor(theme.colors.primary);
+    const textColor = this.cleanHexColor(theme.colors.text || 'ffffff');
+
+    // Equation Container Box
+    pptxSlide.addShape(pptx.ShapeType.roundRect, {
+      x: rect.x,
+      y: rect.y,
+      w: rect.w,
+      h: rect.h,
+      rectRadius: 0.08,
+      fill: { color: surfaceColor },
+      line: { color: borderColor, width: 1.2 },
+    });
+
+    // Left accent bar
+    pptxSlide.addShape(pptx.ShapeType.rect, {
+      x: rect.x,
+      y: rect.y,
+      w: 0.06,
+      h: rect.h,
+      fill: { color: accentColor },
+      line: { color: accentColor, width: 0 },
+    });
+
+    // Equation text
+    pptxSlide.addText(
+      [
+        {
+          text: math.expression,
+          options: {
+            fontFace: 'Cambria Math',
+            fontSize: 20,
+            color: textColor,
+            italic: true,
+            align: 'center',
+            valign: 'middle',
+          },
+        },
+      ],
+      {
+        x: rect.x + 0.15,
+        y: rect.y,
+        w: Math.max(0.1, rect.w - 0.3),
+        h: rect.h,
+        margin: 0.08,
+      }
+    );
   }
 
   private isDarkColor(rawHex?: string): boolean {
