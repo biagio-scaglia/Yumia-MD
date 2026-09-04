@@ -28,6 +28,7 @@ Commands:
   inspect <file>     Inspect the AST and geometric layout tree
   schema             Output machine-readable JSON schema for AI agents
   build <file>       Compile a presentation to PowerPoint (.pptx), PDF (.pdf), or HTML (.html)
+  deploy <file>      Export and deploy presentation to static site, GitHub Pages, or Vercel
 
 Theming & Color Options:
   --theme, -t <name> Base theme: default | cyberpunk | minimal | corporate | terminal | academic
@@ -379,6 +380,78 @@ Opening slide introducing the presentation deck.
         exitCode: 1,
         output: `✗ Inspection failed: ${msg}`,
       };
+    }
+  }
+
+  if (command === 'deploy') {
+    if (!target) {
+      const msg = "Error: Please specify a presentation file to deploy (e.g. 'yumia deploy presentation.yumia.md')";
+      return { exitCode: 1, output: isJson ? JSON.stringify({ error: msg }) : msg };
+    }
+
+    try {
+      const resolvedInput = resolve(process.cwd(), target);
+      const source = readFileSync(resolvedInput, 'utf-8');
+      const provider = (getFlagValue(args, ['--provider']) || 'static').toLowerCase();
+      const outDir = resolve(process.cwd(), getFlagValue(args, ['--out', '-o']) || 'dist-site');
+
+      mkdirSync(outDir, { recursive: true });
+
+      const compiler = new YumiaCompiler();
+      const htmlRenderer = new HtmlRenderer();
+      const result = await compiler.compile(source, htmlRenderer);
+
+      const indexPath = join(outDir, 'index.html');
+      writeFileSync(indexPath, result.html, 'utf-8');
+
+      if (provider === 'gh-pages' || provider === 'github') {
+        writeFileSync(join(outDir, '.nojekyll'), '', 'utf-8');
+      } else if (provider === 'vercel') {
+        const vercelConfig = {
+          version: 2,
+          cleanUrls: true,
+          routes: [{ src: '/(.*)', dest: '/index.html' }],
+        };
+        writeFileSync(join(outDir, 'vercel.json'), JSON.stringify(vercelConfig, null, 2), 'utf-8');
+      }
+
+      if (isJson) {
+        return {
+          exitCode: 0,
+          output: JSON.stringify(
+            {
+              success: true,
+              provider,
+              outputDirectory: outDir,
+              indexPath,
+              slideCount: result.slideCount,
+            },
+            null,
+            2
+          ),
+        };
+      }
+
+      return {
+        exitCode: 0,
+        output: [
+          `🚀 YumiaMD Presentation Deployment Ready!`,
+          `✓ Standalone interactive deck compiled (${result.slideCount} slides)`,
+          `✓ Target Directory: ${outDir}`,
+          `✓ Provider Profile: ${provider}`,
+          `✓ Entrypoint: ${indexPath}`,
+          ``,
+          provider === 'gh-pages'
+            ? `To publish to GitHub Pages: push '${outDir}' contents to 'gh-pages' branch.`
+            : `To deploy to Vercel/Netlify/S3: run 'vercel ${outDir}' or host files from '${outDir}'.`,
+        ].join('\n'),
+      };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (isJson) {
+        return { exitCode: 1, output: JSON.stringify({ success: false, error: msg }) };
+      }
+      return { exitCode: 1, output: `✗ Deployment build failed: ${msg}` };
     }
   }
 

@@ -54,4 +54,15 @@ describe('yumia CLI', () => {
     // Clean up temporary artifact
     unlinkSync(tempOutPath);
   });
+
+  it('should export and prepare cloud deployment with yumia deploy', async () => {
+    const deployDir = path.resolve(__dirname, '../../../examples/basic/dist-test-deploy');
+    const deployRes = await runCli(['node', 'yumia', 'deploy', samplePath, '--provider', 'vercel', '--out', deployDir]);
+
+    expect(deployRes.exitCode).toBe(0);
+    expect(deployRes.output).toContain('Presentation Deployment Ready');
+    expect(existsSync(path.join(deployDir, 'index.html'))).toBe(true);
+    expect(existsSync(path.join(deployDir, 'vercel.json'))).toBe(true);
+  });
 });
+
