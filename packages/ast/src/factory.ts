@@ -1,14 +1,19 @@
 import {
+  BadgeElement,
   CardElement,
+  ChartDataSeries,
+  ChartElement,
   CodeElement,
   ColumnElement,
   ColumnsElement,
+  CompareElement,
   GroupElement,
   HeadingElement,
   ImageElement,
   LayoutDirectiveElement,
   ListElement,
   ListItem,
+  MermaidElement,
   MetricElement,
   ParagraphElement,
   Presentation,
@@ -17,6 +22,8 @@ import {
   Slide,
   SlideElement,
   TableElement,
+  TimelineElement,
+  TimelineItem,
 } from './types.js';
 
 export function createPresentation(
@@ -133,6 +140,63 @@ export function createTable(rows: string[][], headers?: string[]): TableElement 
     type: 'table',
     rows,
     ...(headers ? { headers } : {}),
+  };
+}
+
+export function createChart(
+  chartType: ChartElement['chartType'],
+  labels: string[],
+  series: ChartDataSeries[],
+  title?: string
+): ChartElement {
+  return {
+    type: 'chart',
+    chartType,
+    labels,
+    series,
+    ...(title ? { title } : {}),
+  };
+}
+
+export function createMermaid(code: string, chartType?: string): MermaidElement {
+  return {
+    type: 'mermaid',
+    code,
+    ...(chartType ? { chartType } : {}),
+  };
+}
+
+export function createTimeline(
+  items: TimelineItem[],
+  layout: 'horizontal' | 'vertical' = 'horizontal'
+): TimelineElement {
+  return {
+    type: 'timeline',
+    items,
+    layout,
+  };
+}
+
+export function createCompare(
+  left: SlideElement[],
+  right: SlideElement[],
+  leftTitle?: string,
+  rightTitle?: string
+): CompareElement {
+  return {
+    type: 'compare',
+    left,
+    right,
+    ...(leftTitle ? { leftTitle } : {}),
+    ...(rightTitle ? { rightTitle } : {}),
+  };
+}
+
+export function createBadge(text: string, variant?: BadgeElement['variant']): BadgeElement {
+  return {
+    type: 'badge',
+    text,
+    ...(variant ? { variant } : {}),
   };
 }
 

@@ -62,6 +62,7 @@ export type TextAlignment = 'left' | 'center' | 'right' | 'justify';
 
 export interface BaseElement {
   loc?: SourceLocation;
+  step?: number;
 }
 
 export interface HeadingElement extends BaseElement {
@@ -136,6 +137,53 @@ export interface TableElement extends BaseElement {
   alignments?: TextAlignment[];
 }
 
+export interface ChartDataSeries {
+  name?: string | undefined;
+  values: number[];
+  color?: string | undefined;
+}
+
+export interface ChartElement extends BaseElement {
+  type: 'chart';
+  chartType: 'bar' | 'line' | 'pie' | 'doughnut' | string;
+  labels: string[];
+  series: ChartDataSeries[];
+  title?: string | undefined;
+}
+
+export interface MermaidElement extends BaseElement {
+  type: 'mermaid';
+  code: string;
+  chartType?: string | undefined;
+}
+
+export interface TimelineItem extends BaseElement {
+  date?: string | undefined;
+  title: string;
+  description?: string | undefined;
+  badge?: string | undefined;
+}
+
+export interface TimelineElement extends BaseElement {
+  type: 'timeline';
+  items: TimelineItem[];
+  layout?: 'horizontal' | 'vertical' | undefined;
+}
+
+export interface CompareElement extends BaseElement {
+  type: 'compare';
+  left: SlideElement[];
+  right: SlideElement[];
+  leftTitle?: string | undefined;
+  rightTitle?: string | undefined;
+}
+
+export interface BadgeElement extends BaseElement {
+  type: 'badge';
+  text: string;
+  variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'accent' | string | undefined;
+}
+
 export interface GroupElement extends BaseElement {
   type: 'group';
   direction: 'row' | 'column';
@@ -172,6 +220,11 @@ export type SlideElement =
   | CodeElement
   | QuoteElement
   | TableElement
+  | ChartElement
+  | MermaidElement
+  | TimelineElement
+  | CompareElement
+  | BadgeElement
   | GroupElement
   | ColumnElement
   | ColumnsElement

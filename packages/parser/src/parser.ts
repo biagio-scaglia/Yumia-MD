@@ -1,24 +1,34 @@
 import {
+  ChartDataSeries,
+  ChartElement,
   ColumnElement,
+  CompareElement,
   Diagnostic,
   Presentation,
   PresentationMetadata,
   Slide,
   SlideElement,
+  TimelineElement,
+  TimelineItem,
+  createBadge,
   createCard,
+  createChart,
   createCode,
   createColumn,
   createColumns,
+  createCompare,
   createHeading,
   createImage,
   createLayoutDirective,
   createList,
+  createMermaid,
   createMetric,
   createParagraph,
   createPresentation,
   createQuote,
   createSlide,
   createTable,
+  createTimeline,
 } from '@yumiamd/ast';
 import { ParserOptions, YumiaParser } from './types.js';
 
@@ -355,6 +365,36 @@ export class DefaultYumiaParser implements YumiaParser {
           continue;
         }
 
+        // Check if single line badge e.g. :::badge text="v1.2" variant="success" or :::badge [variant="info"] New Release
+        if (directiveHeader.startsWith('badge')) {
+          const badgeArg = directiveHeader.slice(5).trim();
+          const variantMatch = badgeArg.match(/variant=['"](.*?)['"]/);
+          const textMatch = badgeArg.match(/text=['"](.*?)['"]/);
+          const variant = variantMatch ? variantMatch[1] : undefined;
+          let text = textMatch ? textMatch[1]! : badgeArg.replace(/variant=['"].*?['"]/, '').trim();
+          text = text.replace(/^['"](.*)['"]$/, '$1');
+          const el = createBadge(text, variant);
+          el.loc = {
+            start: { line: currentLineNum, column: 1 },
+            end: { line: currentLineNum, column: rawLine.length + 1 },
+          };
+          elements.push(el);
+          i++;
+          continue;
+        }
+
+        // Check if single-line chart e.g. :::chart type="bar" data="Q1:100, Q2:200"
+        if (directiveHeader.startsWith('chart') && (directiveHeader.includes('data=') || directiveHeader.includes('labels='))) {
+          const el = this.parseChartDirective(directiveHeader, []);
+          el.loc = {
+            start: { line: currentLineNum, column: 1 },
+            end: { line: currentLineNum, column: rawLine.length + 1 },
+          };
+          elements.push(el);
+          i++;
+          continue;
+        }
+
         // Block with closing :::
         const [directiveName, ...args] = directiveHeader.split(' ');
         const directiveArg = args.join(' ').trim();
@@ -367,7 +407,10 @@ export class DefaultYumiaParser implements YumiaParser {
         while (i < lines.length) {
           const innerLine = lines[i]?.trim() ?? '';
           const isSingleLine =
-            innerLine.startsWith(':::metric') || innerLine.startsWith(':::layout');
+            innerLine.startsWith(':::metric') ||
+            innerLine.startsWith(':::layout') ||
+            (innerLine.startsWith(':::badge') && (innerLine.includes('text=') || innerLine.includes('variant='))) ||
+            (innerLine.startsWith(':::chart') && innerLine.includes('data='));
           if (innerLine.startsWith(':::') && innerLine.length > 3 && !isSingleLine) {
             nestedCount++;
           } else if (innerLine === ':::') {
@@ -445,6 +488,41 @@ export class DefaultYumiaParser implements YumiaParser {
             end: { line: baseLine + i - 1, column: 1 },
           };
           elements.push(el);
+        } else if (directiveName === 'mermaid') {
+          const code = blockLines.join('\n').trim();
+          const el = createMermaid(code);
+          el.loc = {
+            start: { line: directiveStartLine, column: 1 },
+            end: { line: baseLine + i - 1, column: 1 },
+          };
+          elements.push(el);
+        } else if (directiveName === 'chart') {
+          const el = this.parseChartDirective(directiveArg, blockLines);
+          el.loc = {
+            start: { line: directiveStartLine, column: 1 },
+            end: { line: baseLine + i - 1, column: 1 },
+          };
+          elements.push(el);
+        } else if (directiveName === 'timeline') {
+          const el = this.parseTimelineBlock(directiveArg, blockLines);
+          el.loc = {
+            start: { line: directiveStartLine, column: 1 },
+            end: { line: baseLine + i - 1, column: 1 },
+          };
+          elements.push(el);
+        } else if (directiveName === 'compare') {
+          const el = this.parseCompareBlock(directiveArg, blockLines, blockBaseLine);
+          el.loc = {
+            start: { line: directiveStartLine, column: 1 },
+            end: { line: baseLine + i - 1, column: 1 },
+          };
+          elements.push(el);
+        } else if (directiveName === 'step') {
+          const { elements: stepElements } = this.parseLines(blockLines, blockBaseLine);
+          for (const sEl of stepElements) {
+            sEl.step = 1;
+            elements.push(sEl);
+          }
         }
         continue;
       }
@@ -624,6 +702,168 @@ export class DefaultYumiaParser implements YumiaParser {
     }
 
     return columns;
+  }
+
+  private parseChartDirective(headerArg: string, blockLines: string[]): ChartElement {
+    const typeMatch = headerArg.match(/type=['"](.*?)['"]/);
+    const titleMatch = headerArg.match(/title=['"](.*?)['"]/);
+    const labelsMatch = headerArg.match(/labels=['"](.*?)['"]/);
+    const dataMatch = headerArg.match(/data=['"](.*?)['"]/);
+
+    const chartType = (typeMatch ? typeMatch[1] : 'bar') as 'bar' | 'line' | 'pie' | 'doughnut';
+    const title = titleMatch ? titleMatch[1] : undefined;
+
+    let labels: string[] = [];
+    const series: ChartDataSeries[] = [];
+
+    if (labelsMatch && labelsMatch[1]) {
+      labels = labelsMatch[1]
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+
+    if (dataMatch && dataMatch[1]) {
+      const rawData = dataMatch[1].trim();
+      if (rawData.includes(':')) {
+        const parts = rawData.split(',').map((p) => p.trim());
+        const values: number[] = [];
+        const extractedLabels: string[] = [];
+        for (const part of parts) {
+          const [k, v] = part.split(':').map((s) => s.trim());
+          if (k && v !== undefined) {
+            extractedLabels.push(k);
+            values.push(parseFloat(v) || 0);
+          }
+        }
+        if (labels.length === 0) labels = extractedLabels;
+        series.push({ name: title || 'Data', values });
+      } else {
+        const values = rawData.split(',').map((v) => parseFloat(v.trim()) || 0);
+        series.push({ name: title || 'Data', values });
+      }
+    }
+
+    for (const line of blockLines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+
+      if (trimmed.toLowerCase().startsWith('labels:')) {
+        labels = trimmed
+          .slice(7)
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+      } else if (trimmed.toLowerCase().startsWith('series:')) {
+        const seriesContent = trimmed.slice(7).trim();
+        const sMatch = seriesContent.match(/^(.*?)\s*\[(.*?)\]$/);
+        if (sMatch && sMatch[1] && sMatch[2]) {
+          const sName = sMatch[1].trim();
+          const sValues = sMatch[2].split(',').map((v) => parseFloat(v.trim()) || 0);
+          series.push({ name: sName, values: sValues });
+        }
+      } else if (trimmed.includes('|')) {
+        const parts = trimmed.split('|').map((s) => s.trim());
+        if (parts.length >= 2) {
+          const [l, valStr] = parts;
+          if (l && valStr) {
+            labels.push(l);
+            const val = parseFloat(valStr) || 0;
+            if (series.length === 0) series.push({ name: 'Data', values: [] });
+            series[0]?.values.push(val);
+          }
+        }
+      }
+    }
+
+    if (labels.length === 0) {
+      const maxLen = Math.max(0, ...series.map((s) => s.values.length));
+      labels = Array.from({ length: maxLen }, (_, i) => `Item ${i + 1}`);
+    }
+
+    return createChart(chartType, labels, series, title);
+  }
+
+  private parseTimelineBlock(headerArg: string, blockLines: string[]): TimelineElement {
+    const layoutMatch = headerArg.match(/layout=['"](.*?)['"]/);
+    const layout = layoutMatch && layoutMatch[1] === 'vertical' ? 'vertical' : 'horizontal';
+    const items: TimelineItem[] = [];
+
+    for (const line of blockLines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+
+      const bracketMatch = trimmed.match(/^[-*]?\s*\[(.*?)\]\s*(.*?)(?::\s*(.*))?$/);
+      if (bracketMatch && bracketMatch[1] && bracketMatch[2]) {
+        items.push({
+          date: bracketMatch[1].trim(),
+          title: bracketMatch[2].trim(),
+          description: bracketMatch[3] ? bracketMatch[3].trim() : undefined,
+        });
+        continue;
+      }
+
+      if (trimmed.includes('|')) {
+        const parts = trimmed.split('|').map((s) => s.trim());
+        if (parts.length >= 2) {
+          items.push({
+            date: parts[0],
+            title: parts[1] || '',
+            description: parts[2] || undefined,
+          });
+          continue;
+        }
+      }
+
+      items.push({
+        title: trimmed.replace(/^[-*]\s*/, ''),
+      });
+    }
+
+    return createTimeline(items, layout);
+  }
+
+  private parseCompareBlock(
+    headerArg: string,
+    blockLines: string[],
+    baseLine: number
+  ): CompareElement {
+    const leftMatch = headerArg.match(/left=['"](.*?)['"]/);
+    const rightMatch = headerArg.match(/right=['"](.*?)['"]/);
+    const leftTitle = leftMatch ? leftMatch[1] : undefined;
+    const rightTitle = rightMatch ? rightMatch[1] : undefined;
+
+    let leftLines: string[] = [];
+    let rightLines: string[] = [];
+    let currentSide: 'left' | 'right' = 'left';
+
+    for (const line of blockLines) {
+      const trimmed = line.trim();
+      if (trimmed === ':::vs' || trimmed === ':::right' || trimmed === '---') {
+        currentSide = 'right';
+        continue;
+      }
+      if (trimmed === ':::left') {
+        currentSide = 'left';
+        continue;
+      }
+      if (currentSide === 'left') {
+        leftLines.push(line);
+      } else {
+        rightLines.push(line);
+      }
+    }
+
+    if (rightLines.length === 0 && leftLines.length > 1) {
+      const half = Math.ceil(leftLines.length / 2);
+      rightLines = leftLines.slice(half);
+      leftLines = leftLines.slice(0, half);
+    }
+
+    const { elements: leftElements } = this.parseLines(leftLines, baseLine);
+    const { elements: rightElements } = this.parseLines(rightLines, baseLine + leftLines.length);
+
+    return createCompare(leftElements, rightElements, leftTitle, rightTitle);
   }
 }
 
