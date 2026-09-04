@@ -5,6 +5,7 @@ import {
   HeadingElement,
   ImageElement,
   ListElement,
+  MetricElement,
   ParagraphElement,
   Presentation,
   QuoteElement,
@@ -12,7 +13,7 @@ import {
 } from '@yumiamd/ast';
 import { DefaultLayoutEngine, LayoutNode, Rect, Size, SlideLayoutResult } from '@yumiamd/layout';
 import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
-import { defaultTheme, YumiaTheme } from '@yumiamd/theme';
+import { defaultTheme, resolveTheme, YumiaTheme } from '@yumiamd/theme';
 
 export interface PptxRenderOptions {
   author?: string;
@@ -103,7 +104,10 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     const PptxConstructor = (pptxgen as unknown as { default?: typeof pptxgen }).default || pptxgen;
     const pptx: PptxInstance = new (PptxConstructor as unknown as new () => PptxInstance)();
 
-    const theme = context.theme || defaultTheme;
+    const resolvedTheme = presentation.metadata.theme
+      ? resolveTheme(presentation.metadata.theme)
+      : defaultTheme;
+    const theme = context.theme || resolvedTheme;
     const title = presentation.metadata.title || 'Yumia Presentation';
     const author = presentation.metadata.author || 'YumiaMD';
 
@@ -189,6 +193,9 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         break;
       case 'image':
         this.renderImage(pptxSlide, element, rect);
+        break;
+      case 'metric':
+        this.renderMetric(pptxSlide, pptx, node, scaleX, scaleY, theme);
         break;
       case 'card':
         this.renderCard(pptxSlide, pptx, node, scaleX, scaleY, theme);
@@ -382,6 +389,93 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     }
   }
 
+  private renderMetric(
+    pptxSlide: PptxSlide,
+    pptx: PptxInstance,
+    node: LayoutNode,
+    scaleX: number,
+    scaleY: number,
+    theme: YumiaTheme
+  ): void {
+    const metric = node.element as MetricElement;
+    const rect = this.toInches(node.bounds, scaleX, scaleY);
+    const cardTheme = theme.components?.card;
+
+    // Pick variant color or primary color
+    let accentColor = theme.colors.primary;
+    if (metric.variant && theme.colors[metric.variant as keyof typeof theme.colors]) {
+      accentColor = theme.colors[metric.variant as keyof typeof theme.colors] as string;
+    }
+
+    const fillColor = this.cleanHexColor(cardTheme?.background || theme.colors.surface);
+    const borderColor = this.cleanHexColor(
+      metric.variant && theme.colors[metric.variant as keyof typeof theme.colors]
+        ? (theme.colors[metric.variant as keyof typeof theme.colors] as string)
+        : cardTheme?.borderColor || theme.colors.border || '#cbd5e1'
+    );
+
+    // Render container card
+    pptxSlide.addShape(pptx.ShapeType.roundRect, {
+      x: rect.x,
+      y: rect.y,
+      w: rect.w,
+      h: rect.h,
+      fill: { color: fillColor },
+      line: { color: borderColor, width: 1.5 },
+      rectRadius: 0.08,
+    });
+
+    // Top Label
+    pptxSlide.addText(metric.label.toUpperCase(), {
+      x: rect.x + 0.15,
+      y: rect.y + 0.15,
+      w: rect.w - 0.3,
+      h: 0.25,
+      fontSize: 11,
+      bold: true,
+      color: this.cleanHexColor(theme.colors.muted || '#64748b'),
+      fontFace: theme.typography.headingFont.split(',')[0]?.trim() || 'Arial',
+      align: 'center',
+      valign: 'middle',
+    });
+
+    // Large Metric Value
+    const displayValue = metric.unit ? `${metric.value} ${metric.unit}` : metric.value;
+    pptxSlide.addText(displayValue, {
+      x: rect.x + 0.1,
+      y: rect.y + 0.4,
+      w: rect.w - 0.2,
+      h: 0.55,
+      fontSize: 30,
+      bold: true,
+      color: this.cleanHexColor(accentColor),
+      fontFace: theme.typography.headingFont.split(',')[0]?.trim() || 'Arial',
+      align: 'center',
+      valign: 'middle',
+    });
+
+    // Optional Change indicator / subtext
+    if (metric.change) {
+      const isPositive = metric.change.startsWith('+');
+      const changeColor = isPositive
+        ? this.cleanHexColor(theme.colors.success || '#10b981')
+        : this.cleanHexColor(theme.colors.danger || '#ef4444');
+
+      pptxSlide.addText(metric.change, {
+        x: rect.x + 0.1,
+        y: rect.y + rect.h - 0.32,
+        w: rect.w - 0.2,
+        h: 0.22,
+        fontSize: 12,
+        bold: true,
+        color: changeColor,
+        fontFace: theme.typography.bodyFont.split(',')[0]?.trim() || 'Arial',
+        align: 'center',
+        valign: 'middle',
+      });
+    }
+  }
+
   private renderCard(
     pptxSlide: PptxSlide,
     pptx: PptxInstance,
@@ -395,9 +489,18 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     const cardTheme = theme.components?.card;
 
     const fillColor = this.cleanHexColor(cardTheme?.background || theme.colors.surface);
-    const borderColor = this.cleanHexColor(
+    let borderColor = this.cleanHexColor(
       cardTheme?.borderColor || theme.colors.border || '#cbd5e1'
     );
+    let titleColor = this.cleanHexColor(theme.colors.primary);
+
+    if (card.variant && theme.colors[card.variant as keyof typeof theme.colors]) {
+      const variantHex = this.cleanHexColor(
+        theme.colors[card.variant as keyof typeof theme.colors] as string
+      );
+      borderColor = variantHex;
+      titleColor = variantHex;
+    }
 
     pptxSlide.addShape(pptx.ShapeType.roundRect, {
       x: rect.x,
@@ -417,7 +520,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         h: 0.35,
         fontSize: 20,
         bold: true,
-        color: this.cleanHexColor(theme.colors.primary),
+        color: titleColor,
         fontFace: theme.typography.headingFont.split(',')[0]?.trim() || 'Arial',
       });
     }

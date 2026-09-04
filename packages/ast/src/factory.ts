@@ -9,6 +9,7 @@ import {
   LayoutDirectiveElement,
   ListElement,
   ListItem,
+  MetricElement,
   ParagraphElement,
   Presentation,
   PresentationMetadata,
@@ -83,6 +84,25 @@ export function createCard(
     elements,
     ...(title ? { title } : {}),
     ...(variant ? { variant } : {}),
+  };
+}
+
+export function createMetric(
+  value: string,
+  label: string,
+  variant?: MetricElement['variant'],
+  description?: string,
+  unit?: string,
+  change?: string
+): MetricElement {
+  return {
+    type: 'metric',
+    value,
+    label,
+    ...(variant ? { variant } : {}),
+    ...(description ? { description } : {}),
+    ...(unit ? { unit } : {}),
+    ...(change ? { change } : {}),
   };
 }
 

@@ -2,7 +2,8 @@ import { Diagnostic, Presentation } from '@yumiamd/ast';
 import { DefaultLayoutEngine, LayoutEngine, PresentationLayoutResult, Size } from '@yumiamd/layout';
 import { DefaultYumiaParser, ParserOptions, YumiaParser } from '@yumiamd/parser';
 import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
-import { defaultTheme, YumiaTheme } from '@yumiamd/theme';
+import { defaultTheme, resolveTheme, YumiaTheme } from '@yumiamd/theme';
+import { LintOptions, LintReport, YumiaLinter } from './linter.js';
 
 export interface CompilerConfig {
   parser?: YumiaParser;
@@ -22,12 +23,14 @@ export class YumiaCompiler {
   private parser: YumiaParser;
   private layoutEngine: LayoutEngine;
   private defaultTheme: YumiaTheme;
+  private linter: YumiaLinter;
   private viewport?: Size;
 
   constructor(config: CompilerConfig = {}) {
     this.parser = config.parser ?? new DefaultYumiaParser();
     this.layoutEngine = config.layoutEngine ?? new DefaultLayoutEngine();
     this.defaultTheme = config.defaultTheme ?? defaultTheme;
+    this.linter = new YumiaLinter(this.layoutEngine);
     if (config.viewport) {
       this.viewport = config.viewport;
     }
@@ -51,6 +54,17 @@ export class YumiaCompiler {
     };
   }
 
+  lint(sourceOrPresentation: string | Presentation, options?: LintOptions): LintReport {
+    const presentation =
+      typeof sourceOrPresentation === 'string'
+        ? this.parse(sourceOrPresentation)
+        : sourceOrPresentation;
+    return this.linter.lint(presentation, {
+      ...(this.viewport ? { viewport: this.viewport } : {}),
+      ...options,
+    });
+  }
+
   layout(presentation: Presentation, viewport?: Size): PresentationLayoutResult {
     return this.layoutEngine.computePresentation(presentation, viewport ?? this.viewport);
   }
@@ -61,7 +75,10 @@ export class YumiaCompiler {
     contextOverrides: Partial<RenderContext> = {}
   ): Promise<TOutput> {
     const layout = contextOverrides.layout ?? this.layout(presentation);
-    const theme = contextOverrides.theme ?? this.defaultTheme;
+    const presentationTheme = presentation.metadata.theme
+      ? resolveTheme(presentation.metadata.theme)
+      : this.defaultTheme;
+    const theme = contextOverrides.theme ?? presentationTheme;
 
     const context: RenderContext = {
       theme,
@@ -98,7 +115,10 @@ export class YumiaCompiler {
             subtitle: { type: 'string' },
             author: { type: 'string' },
             date: { type: 'string' },
-            theme: { type: 'string' },
+            theme: {
+              type: 'string',
+              enum: ['default', 'cyberpunk', 'minimal', 'corporate', 'terminal', 'academic'],
+            },
             aspectRatio: { enum: ['16:9', '4:3', '16:10'] },
           },
         },
@@ -110,8 +130,12 @@ export class YumiaCompiler {
               description: 'Multi-column grid layout',
             },
             card: {
-              syntax: ':::card [Title]\\n...\\n:::',
+              syntax: ':::card [Title] [variant="primary|success|warning|danger|info"]\\n...\\n:::',
               description: 'Visual container card with theme border and background',
+            },
+            metric: {
+              syntax: ':::metric value="99.9%" label="Uptime" change="+0.4%" variant="success"',
+              description: 'Stat callout box with prominent value, label, and trend',
             },
             notes: {
               syntax: ':::notes\\nSpeaker notes text\\n:::',

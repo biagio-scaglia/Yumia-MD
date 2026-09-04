@@ -92,7 +92,17 @@ export interface CardElement extends BaseElement {
   type: 'card';
   title?: string;
   elements: SlideElement[];
-  variant?: 'default' | 'outlined' | 'filled';
+  variant?: 'default' | 'outlined' | 'filled' | 'warning' | 'success' | 'info' | 'accent' | string;
+}
+
+export interface MetricElement extends BaseElement {
+  type: 'metric';
+  value: string;
+  label: string;
+  variant?: 'default' | 'success' | 'warning' | 'danger' | 'accent' | 'primary' | 'info' | string;
+  unit?: string;
+  change?: string;
+  description?: string;
 }
 
 export interface CodeElement extends BaseElement {
@@ -148,6 +158,7 @@ export type SlideElement =
   | ListElement
   | ImageElement
   | CardElement
+  | MetricElement
   | CodeElement
   | QuoteElement
   | TableElement

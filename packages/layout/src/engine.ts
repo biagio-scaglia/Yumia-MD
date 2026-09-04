@@ -6,6 +6,7 @@ import {
   HeadingElement,
   ImageElement,
   ListElement,
+  MetricElement,
   ParagraphElement,
   Presentation,
   QuoteElement,
@@ -147,6 +148,10 @@ export class DefaultLayoutEngine implements LayoutEngine {
       }
       case 'image': {
         const height = this.estimateImageHeight(element);
+        return { element, bounds: { x, y, width, height } };
+      }
+      case 'metric': {
+        const height = this.estimateMetricHeight(element);
         return { element, bounds: { x, y, width, height } };
       }
       case 'card': {
@@ -311,5 +316,9 @@ export class DefaultLayoutEngine implements LayoutEngine {
       return image.height;
     }
     return 320;
+  }
+
+  private estimateMetricHeight(metric: MetricElement): number {
+    return metric.change ? 140 : 120;
   }
 }

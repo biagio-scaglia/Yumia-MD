@@ -2,11 +2,11 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, extname, join, resolve } from 'node:path';
 import { parseYumia } from '@yumiamd/parser';
 import { DefaultLayoutEngine } from '@yumiamd/layout';
-import { Presentation, Slide } from '@yumiamd/ast';
+import { Presentation } from '@yumiamd/ast';
 import { YumiaCompiler } from '@yumiamd/core';
 import { PptxRenderer } from '@yumiamd/renderer-pptx';
 
-export const VERSION = '0.1.7';
+export const VERSION = '0.1.8';
 
 export function printHelp(): string {
   return `
@@ -26,6 +26,7 @@ Commands:
 Options:
   --out, -o <file>   Specify output file path (default: dist/<name>.pptx)
   --format, -f <fmt> Target output format: pptx (default)
+  --strict           Enforce zero warnings in 'lint' (exits with code 1 on warning)
   --json             Output results formatted as JSON for CI/CD and AI tools
   --layout           Show computed geometric bounding boxes in 'inspect'
   -h, --help         Show this help message
@@ -45,6 +46,7 @@ export async function runCli(argv: string[]): Promise<{ exitCode: number; output
   }
 
   const isJson = args.includes('--json');
+  const isStrict = args.includes('--strict');
   const nonFlagArgs = args.filter((a) => !a.startsWith('-'));
   const command = nonFlagArgs[0];
   const target = nonFlagArgs[1];
@@ -190,40 +192,16 @@ Opening slide introducing the presentation deck.
     }
     try {
       const source = readFileSync(target, 'utf-8');
-      const presentation = parseYumia(source);
-      const engine = new DefaultLayoutEngine();
-      const layout = engine.computePresentation(presentation);
-
-      const issues: Array<{ slide: number; type: string; message: string }> = [];
-      layout.slides.forEach((slideResult, index) => {
-        const slideNum = index + 1;
-        if (slideResult.overflow) {
-          issues.push({
-            slide: slideNum,
-            type: 'overflow',
-            message: `Content exceeds slide height by ~${Math.round(slideResult.overflowAmount || 0)}px`,
-          });
-        }
-
-        const slide = presentation.slides[index] as Slide;
-        if (slide.elements.length === 0) {
-          issues.push({
-            slide: slideNum,
-            type: 'empty',
-            message: 'Slide has no content elements.',
-          });
-        }
-      });
+      const compiler = new YumiaCompiler();
+      const report = compiler.lint(source, { strict: isStrict });
 
       if (isJson) {
         return {
-          exitCode: 0,
+          exitCode: report.passed ? 0 : 1,
           output: JSON.stringify(
             {
               target,
-              passed: issues.length === 0,
-              slideCount: presentation.slides.length,
-              issues,
+              ...report,
             },
             null,
             2
@@ -231,16 +209,29 @@ Opening slide introducing the presentation deck.
         };
       }
 
-      if (issues.length === 0) {
+      if (report.issueCount === 0) {
         return {
           exitCode: 0,
-          output: `✓ Yumia Lint: All ${presentation.slides.length} slide(s) passed with 0 issues.`,
+          output: `✓ Yumia Lint: All ${report.totalSlides} slide(s) passed with 0 issues.`,
         };
       } else {
-        const formatted = issues.map((i) => `⚠ Slide ${i.slide}: ${i.message}`).join('\n');
+        const issueLines: string[] = [];
+        for (const e of report.errors) {
+          issueLines.push(`  ✗ [${e.code}] Slide ${e.slide}: ${e.message}`);
+        }
+        for (const w of report.warnings) {
+          issueLines.push(`  ⚠ [${w.code}] Slide ${w.slide}: ${w.message}`);
+        }
+        for (const info of report.infos) {
+          issueLines.push(`  ℹ [${info.code}] Slide ${info.slide}: ${info.message}`);
+        }
+
+        const summary = `Found ${report.errors.length} error(s), ${report.warnings.length} warning(s).`;
+        const exitCode = report.passed ? 0 : 1;
+
         return {
-          exitCode: 0,
-          output: `Yumia Lint Report for '${target}':\n\n${formatted}\n\nFound ${issues.length} warning(s).`,
+          exitCode,
+          output: `Yumia Lint Report for '${target}':\n\n${issueLines.join('\n')}\n\n${summary}${isStrict && report.warnings.length > 0 ? ' (failed due to --strict)' : ''}`,
         };
       }
     } catch (err) {

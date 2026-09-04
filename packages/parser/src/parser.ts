@@ -13,6 +13,7 @@ import {
   createImage,
   createLayoutDirective,
   createList,
+  createMetric,
   createParagraph,
   createPresentation,
   createQuote,
@@ -32,18 +33,15 @@ export class DefaultYumiaParser implements YumiaParser {
 
     const normalized = source.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
     const { metadata, content, lineOffset } = this.extractFrontmatter(normalized);
+    if (!content.trim()) {
+      return createPresentation(metadata, []);
+    }
     const slideChunks = this.splitSlides(content, lineOffset);
 
     const slides: Slide[] = [];
     for (const chunk of slideChunks) {
       const slide = this.parseSlide(chunk.content, chunk.startLine);
-      if (
-        slide.elements.length > 0 ||
-        slide.notes !== undefined ||
-        slide.background !== undefined
-      ) {
-        slides.push(slide);
-      }
+      slides.push(slide);
     }
 
     const presentation = createPresentation(metadata, slides);
@@ -318,6 +316,30 @@ export class DefaultYumiaParser implements YumiaParser {
           continue;
         }
 
+        // Check if metric directive e.g. :::metric value="99.9%" label="Uptime" change="+0.4%" variant="success"
+        if (directiveHeader.startsWith('metric')) {
+          const valueMatch = directiveHeader.match(/value=['"](.*?)['"]/);
+          const labelMatch = directiveHeader.match(/label=['"](.*?)['"]/);
+          const variantMatch = directiveHeader.match(/variant=['"](.*?)['"]/);
+          const descMatch = directiveHeader.match(/description=['"](.*?)['"]/);
+          const unitMatch = directiveHeader.match(/unit=['"](.*?)['"]/);
+          const changeMatch = directiveHeader.match(/change=['"](.*?)['"]/);
+          const value = valueMatch ? valueMatch[1]! : '0';
+          const label = labelMatch ? labelMatch[1]! : '';
+          const variant = variantMatch ? variantMatch[1]! : undefined;
+          const desc = descMatch ? descMatch[1]! : undefined;
+          const unit = unitMatch ? unitMatch[1]! : undefined;
+          const change = changeMatch ? changeMatch[1]! : undefined;
+          const el = createMetric(value, label, variant, desc, unit, change);
+          el.loc = {
+            start: { line: currentLineNum, column: 1 },
+            end: { line: currentLineNum, column: rawLine.length + 1 },
+          };
+          elements.push(el);
+          i++;
+          continue;
+        }
+
         // Block with closing :::
         const [directiveName, ...args] = directiveHeader.split(' ');
         const directiveArg = args.join(' ').trim();
@@ -329,7 +351,9 @@ export class DefaultYumiaParser implements YumiaParser {
 
         while (i < lines.length) {
           const innerLine = lines[i]?.trim() ?? '';
-          if (innerLine.startsWith(':::') && innerLine.length > 3) {
+          const isSingleLine =
+            innerLine.startsWith(':::metric') || innerLine.startsWith(':::layout');
+          if (innerLine.startsWith(':::') && innerLine.length > 3 && !isSingleLine) {
             nestedCount++;
           } else if (innerLine === ':::') {
             nestedCount--;
@@ -363,9 +387,17 @@ export class DefaultYumiaParser implements YumiaParser {
             .filter(Boolean)
             .join('\n');
         } else if (directiveName === 'card') {
-          const title = directiveArg.replace(/^['"](.*)['"]$/, '$1') || undefined;
+          let cardTitle: string | undefined;
+          let cardVariant: string | undefined;
+          const variantMatch = directiveArg.match(/variant=['"](.*?)['"]/);
+          if (variantMatch) {
+            cardVariant = variantMatch[1];
+            cardTitle = directiveArg.replace(/variant=['"].*?['"]/, '').trim().replace(/^['"](.*)['"]$/, '$1') || undefined;
+          } else {
+            cardTitle = directiveArg.replace(/^['"](.*)['"]$/, '$1') || undefined;
+          }
           const { elements: cardElements } = this.parseLines(blockLines, blockBaseLine);
-          const el = createCard(cardElements, title);
+          const el = createCard(cardElements, cardTitle, cardVariant);
           el.loc = {
             start: { line: directiveStartLine, column: 1 },
             end: { line: baseLine + i - 1, column: 1 },
@@ -545,7 +577,9 @@ export class DefaultYumiaParser implements YumiaParser {
 
         while (i < lines.length) {
           const innerLine = lines[i]?.trim() ?? '';
-          if (innerLine.startsWith(':::') && innerLine.length > 3) {
+          const isSingleLine =
+            innerLine.startsWith(':::metric') || innerLine.startsWith(':::layout');
+          if (innerLine.startsWith(':::') && innerLine.length > 3 && !isSingleLine) {
             nestedCount++;
           } else if (innerLine === ':::') {
             nestedCount--;

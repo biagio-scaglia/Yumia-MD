@@ -7,6 +7,10 @@ export interface ColorPalette {
   muted?: string;
   accent?: string;
   border?: string;
+  success?: string;
+  warning?: string;
+  danger?: string;
+  info?: string;
 }
 
 export interface TypographyConfig {
@@ -55,6 +59,11 @@ export interface ComponentThemeDefaults {
     borderColor?: string;
     borderRadius?: number;
     padding?: number;
+  };
+  metric?: {
+    valueColor?: string;
+    labelColor?: string;
+    borderRadius?: number;
   };
   code?: {
     background?: string;
