@@ -19,7 +19,7 @@ for (const pkg of packages) {
   try {
     execSync(`npm unpublish ${pkg} --force`, { stdio: 'inherit' });
     console.log(`✓ Removed ${pkg}\n`);
-  } catch (err) {
+  } catch {
     console.warn(`⚠️  Could not unpublish ${pkg} (may already be unpublished or require auth)\n`);
   }
 }
