@@ -86,12 +86,34 @@ Opening slide introducing deterministic workflows.
 
 ---
 
-## CLI Usage (`yumiamd`)
+## ⚡ Quick Start
 
-Install or run the CLI globally / locally:
+You can run YumiaMD immediately without installing anything via `npx`:
 
 ```bash
 # Initialize a new presentation project
+npx yumiamd init my-deck
+
+# Compile presentation directly to native editable PowerPoint (.pptx)
+npx yumiamd build presentation.yumia.md --out dist/presentation.pptx
+```
+
+---
+
+## 📦 Installation & Usage
+
+### 1. Global CLI Tool
+
+Install the `yumia` / `yumiamd` command-line tool globally:
+
+```bash
+npm install -g yumiamd
+# or
+pnpm add -g yumiamd
+```
+
+```bash
+# Initialize a starter project
 yumia init my-deck
 
 # Validate markdown syntax and AST structure
@@ -103,15 +125,37 @@ yumia lint presentation.yumia.md
 # Inspect AST and deterministic layout bounding boxes
 yumia inspect presentation.yumia.md --layout
 
-# Compile directly to a native editable PowerPoint deck
+# Compile to PowerPoint (.pptx)
 yumia build presentation.yumia.md --out dist/presentation.pptx
+```
+
+### 2. Node.js & TypeScript Library
+
+Use YumiaMD programmatically in your applications:
+
+```bash
+npm install yumiamd
+```
+
+```typescript
+import { compile, parse } from 'yumiamd';
+import fs from 'node:fs';
+
+const markdown = fs.readFileSync('presentation.yumia.md', 'utf-8');
+const { buffer, errors } = await compile(markdown, { format: 'pptx' });
+
+if (errors.length === 0) {
+  fs.writeFileSync('output.pptx', buffer);
+}
 ```
 
 ---
 
-## Packages Overview
+## 🏛️ Architecture & Internal Modules
 
-| Package                  | Responsibility                                                  |
+YumiaMD is developed as a modular monorepo and distributed as a self-contained **All-in-One package (`yumiamd`)**:
+
+| Module                   | Responsibility                                                  |
 | :----------------------- | :-------------------------------------------------------------- |
 | `@yumiamd/ast`           | Pure semantic presentation AST data structures                  |
 | `@yumiamd/parser`        | Converts Markdown + Presentation DSL into AST                   |
@@ -122,7 +166,7 @@ yumia build presentation.yumia.md --out dist/presentation.pptx
 | `@yumiamd/renderer-pdf`  | Vector PDF document compiler _(in development)_                 |
 | `@yumiamd/renderer-html` | Interactive HTML5 presentation deck compiler _(in development)_ |
 | `@yumiamd/core`          | Compiler pipeline coordinator                                   |
-| `yumiamd`                | Command-line interface and compiler runner (`yumia`)            |
+| **`yumiamd`**            | **Unified All-in-One package & CLI published to NPM**           |
 
 ---
 
