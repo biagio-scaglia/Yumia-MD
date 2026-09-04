@@ -41,7 +41,7 @@ export class DefaultLayoutEngine implements LayoutEngine {
     options: LayoutOptions = {}
   ): SlideLayoutResult {
     const padding = options.padding ?? 64;
-    const gap = options.gap ?? 24;
+    const gap = options.gap ?? 32;
     const availableWidth = Math.max(100, viewport.width - padding * 2);
     const availableHeight = Math.max(100, viewport.height - padding * 2);
 
@@ -130,7 +130,7 @@ export class DefaultLayoutEngine implements LayoutEngine {
         return { element, bounds: { x, y, width, height } };
       }
       case 'list': {
-        const height = this.estimateListHeight(element);
+        const height = this.estimateListHeight(element, width);
         return { element, bounds: { x, y, width, height } };
       }
       case 'code': {
@@ -169,9 +169,9 @@ export class DefaultLayoutEngine implements LayoutEngine {
     width: number,
     gap: number
   ): LayoutNode {
-    const cardPadding = 28;
+    const cardPadding = 32;
     const innerWidth = Math.max(10, width - cardPadding * 2);
-    const titleHeight = element.title ? 56 : 0;
+    const titleHeight = element.title ? 60 : 0;
     const innerStartY = y + cardPadding + titleHeight;
 
     const { nodes: children, totalHeight: innerHeight } = this.layoutElementList(
@@ -179,11 +179,11 @@ export class DefaultLayoutEngine implements LayoutEngine {
       x + cardPadding,
       innerStartY,
       innerWidth,
-      gap / 1.5
+      gap
     );
 
-    const cardHeight = titleHeight + innerHeight + cardPadding * 2;
-    const bounds: Rect = { x, y, width, height: Math.max(100, cardHeight) };
+    const cardHeight = titleHeight + innerHeight + cardPadding * 2 + 12;
+    const bounds: Rect = { x, y, width, height: Math.max(120, cardHeight) };
 
     return {
       element,
@@ -275,28 +275,35 @@ export class DefaultLayoutEngine implements LayoutEngine {
   private estimateParagraphHeight(paragraph: ParagraphElement, width: number): number {
     const charsPerLine = Math.max(20, Math.floor(width / 14));
     const lines = Math.ceil(paragraph.text.length / charsPerLine) || 1;
-    return Math.max(40, lines * 32);
+    return Math.max(40, lines * 36);
   }
 
-  private estimateListHeight(list: ListElement): number {
-    return Math.max(40, list.items.length * 40);
+  private estimateListHeight(list: ListElement, width: number = 800): number {
+    const charsPerLine = Math.max(15, Math.floor(width / 13));
+    let totalHeight = 0;
+    for (const item of list.items) {
+      const cleanLen = item.text.replace(/\*\*/g, '').replace(/\*/g, '').length;
+      const lines = Math.ceil(cleanLen / charsPerLine) || 1;
+      totalHeight += lines * 34 + 18;
+    }
+    return Math.max(40, totalHeight);
   }
 
   private estimateCodeHeight(code: CodeElement): number {
     const lines = code.code.split('\n').length || 1;
-    return lines * 26 + 32;
+    return lines * 28 + 48;
   }
 
   private estimateQuoteHeight(quote: QuoteElement, width: number): number {
     const charsPerLine = Math.max(20, Math.floor(width / 14));
     const lines = Math.ceil(quote.text.length / charsPerLine) || 1;
-    return lines * 32 + 24;
+    return lines * 34 + 32;
   }
 
   private estimateTableHeight(table: TableElement): number {
-    const headerHeight = table.headers && table.headers.length > 0 ? 50 : 0;
-    const rowsHeight = (table.rows ? table.rows.length : 0) * 42;
-    return Math.max(60, headerHeight + rowsHeight + 16);
+    const headerHeight = table.headers && table.headers.length > 0 ? 56 : 0;
+    const rowsHeight = (table.rows ? table.rows.length : 0) * 44;
+    return Math.max(60, headerHeight + rowsHeight + 20);
   }
 
   private estimateImageHeight(image: ImageElement): number {

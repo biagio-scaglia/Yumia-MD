@@ -46,6 +46,49 @@ const CSS_NAMED_COLORS: Record<string, string> = {
   transparent: 'ffffff',
 };
 
+interface InlineChunk {
+  text: string;
+  options: Record<string, unknown>;
+}
+
+export function parseInlineMarkdown(
+  rawText: string,
+  baseOptions: Record<string, unknown>
+): InlineChunk[] {
+  const chunks: InlineChunk[] = [];
+  // Tokenize bold (**text**), italic (*text* or _text_), code (`text`)
+  const regex = /(\*\*.*?\*\*|\*.*?\*|`.*?`)/g;
+  const parts = rawText.split(regex);
+
+  for (const part of parts) {
+    if (!part) continue;
+
+    if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
+      chunks.push({
+        text: part.slice(2, -2),
+        options: { ...baseOptions, bold: true },
+      });
+    } else if (part.startsWith('*') && part.endsWith('*') && part.length >= 2) {
+      chunks.push({
+        text: part.slice(1, -1),
+        options: { ...baseOptions, italic: true },
+      });
+    } else if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
+      chunks.push({
+        text: part.slice(1, -1),
+        options: { ...baseOptions, fontFace: 'Courier New' },
+      });
+    } else {
+      chunks.push({
+        text: part,
+        options: { ...baseOptions },
+      });
+    }
+  }
+
+  return chunks.length > 0 ? chunks : [{ text: rawText, options: baseOptions }];
+}
+
 export class PptxRenderer implements YumiaRenderer<PptxOutput> {
   readonly name = 'PptxRenderer';
   readonly targetFormat = 'pptx';
@@ -169,15 +212,18 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       heading.level === 1 ? theme.colors.primary : theme.colors.text
     );
 
-    pptxSlide.addText(heading.text, {
-      x: rect.x,
-      y: rect.y,
-      w: rect.w,
-      h: rect.h,
+    const chunks = parseInlineMarkdown(heading.text, {
       fontSize,
       bold: true,
       fontFace: theme.typography.headingFont.split(',')[0]?.trim() || 'Arial',
       color,
+    });
+
+    pptxSlide.addText(chunks, {
+      x: rect.x,
+      y: rect.y,
+      w: rect.w,
+      h: rect.h,
       align: heading.align || 'left',
       valign: 'middle',
       margin: 0,
@@ -193,14 +239,17 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     const fontSize = theme.typography.sizes?.body || 18;
     const color = this.cleanHexColor(theme.colors.text);
 
-    pptxSlide.addText(paragraph.text, {
+    const chunks = parseInlineMarkdown(paragraph.text, {
+      fontSize,
+      fontFace: theme.typography.bodyFont.split(',')[0]?.trim() || 'Arial',
+      color,
+    });
+
+    pptxSlide.addText(chunks, {
       x: rect.x,
       y: rect.y,
       w: rect.w,
       h: rect.h,
-      fontSize,
-      fontFace: theme.typography.bodyFont.split(',')[0]?.trim() || 'Arial',
-      color,
       align: paragraph.align || 'left',
       valign: 'top',
       margin: 0,
@@ -215,20 +264,28 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
   ): void {
     const fontSize = theme.typography.sizes?.body || 18;
     const color = this.cleanHexColor(theme.colors.text);
+    const allChunks: InlineChunk[] = [];
 
-    const textItems = list.items.map((item) => ({
-      text: item.text,
-      options: {
-        bullet: list.ordered ? ({ type: 'number' } as const) : true,
+    list.items.forEach((item) => {
+      const itemChunks = parseInlineMarkdown(item.text, {
         fontSize,
         color,
         fontFace: theme.typography.bodyFont.split(',')[0]?.trim() || 'Arial',
         indentLevel: item.depth || 0,
         paraSpaceAfter: 8,
-      },
-    }));
+      });
 
-    pptxSlide.addText(textItems, {
+      if (itemChunks.length > 0) {
+        // Set bullet on the very first chunk of this item
+        itemChunks[0]!.options = {
+          ...itemChunks[0]!.options,
+          bullet: list.ordered ? ({ type: 'number' } as const) : true,
+        };
+      }
+      allChunks.push(...itemChunks);
+    });
+
+    pptxSlide.addText(allChunks, {
       x: rect.x,
       y: rect.y,
       w: rect.w,
@@ -251,7 +308,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     if (table.headers && table.headers.length > 0) {
       tableRows.push(
         table.headers.map((h) => ({
-          text: h,
+          text: h.replace(/\*\*/g, ''),
           options: {
             bold: true,
             color: 'ffffff',
@@ -268,7 +325,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         const rowBg = rowIndex % 2 === 1 ? 'f8fafc' : 'ffffff';
         tableRows.push(
           row.map((cell) => ({
-            text: cell,
+            text: cell.replace(/\*\*/g, ''),
             options: {
               color: this.cleanHexColor(theme.colors.text),
               fill: { color: rowBg },
@@ -304,7 +361,6 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         h: rect.h,
       });
     } catch {
-      // Graceful fallback for missing/remote offline images: draw placeholder box
       pptxSlide.addShape('rect', {
         x: rect.x,
         y: rect.y,
@@ -350,16 +406,16 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       h: rect.h,
       fill: { color: fillColor },
       line: { color: borderColor, width: 1.5 },
-      rectRadius: 0.1,
+      rectRadius: 0.08,
     });
 
     if (card.title) {
       pptxSlide.addText(card.title, {
-        x: rect.x + 28 * scaleX,
-        y: rect.y + 20 * scaleY,
-        w: rect.w - 56 * scaleX,
-        h: 40 * scaleY,
-        fontSize: 22,
+        x: rect.x + 0.25,
+        y: rect.y + 0.18,
+        w: rect.w - 0.5,
+        h: 0.35,
+        fontSize: 20,
         bold: true,
         color: this.cleanHexColor(theme.colors.primary),
         fontFace: theme.typography.headingFont.split(',')[0]?.trim() || 'Arial',
@@ -441,12 +497,15 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       fill: { color: accentColor },
     });
 
-    pptxSlide.addText(`"${quote.text}"`, {
+    // Strip leading/trailing quote characters so we never get triple quotes
+    const cleanText = quote.text.replace(/^["'“”«»]+|["'“”«»]+$/g, '').trim();
+
+    pptxSlide.addText(`“${cleanText}”`, {
       x: rect.x + 0.2,
       y: rect.y,
       w: rect.w - 0.2,
       h: rect.h,
-      fontSize: 20,
+      fontSize: 18,
       italic: true,
       color: this.cleanHexColor(theme.colors.muted || theme.colors.text),
       fontFace: theme.typography.bodyFont.split(',')[0]?.trim() || 'Arial',
@@ -495,7 +554,11 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     if (hexMatch && hexMatch[1]) {
       const hex = hexMatch[1];
       if (hex.length === 3) {
-        return hex[0]! + hex[0]! + hex[1]! + hex[1]! + hex[2]! + hex[2]!;
+        return (
+          hex[0]! + hex[0]! +
+          hex[1]! + hex[1]! +
+          hex[2]! + hex[2]!
+        );
       }
       return hex;
     }
