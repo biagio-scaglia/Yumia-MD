@@ -95,7 +95,8 @@ export class YumiaLinter {
         issues.push({
           code: 'YUM003',
           slide: slideNum,
-          message: 'Slide has no heading (h1-h4). Consider adding a descriptive title for structure.',
+          message:
+            'Slide has no heading (h1-h4). Consider adding a descriptive title for structure.',
           severity: 'warning',
           loc: slide.loc,
         });
@@ -176,7 +177,10 @@ export class YumiaLinter {
     return false;
   }
 
-  private calculateSlideDensity(elements: SlideElement[]): { listCount: number; wordCount: number } {
+  private calculateSlideDensity(elements: SlideElement[]): {
+    listCount: number;
+    wordCount: number;
+  } {
     let listCount = 0;
     let wordCount = 0;
 

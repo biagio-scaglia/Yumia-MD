@@ -1,6 +1,6 @@
 {
   "name": "@yumiamd/parser",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "private": true,
   "description": "Parser for YumiaMD Markdown presentation syntax",
   "type": "module",

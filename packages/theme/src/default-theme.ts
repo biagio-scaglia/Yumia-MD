@@ -1,4 +1,4 @@
-import { YumiaTheme } from './types.js';
+import { ThemeOverrides, YumiaTheme } from './types.js';
 
 export const defaultTheme: YumiaTheme = {
   name: 'default',
@@ -353,18 +353,16 @@ export const THEME_REGISTRY: Record<string, YumiaTheme> = {
 };
 
 export function resolveTheme(
-  themeNameOrRef?: string | { name: string; overrides?: Partial<YumiaTheme> },
-  explicitOverrides?: Partial<YumiaTheme>
+  themeNameOrRef?: string | { name: string; overrides?: ThemeOverrides },
+  explicitOverrides?: ThemeOverrides
 ): YumiaTheme {
   const name =
-    typeof themeNameOrRef === 'string'
-      ? themeNameOrRef
-      : themeNameOrRef?.name || 'default';
+    typeof themeNameOrRef === 'string' ? themeNameOrRef : themeNameOrRef?.name || 'default';
 
   const baseTheme = THEME_REGISTRY[name.toLowerCase()] || defaultTheme;
   const refOverrides = typeof themeNameOrRef === 'object' ? themeNameOrRef.overrides : undefined;
 
-  const mergedOverrides: Partial<YumiaTheme> = {
+  const mergedOverrides: ThemeOverrides = {
     ...refOverrides,
     ...explicitOverrides,
     colors: { ...baseTheme.colors, ...refOverrides?.colors, ...explicitOverrides?.colors },
@@ -383,9 +381,9 @@ export function resolveTheme(
   return {
     ...baseTheme,
     ...mergedOverrides,
-  };
+  } as YumiaTheme;
 }
 
-export function createTheme(overrides: Partial<YumiaTheme> & { name: string }): YumiaTheme {
+export function createTheme(overrides: ThemeOverrides & { name: string }): YumiaTheme {
   return resolveTheme(overrides.name, overrides);
 }

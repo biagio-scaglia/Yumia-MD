@@ -139,6 +139,21 @@ export class DefaultYumiaParser implements YumiaParser {
     if (typeof metadata['theme'] === 'string') result.theme = metadata['theme'];
     if (typeof metadata['aspectRatio'] === 'string') result.aspectRatio = metadata['aspectRatio'];
 
+    const colors: Record<string, string> = {};
+    if (typeof metadata['background'] === 'string') colors.background = metadata['background'];
+    if (typeof metadata['bg'] === 'string') colors.background = metadata['bg'];
+    if (typeof metadata['primary'] === 'string') colors.primary = metadata['primary'];
+    if (typeof metadata['secondary'] === 'string') colors.secondary = metadata['secondary'];
+    if (typeof metadata['surface'] === 'string') colors.surface = metadata['surface'];
+    if (typeof metadata['text'] === 'string') colors.text = metadata['text'];
+    if (typeof metadata['muted'] === 'string') colors.muted = metadata['muted'];
+    if (typeof metadata['accent'] === 'string') colors.accent = metadata['accent'];
+    if (typeof metadata['border'] === 'string') colors.border = metadata['border'];
+
+    if (Object.keys(colors).length > 0) {
+      result.colors = colors;
+    }
+
     return result;
   }
 
@@ -392,7 +407,11 @@ export class DefaultYumiaParser implements YumiaParser {
           const variantMatch = directiveArg.match(/variant=['"](.*?)['"]/);
           if (variantMatch) {
             cardVariant = variantMatch[1];
-            cardTitle = directiveArg.replace(/variant=['"].*?['"]/, '').trim().replace(/^['"](.*)['"]$/, '$1') || undefined;
+            cardTitle =
+              directiveArg
+                .replace(/variant=['"].*?['"]/, '')
+                .trim()
+                .replace(/^['"](.*)['"]$/, '$1') || undefined;
           } else {
             cardTitle = directiveArg.replace(/^['"](.*)['"]$/, '$1') || undefined;
           }

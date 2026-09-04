@@ -4,9 +4,10 @@ import { parseYumia } from '@yumiamd/parser';
 import { DefaultLayoutEngine } from '@yumiamd/layout';
 import { Presentation } from '@yumiamd/ast';
 import { YumiaCompiler } from '@yumiamd/core';
+import { resolveTheme } from '@yumiamd/theme';
 import { PptxRenderer } from '@yumiamd/renderer-pptx';
 
-export const VERSION = '0.1.8';
+export const VERSION = '0.1.9';
 
 export function printHelp(): string {
   return `
@@ -23,7 +24,15 @@ Commands:
   schema             Output machine-readable JSON schema for AI agents
   build <file>       Compile a presentation to editable PowerPoint (.pptx)
 
-Options:
+Theming & Color Options:
+  --theme, -t <name> Base theme: default | cyberpunk | minimal | corporate | terminal | academic
+  --bg, --background Hex background color (e.g. "#0B0B12" or "#FFFFFF")
+  --primary, -p      Hex primary accent color (e.g. "#FF2E88" or "#2563EB")
+  --secondary        Hex secondary color (e.g. "#00F0FF")
+  --text             Hex text color (e.g. "#FFFFFF" or "#0F172A")
+  --accent           Hex accent bar & highlight color
+
+Compiler & Output Options:
   --out, -o <file>   Specify output file path (default: dist/<name>.pptx)
   --format, -f <fmt> Target output format: pptx (default)
   --strict           Enforce zero warnings in 'lint' (exits with code 1 on warning)
@@ -32,6 +41,22 @@ Options:
   -h, --help         Show this help message
   -v, --version      Show CLI version
 `.trim();
+}
+
+function getFlagValue(args: string[], flagNames: string[]): string | undefined {
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (!arg) continue;
+    for (const flag of flagNames) {
+      if (arg === flag && args[i + 1] && !args[i + 1]!.startsWith('-')) {
+        return args[i + 1];
+      }
+      if (arg.startsWith(`${flag}=`)) {
+        return arg.slice(flag.length + 1);
+      }
+    }
+  }
+  return undefined;
 }
 
 export async function runCli(argv: string[]): Promise<{ exitCode: number; output: string }> {
@@ -51,6 +76,14 @@ export async function runCli(argv: string[]): Promise<{ exitCode: number; output
   const command = nonFlagArgs[0];
   const target = nonFlagArgs[1];
 
+  // Color & Theme CLI Flags
+  const cliTheme = getFlagValue(args, ['--theme', '-t']);
+  const cliBg = getFlagValue(args, ['--bg', '--background']);
+  const cliPrimary = getFlagValue(args, ['--primary', '-p']);
+  const cliSecondary = getFlagValue(args, ['--secondary']);
+  const cliText = getFlagValue(args, ['--text']);
+  const cliAccent = getFlagValue(args, ['--accent']);
+
   if (command === 'schema') {
     const compiler = new YumiaCompiler();
     return {
@@ -68,10 +101,20 @@ export async function runCli(argv: string[]): Promise<{ exitCode: number; output
       mkdirSync(join(projectDir, 'assets'), { recursive: true });
       mkdirSync(join(projectDir, 'themes'), { recursive: true });
 
+      const chosenTheme = cliTheme || 'default';
+      const colorLines: string[] = [];
+      if (cliBg) colorLines.push(`background: "${cliBg}"`);
+      if (cliPrimary) colorLines.push(`primary: "${cliPrimary}"`);
+      if (cliSecondary) colorLines.push(`secondary: "${cliSecondary}"`);
+      if (cliText) colorLines.push(`text: "${cliText}"`);
+      if (cliAccent) colorLines.push(`accent: "${cliAccent}"`);
+
+      const colorsYaml = colorLines.length > 0 ? `\n${colorLines.join('\n')}` : '';
+
       const sampleContent = `---
 title: ${projectName}
-theme: default
-aspectRatio: "16:9"
+theme: ${chosenTheme}
+aspectRatio: "16:9"${colorsYaml}
 ---
 
 # ${projectName}
@@ -88,7 +131,7 @@ Opening slide introducing the presentation deck.
 :::columns ratios="50:50"
 
 :::column
-:::card Core Pipeline
+:::card Core Pipeline variant="primary"
 - Semantic AST model
 - Markdown + Directive parser
 - 100% Deterministic layout
@@ -96,7 +139,7 @@ Opening slide introducing the presentation deck.
 :::
 
 :::column
-:::card Native Output
+:::card Native Output variant="warning"
 - Fully editable PowerPoint objects
 - Vector PDF documents
 - Interactive HTML decks
@@ -117,6 +160,7 @@ Opening slide introducing the presentation deck.
               project: projectName,
               path: projectDir,
               entry: join(projectDir, 'presentation.yumia.md'),
+              theme: chosenTheme,
             },
             null,
             2
@@ -126,7 +170,7 @@ Opening slide introducing the presentation deck.
 
       return {
         exitCode: 0,
-        output: `✓ Created presentation project '${projectName}' at ./${projectName}\n  Edit ./${projectName}/presentation.yumia.md to get started!\n  Then compile with: yumia build ./${projectName}/presentation.yumia.md`,
+        output: `✓ Created presentation project '${projectName}' at ./${projectName}\n  Theme: ${chosenTheme}${colorsYaml ? ` (with custom colors)` : ''}\n  Edit ./${projectName}/presentation.yumia.md to get started!\n  Then compile with: yumia build ./${projectName}/presentation.yumia.md`,
       };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -305,7 +349,25 @@ Opening slide introducing the presentation deck.
       const compiler = new YumiaCompiler();
       const renderer = new PptxRenderer();
 
-      const result = await compiler.compile(source, renderer);
+      // Assemble CLI color / theme overrides
+      const cliColorOverrides: Record<string, string> = {};
+      if (cliBg) cliColorOverrides.background = cliBg;
+      if (cliPrimary) cliColorOverrides.primary = cliPrimary;
+      if (cliSecondary) cliColorOverrides.secondary = cliSecondary;
+      if (cliText) cliColorOverrides.text = cliText;
+      if (cliAccent) cliColorOverrides.accent = cliAccent;
+
+      const renderTheme =
+        cliTheme || Object.keys(cliColorOverrides).length > 0
+          ? resolveTheme(cliTheme || 'default', {
+              ...(Object.keys(cliColorOverrides).length > 0 ? { colors: cliColorOverrides } : {}),
+            })
+          : undefined;
+
+      const result = await compiler.compile(source, renderer, {
+        ...(renderTheme ? { renderContext: { theme: renderTheme } } : {}),
+      });
+
       const buffer =
         result.data instanceof Uint8Array
           ? Buffer.from(result.data)

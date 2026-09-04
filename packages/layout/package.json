@@ -1,6 +1,6 @@
 {
   "name": "@yumiamd/layout",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "private": true,
   "description": "Foundational layout computation engine and geometric models for YumiaMD",
   "type": "module",

@@ -306,9 +306,10 @@ export class DefaultLayoutEngine implements LayoutEngine {
   }
 
   private estimateTableHeight(table: TableElement): number {
-    const headerHeight = table.headers && table.headers.length > 0 ? 56 : 0;
-    const rowsHeight = (table.rows ? table.rows.length : 0) * 44;
-    return Math.max(60, headerHeight + rowsHeight + 20);
+    const headerHeight = table.headers && table.headers.length > 0 ? 50 : 0;
+    const rowsCount = table.rows ? table.rows.length : 0;
+    const rowsHeight = rowsCount * 46;
+    return Math.max(80, headerHeight + rowsHeight + 20);
   }
 
   private estimateImageHeight(image: ImageElement): number {
@@ -319,6 +320,6 @@ export class DefaultLayoutEngine implements LayoutEngine {
   }
 
   private estimateMetricHeight(metric: MetricElement): number {
-    return metric.change ? 140 : 120;
+    return metric.change ? 160 : 130;
   }
 }

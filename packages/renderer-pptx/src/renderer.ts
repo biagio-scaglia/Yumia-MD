@@ -13,7 +13,7 @@ import {
 } from '@yumiamd/ast';
 import { DefaultLayoutEngine, LayoutNode, Rect, Size, SlideLayoutResult } from '@yumiamd/layout';
 import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
-import { defaultTheme, resolveTheme, YumiaTheme } from '@yumiamd/theme';
+import { resolveTheme, YumiaTheme } from '@yumiamd/theme';
 
 export interface PptxRenderOptions {
   author?: string;
@@ -50,6 +50,26 @@ const CSS_NAMED_COLORS: Record<string, string> = {
 interface InlineChunk {
   text: string;
   options: Record<string, unknown>;
+}
+
+export function cleanFontFace(fontString?: string): string {
+  if (!fontString) return 'Segoe UI';
+  const first =
+    fontString
+      .split(',')[0]
+      ?.trim()
+      .replace(/^['"]|['"]$/g, '') || '';
+  if (
+    !first ||
+    first === 'system-ui' ||
+    first === '-apple-system' ||
+    first === 'sans-serif' ||
+    first === 'monospace' ||
+    first === 'serif'
+  ) {
+    return 'Segoe UI';
+  }
+  return first;
 }
 
 export function parseInlineMarkdown(
@@ -104,9 +124,10 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     const PptxConstructor = (pptxgen as unknown as { default?: typeof pptxgen }).default || pptxgen;
     const pptx: PptxInstance = new (PptxConstructor as unknown as new () => PptxInstance)();
 
-    const resolvedTheme = presentation.metadata.theme
-      ? resolveTheme(presentation.metadata.theme)
-      : defaultTheme;
+    const colorOverrides = presentation.metadata.colors
+      ? { colors: presentation.metadata.colors }
+      : undefined;
+    const resolvedTheme = resolveTheme(presentation.metadata.theme, colorOverrides);
     const theme = context.theme || resolvedTheme;
     const title = presentation.metadata.title || 'Yumia Presentation';
     const author = presentation.metadata.author || 'YumiaMD';
@@ -222,7 +243,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     const chunks = parseInlineMarkdown(heading.text, {
       fontSize,
       bold: true,
-      fontFace: theme.typography.headingFont.split(',')[0]?.trim() || 'Arial',
+      fontFace: cleanFontFace(theme.typography.headingFont),
       color,
     });
 
@@ -248,7 +269,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
 
     const chunks = parseInlineMarkdown(paragraph.text, {
       fontSize,
-      fontFace: theme.typography.bodyFont.split(',')[0]?.trim() || 'Arial',
+      fontFace: cleanFontFace(theme.typography.bodyFont),
       color,
     });
 
@@ -273,21 +294,29 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     const color = this.cleanHexColor(theme.colors.text);
     const allChunks: InlineChunk[] = [];
 
-    list.items.forEach((item) => {
+    list.items.forEach((item, itemIdx) => {
       const itemChunks = parseInlineMarkdown(item.text, {
         fontSize,
         color,
-        fontFace: theme.typography.bodyFont.split(',')[0]?.trim() || 'Arial',
+        fontFace: cleanFontFace(theme.typography.bodyFont),
         indentLevel: item.depth || 0,
         paraSpaceAfter: 8,
       });
 
       if (itemChunks.length > 0) {
-        // Set bullet on the very first chunk of this item
+        // Set bullet only on the very first chunk of this item
         itemChunks[0]!.options = {
           ...itemChunks[0]!.options,
           bullet: list.ordered ? ({ type: 'number' } as const) : true,
         };
+
+        // Break line on the last chunk of each item to ensure clean OpenXML paragraph separation
+        if (itemIdx < list.items.length - 1) {
+          itemChunks[itemChunks.length - 1]!.options = {
+            ...itemChunks[itemChunks.length - 1]!.options,
+            breakLine: true,
+          };
+        }
       }
       allChunks.push(...itemChunks);
     });
@@ -312,6 +341,13 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     const headerBg = this.cleanHexColor(theme.colors.primary);
     const borderColor = this.cleanHexColor(theme.colors.border || '#cbd5e1');
 
+    const isDark = this.isDarkColor(theme.colors.background);
+    const rowBg1 = this.cleanHexColor(
+      theme.components?.table?.rowAlternateBackground || (isDark ? theme.colors.surface : 'ffffff')
+    );
+    const rowBg2 = this.cleanHexColor(isDark ? '#1a1a2e' : 'f8fafc');
+    const cellTextColor = this.cleanHexColor(theme.colors.text);
+
     if (table.headers && table.headers.length > 0) {
       tableRows.push(
         table.headers.map((h) => ({
@@ -321,6 +357,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
             color: 'ffffff',
             fill: { color: headerBg },
             fontSize: 14,
+            fontFace: cleanFontFace(theme.typography.headingFont),
             align: 'center',
           },
         }))
@@ -329,14 +366,15 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
 
     if (table.rows) {
       table.rows.forEach((row, rowIndex) => {
-        const rowBg = rowIndex % 2 === 1 ? 'f8fafc' : 'ffffff';
+        const rowBg = rowIndex % 2 === 1 ? rowBg2 : rowBg1;
         tableRows.push(
           row.map((cell) => ({
             text: cell.replace(/\*\*/g, ''),
             options: {
-              color: this.cleanHexColor(theme.colors.text),
+              color: cellTextColor,
               fill: { color: rowBg },
               fontSize: 13,
+              fontFace: cleanFontFace(theme.typography.bodyFont),
             },
           }))
         );
@@ -349,7 +387,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         y: rect.y,
         w: rect.w,
         border: { type: 'solid', pt: 1, color: borderColor },
-        margin: [4, 8, 4, 8],
+        margin: [6, 10, 6, 10],
       });
     }
   }
@@ -425,16 +463,18 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       rectRadius: 0.08,
     });
 
+    const hasChange = Boolean(metric.change);
+
     // Top Label
     pptxSlide.addText(metric.label.toUpperCase(), {
-      x: rect.x + 0.15,
-      y: rect.y + 0.15,
-      w: rect.w - 0.3,
-      h: 0.25,
-      fontSize: 11,
+      x: rect.x + 0.1,
+      y: rect.y + 0.1,
+      w: rect.w - 0.2,
+      h: 0.22,
+      fontSize: 10,
       bold: true,
       color: this.cleanHexColor(theme.colors.muted || '#64748b'),
-      fontFace: theme.typography.headingFont.split(',')[0]?.trim() || 'Arial',
+      fontFace: cleanFontFace(theme.typography.headingFont),
       align: 'center',
       valign: 'middle',
     });
@@ -443,19 +483,19 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     const displayValue = metric.unit ? `${metric.value} ${metric.unit}` : metric.value;
     pptxSlide.addText(displayValue, {
       x: rect.x + 0.1,
-      y: rect.y + 0.4,
+      y: rect.y + 0.34,
       w: rect.w - 0.2,
-      h: 0.55,
-      fontSize: 30,
+      h: 0.44,
+      fontSize: 26,
       bold: true,
       color: this.cleanHexColor(accentColor),
-      fontFace: theme.typography.headingFont.split(',')[0]?.trim() || 'Arial',
+      fontFace: cleanFontFace(theme.typography.headingFont),
       align: 'center',
       valign: 'middle',
     });
 
-    // Optional Change indicator / subtext
-    if (metric.change) {
+    // Optional Change indicator / subtext below value
+    if (hasChange && metric.change) {
       const isPositive = metric.change.startsWith('+');
       const changeColor = isPositive
         ? this.cleanHexColor(theme.colors.success || '#10b981')
@@ -463,13 +503,13 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
 
       pptxSlide.addText(metric.change, {
         x: rect.x + 0.1,
-        y: rect.y + rect.h - 0.32,
+        y: rect.y + 0.8,
         w: rect.w - 0.2,
         h: 0.22,
-        fontSize: 12,
+        fontSize: 11,
         bold: true,
         color: changeColor,
-        fontFace: theme.typography.bodyFont.split(',')[0]?.trim() || 'Arial',
+        fontFace: cleanFontFace(theme.typography.bodyFont),
         align: 'center',
         valign: 'middle',
       });
@@ -521,7 +561,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         fontSize: 20,
         bold: true,
         color: titleColor,
-        fontFace: theme.typography.headingFont.split(',')[0]?.trim() || 'Arial',
+        fontFace: cleanFontFace(theme.typography.headingFont),
       });
     }
 
@@ -600,7 +640,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       fill: { color: accentColor },
     });
 
-    // Strip leading/trailing quote characters so we never get triple quotes
+    // Strip leading/trailing quote characters
     const cleanText = quote.text.replace(/^["'“”«»]+|["'“”«»]+$/g, '').trim();
 
     pptxSlide.addText(`“${cleanText}”`, {
@@ -611,7 +651,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       fontSize: 18,
       italic: true,
       color: this.cleanHexColor(theme.colors.muted || theme.colors.text),
-      fontFace: theme.typography.bodyFont.split(',')[0]?.trim() || 'Arial',
+      fontFace: cleanFontFace(theme.typography.bodyFont),
       valign: 'middle',
     });
   }
@@ -645,6 +685,15 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     }
   }
 
+  private isDarkColor(rawHex?: string): boolean {
+    const hex = this.cleanHexColor(rawHex);
+    const r = parseInt(hex.substring(0, 2), 16) || 0;
+    const g = parseInt(hex.substring(2, 4), 16) || 0;
+    const b = parseInt(hex.substring(4, 6), 16) || 0;
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance < 0.5;
+  }
+
   private cleanHexColor(raw: string | undefined): string {
     if (!raw) return '000000';
     const trimmed = raw.trim().toLowerCase();
@@ -657,11 +706,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     if (hexMatch && hexMatch[1]) {
       const hex = hexMatch[1];
       if (hex.length === 3) {
-        return (
-          hex[0]! + hex[0]! +
-          hex[1]! + hex[1]! +
-          hex[2]! + hex[2]!
-        );
+        return hex[0]! + hex[0]! + hex[1]! + hex[1]! + hex[2]! + hex[2]!;
       }
       return hex;
     }

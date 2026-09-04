@@ -39,6 +39,16 @@ export interface PresentationMetadata {
   date?: string;
   theme?: string | ThemeReference;
   aspectRatio?: '16:9' | '4:3' | '16:10' | string;
+  colors?: {
+    primary?: string;
+    secondary?: string;
+    background?: string;
+    surface?: string;
+    text?: string;
+    muted?: string;
+    accent?: string;
+    border?: string;
+  };
   custom?: Record<string, unknown>;
 }
 
