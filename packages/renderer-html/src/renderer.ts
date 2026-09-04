@@ -1,11 +1,15 @@
 import {
+  BadgeElement,
   CardElement,
+  ChartElement,
   CodeElement,
   ColumnElement,
   ColumnsElement,
+  CompareElement,
   HeadingElement,
   ImageElement,
   ListElement,
+  MermaidElement,
   MetricElement,
   ParagraphElement,
   Presentation,
@@ -13,6 +17,7 @@ import {
   Slide,
   SlideElement,
   TableElement,
+  TimelineElement,
 } from '@yumiamd/ast';
 import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
 import { defaultTheme, resolveTheme, ThemeOverrides, YumiaTheme } from '@yumiamd/theme';
@@ -93,6 +98,10 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+  </script>
   <style>
     :root {
       --yumia-bg: ${theme.colors.background};
@@ -473,6 +482,172 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       height: 4px;
       background: var(--yumia-primary);
       transition: width 0.25s ease;
+    }
+
+    /* Badge Directive */
+    .yumia-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--yumia-text);
+      border: 1px solid var(--yumia-border);
+      margin-bottom: 0.5rem;
+    }
+    .yumia-badge.variant-primary { background: rgba(0, 240, 255, 0.15); color: var(--yumia-primary); border-color: var(--yumia-primary); }
+    .yumia-badge.variant-success { background: rgba(16, 185, 129, 0.15); color: var(--yumia-success); border-color: var(--yumia-success); }
+    .yumia-badge.variant-warning { background: rgba(245, 158, 11, 0.15); color: var(--yumia-warning); border-color: var(--yumia-warning); }
+    .yumia-badge.variant-danger { background: rgba(239, 68, 68, 0.15); color: var(--yumia-danger); border-color: var(--yumia-danger); }
+    .yumia-badge.variant-info { background: rgba(59, 130, 246, 0.15); color: var(--yumia-info); border-color: var(--yumia-info); }
+    .yumia-badge.variant-accent { background: rgba(255, 46, 136, 0.15); color: var(--yumia-accent); border-color: var(--yumia-accent); }
+
+    /* Timeline Directive */
+    .yumia-timeline {
+      display: flex;
+      gap: 16px;
+      margin: 1.2rem 0;
+      width: 100%;
+    }
+    .yumia-timeline.layout-horizontal {
+      flex-direction: row;
+      justify-content: space-between;
+      position: relative;
+    }
+    .yumia-timeline.layout-horizontal::before {
+      content: '';
+      position: absolute;
+      top: 18px;
+      left: 20px;
+      right: 20px;
+      height: 2px;
+      background: var(--yumia-border);
+      z-index: 0;
+    }
+    .yumia-timeline-item {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      flex: 1;
+    }
+    .yumia-timeline-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--yumia-primary);
+      border: 3px solid var(--yumia-bg);
+      box-shadow: 0 0 10px var(--yumia-primary);
+      margin-bottom: 10px;
+    }
+    .yumia-timeline-date {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--yumia-accent);
+      margin-bottom: 4px;
+      font-family: var(--yumia-font-code);
+    }
+    .yumia-timeline-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--yumia-text);
+      margin-bottom: 4px;
+    }
+    .yumia-timeline-desc {
+      font-size: 0.85rem;
+      color: var(--yumia-muted);
+      line-height: 1.4;
+    }
+
+    /* Compare Directive */
+    .yumia-compare {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 20px;
+      align-items: stretch;
+      margin: 1.2rem 0;
+    }
+    .yumia-compare-col {
+      background: var(--yumia-surface);
+      border: 1px solid var(--yumia-border);
+      border-radius: var(--yumia-radius-card);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+    }
+    .yumia-compare-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--yumia-primary);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--yumia-divider);
+    }
+    .yumia-compare-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.9rem;
+      color: var(--yumia-muted);
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      align-self: center;
+      border: 1px solid var(--yumia-border);
+    }
+
+    /* Native SVG Chart Container */
+    .yumia-chart-container {
+      background: var(--yumia-surface);
+      border: 1px solid var(--yumia-border);
+      border-radius: var(--yumia-radius-card);
+      padding: 1.25rem;
+      margin: 1rem 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+    .yumia-chart-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--yumia-text);
+      margin-bottom: 0.75rem;
+      align-self: flex-start;
+    }
+
+    /* Mermaid Container */
+    .mermaid-container {
+      background: rgba(10, 10, 18, 0.6);
+      border: 1px solid var(--yumia-border);
+      border-radius: var(--yumia-radius-card);
+      padding: 1rem;
+      margin: 1rem 0;
+      display: flex;
+      justify-content: center;
+      overflow: auto;
+      width: 100%;
+    }
+
+    /* Progressive Reveal (Step Builds) */
+    .yumia-slide-wrapper [data-step] {
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    .yumia-slide-wrapper:not(.step-active) [data-step] {
+      opacity: 0.2;
+      transform: translateY(4px);
+    }
+    .yumia-slide-wrapper.step-active [data-step] {
+      opacity: 1;
+      transform: translateY(0);
     }
 
     /* Notes Drawer */
@@ -1126,9 +1301,213 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
           .join('\n');
         return `<div class="yumia-columns" style="grid-template-columns: ${ratioTemplate};">${colsHtml}</div>`;
       }
+      case 'badge': {
+        return this.renderBadge(element as BadgeElement);
+      }
+      case 'mermaid': {
+        const m = element as MermaidElement;
+        return `
+        <div class="mermaid-container">
+          <pre class="mermaid">${this.escapeHtml(m.code)}</pre>
+        </div>`;
+      }
+      case 'chart': {
+        return this.renderChart(element as ChartElement, theme);
+      }
+      case 'timeline': {
+        return this.renderTimeline(element as TimelineElement);
+      }
+      case 'compare': {
+        return this.renderCompare(element as CompareElement, theme);
+      }
       default:
         return '';
     }
+  }
+
+  private renderBadge(b: BadgeElement): string {
+    const variant = b.variant || 'default';
+    return `<span class="yumia-badge variant-${variant}">${this.escapeHtml(b.text)}</span>`;
+  }
+
+  private renderTimeline(t: TimelineElement): string {
+    const layout = t.layout || 'horizontal';
+    const itemsHtml = t.items
+      .map((item) => {
+        const dateHtml = item.date
+          ? `<div class="yumia-timeline-date">${this.escapeHtml(item.date)}</div>`
+          : '';
+        const descHtml = item.description
+          ? `<div class="yumia-timeline-desc">${this.formatInline(item.description)}</div>`
+          : '';
+        return `
+        <div class="yumia-timeline-item">
+          <div class="yumia-timeline-dot"></div>
+          ${dateHtml}
+          <div class="yumia-timeline-title">${this.formatInline(item.title)}</div>
+          ${descHtml}
+        </div>`;
+      })
+      .join('\n');
+
+    return `<div class="yumia-timeline layout-${layout}">${itemsHtml}</div>`;
+  }
+
+  private renderCompare(c: CompareElement, theme: YumiaTheme): string {
+    const leftTitle = c.leftTitle
+      ? `<div class="yumia-compare-title">${this.escapeHtml(c.leftTitle)}</div>`
+      : '';
+    const rightTitle = c.rightTitle
+      ? `<div class="yumia-compare-title">${this.escapeHtml(c.rightTitle)}</div>`
+      : '';
+    const leftInner = c.left.map((el) => this.renderElement(el, theme)).join('\n');
+    const rightInner = c.right.map((el) => this.renderElement(el, theme)).join('\n');
+
+    return `
+    <div class="yumia-compare">
+      <div class="yumia-compare-col left">
+        ${leftTitle}
+        ${leftInner}
+      </div>
+      <div class="yumia-compare-divider">VS</div>
+      <div class="yumia-compare-col right">
+        ${rightTitle}
+        ${rightInner}
+      </div>
+    </div>`;
+  }
+
+  private renderChart(c: ChartElement, theme: YumiaTheme): string {
+    const titleHtml = c.title
+      ? `<div class="yumia-chart-title">${this.escapeHtml(c.title)}</div>`
+      : '';
+    const labels = c.labels || [];
+    const series = c.series || [];
+    const colors = [
+      theme.colors.primary || '#00F0FF',
+      theme.colors.accent || '#FF2E88',
+      theme.colors.secondary || '#7B2CBF',
+      theme.colors.success || '#10B981',
+      theme.colors.warning || '#F59E0B',
+    ];
+
+    if (c.chartType === 'line') {
+      const allValues = series.flatMap((s) => s.values);
+      const maxVal = Math.max(...allValues, 1);
+      const width = 500;
+      const height = 180;
+      const padding = 35;
+      const plotW = width - padding * 2;
+      const plotH = height - padding * 2;
+
+      let pathsHtml = '';
+      series.forEach((s, sIdx) => {
+        const sColor = s.color || colors[sIdx % colors.length]!;
+        const pts = s.values.map((v, i) => {
+          const x = padding + (i / Math.max(s.values.length - 1, 1)) * plotW;
+          const y = height - padding - (v / maxVal) * plotH;
+          return `${x},${y}`;
+        });
+        const pointsStr = pts.join(' ');
+        const circles = pts
+          .map((pt) => `<circle cx="${pt.split(',')[0]}" cy="${pt.split(',')[1]}" r="4" fill="${sColor}" />`)
+          .join('');
+        pathsHtml += `
+        <polyline fill="none" stroke="${sColor}" stroke-width="3" stroke-linecap="round" points="${pointsStr}" />
+        ${circles}`;
+      });
+
+      const labelTexts = labels
+        .map((l, i) => {
+          const x = padding + (i / Math.max(labels.length - 1, 1)) * plotW;
+          return `<text x="${x}" y="${height - 10}" text-anchor="middle" fill="${theme.colors.muted || '#94a3b8'}" font-size="11" font-family="sans-serif">${this.escapeHtml(l)}</text>`;
+        })
+        .join('');
+
+      return `
+      <div class="yumia-chart-container">
+        ${titleHtml}
+        <svg viewBox="0 0 ${width} ${height}" style="width:100%; max-height:220px;">
+          <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.15)" stroke-width="1" />
+          ${pathsHtml}
+          ${labelTexts}
+        </svg>
+      </div>`;
+    }
+
+    if (c.chartType === 'pie' || c.chartType === 'doughnut') {
+      const values = series[0]?.values || [];
+      const total = values.reduce((a, b) => a + b, 0) || 1;
+      let cumulativePercent = 0;
+      const radius = 60;
+      const cx = 100;
+      const cy = 100;
+      const strokeWidth = c.chartType === 'doughnut' ? 24 : 60;
+      const circ = 2 * Math.PI * radius;
+
+      const slices = values
+        .map((val, i) => {
+          const percent = val / total;
+          const strokeDasharray = `${percent * circ} ${circ}`;
+          const strokeDashoffset = -cumulativePercent * circ;
+          cumulativePercent += percent;
+          const sColor = colors[i % colors.length]!;
+          return `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="${sColor}" stroke-width="${strokeWidth}" stroke-dasharray="${strokeDasharray}" stroke-dashoffset="${strokeDashoffset}" />`;
+        })
+        .join('');
+
+      const legend = labels
+        .map((l, i) => {
+          const sColor = colors[i % colors.length]!;
+          const pct = Math.round(((values[i] || 0) / total) * 100);
+          return `<div style="display:flex; align-items:center; gap:8px; font-size:12px; margin:4px 0;"><span style="width:10px; height:10px; border-radius:50%; background:${sColor};"></span><span style="color:var(--yumia-text);">${this.escapeHtml(l)} (${pct}%)</span></div>`;
+        })
+        .join('');
+
+      return `
+      <div class="yumia-chart-container">
+        ${titleHtml}
+        <div style="display:flex; align-items:center; justify-content:center; gap:28px; width:100%;">
+          <svg viewBox="0 0 200 200" style="width:160px; height:160px; transform: rotate(-90deg);">
+            ${slices}
+          </svg>
+          <div style="display:flex; flex-direction:column;">${legend}</div>
+        </div>
+      </div>`;
+    }
+
+    // Default: Bar Chart
+    const values = series[0]?.values || [];
+    const maxVal = Math.max(...values, 1);
+    const width = 500;
+    const height = 180;
+    const padding = 35;
+    const plotW = width - padding * 2;
+    const plotH = height - padding * 2;
+    const barWidth = Math.min(48, Math.max(16, (plotW / Math.max(values.length, 1)) * 0.6));
+
+    const bars = values
+      .map((val, i) => {
+        const x = padding + (i + 0.5) * (plotW / Math.max(values.length, 1)) - barWidth / 2;
+        const barH = (val / maxVal) * plotH;
+        const y = height - padding - barH;
+        const color = colors[i % colors.length]!;
+        const label = labels[i] || '';
+        return `
+        <rect x="${x}" y="${y}" width="${barWidth}" height="${barH}" rx="4" fill="${color}" opacity="0.9" />
+        <text x="${x + barWidth / 2}" y="${y - 6}" text-anchor="middle" fill="${color}" font-size="11" font-weight="600" font-family="sans-serif">${val}</text>
+        <text x="${x + barWidth / 2}" y="${height - 12}" text-anchor="middle" fill="${theme.colors.muted || '#94a3b8'}" font-size="11" font-family="sans-serif">${this.escapeHtml(label)}</text>`;
+      })
+      .join('');
+
+    return `
+    <div class="yumia-chart-container">
+      ${titleHtml}
+      <svg viewBox="0 0 ${width} ${height}" style="width:100%; max-height:220px;">
+        <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.15)" stroke-width="1" />
+        ${bars}
+      </svg>
+    </div>`;
   }
 
   private formatInline(text: string): string {
