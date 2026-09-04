@@ -4,12 +4,14 @@ import {
   ColumnElement,
   ColumnsElement,
   HeadingElement,
+  ImageElement,
   ListElement,
   ParagraphElement,
   Presentation,
   QuoteElement,
   Slide,
   SlideElement,
+  TableElement,
 } from '@yumiamd/ast';
 import {
   LayoutEngine,
@@ -26,6 +28,12 @@ export const DEFAULT_VIEWPORT: Size = {
   height: 1080,
 };
 
+export const VIEWPORT_PRESETS: Record<string, Size> = {
+  '16:9': { width: 1920, height: 1080 },
+  '4:3': { width: 1440, height: 1080 },
+  '16:10': { width: 1920, height: 1200 },
+};
+
 export class DefaultLayoutEngine implements LayoutEngine {
   computeSlide(
     slide: Slide,
@@ -34,8 +42,8 @@ export class DefaultLayoutEngine implements LayoutEngine {
   ): SlideLayoutResult {
     const padding = options.padding ?? 64;
     const gap = options.gap ?? 24;
-    const availableWidth = viewport.width - padding * 2;
-    const availableHeight = viewport.height - padding * 2;
+    const availableWidth = Math.max(100, viewport.width - padding * 2);
+    const availableHeight = Math.max(100, viewport.height - padding * 2);
 
     if (slide.elements.length === 0) {
       return {
@@ -69,13 +77,18 @@ export class DefaultLayoutEngine implements LayoutEngine {
 
   computePresentation(
     presentation: Presentation,
-    viewport: Size = DEFAULT_VIEWPORT,
+    viewport?: Size,
     options: LayoutOptions = {}
   ): PresentationLayoutResult {
+    const effectiveViewport =
+      viewport ||
+      (presentation.metadata.aspectRatio && VIEWPORT_PRESETS[presentation.metadata.aspectRatio]) ||
+      DEFAULT_VIEWPORT;
+
     return {
-      viewport,
+      viewport: effectiveViewport,
       slides: presentation.slides.map((slide: Slide) =>
-        this.computeSlide(slide, viewport, options)
+        this.computeSlide(slide, effectiveViewport, options)
       ),
     };
   }
@@ -128,6 +141,14 @@ export class DefaultLayoutEngine implements LayoutEngine {
         const height = this.estimateQuoteHeight(element, width);
         return { element, bounds: { x, y, width, height } };
       }
+      case 'table': {
+        const height = this.estimateTableHeight(element);
+        return { element, bounds: { x, y, width, height } };
+      }
+      case 'image': {
+        const height = this.estimateImageHeight(element);
+        return { element, bounds: { x, y, width, height } };
+      }
       case 'card': {
         return this.layoutCard(element, x, y, width, gap);
       }
@@ -149,7 +170,7 @@ export class DefaultLayoutEngine implements LayoutEngine {
     gap: number
   ): LayoutNode {
     const cardPadding = 28;
-    const innerWidth = width - cardPadding * 2;
+    const innerWidth = Math.max(10, width - cardPadding * 2);
     const titleHeight = element.title ? 56 : 0;
     const innerStartY = y + cardPadding + titleHeight;
 
@@ -185,7 +206,7 @@ export class DefaultLayoutEngine implements LayoutEngine {
 
     const ratios = this.parseRatios(element.ratios, columnCount);
     const totalGap = gap * (columnCount - 1);
-    const usableWidth = width - totalGap;
+    const usableWidth = Math.max(10, width - totalGap);
 
     let currentX = x;
     const columnNodes: LayoutNode[] = [];
@@ -270,5 +291,18 @@ export class DefaultLayoutEngine implements LayoutEngine {
     const charsPerLine = Math.max(20, Math.floor(width / 14));
     const lines = Math.ceil(quote.text.length / charsPerLine) || 1;
     return lines * 32 + 24;
+  }
+
+  private estimateTableHeight(table: TableElement): number {
+    const headerHeight = table.headers && table.headers.length > 0 ? 50 : 0;
+    const rowsHeight = (table.rows ? table.rows.length : 0) * 42;
+    return Math.max(60, headerHeight + rowsHeight + 16);
+  }
+
+  private estimateImageHeight(image: ImageElement): number {
+    if (typeof image.height === 'number') {
+      return image.height;
+    }
+    return 320;
   }
 }

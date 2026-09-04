@@ -3,6 +3,27 @@
  * This package is strictly decoupled from any rendering or parser implementation.
  */
 
+export interface SourcePosition {
+  line: number;
+  column: number;
+  offset?: number;
+}
+
+export interface SourceLocation {
+  start: SourcePosition;
+  end: SourcePosition;
+}
+
+export type DiagnosticSeverity = 'error' | 'warning' | 'info';
+
+export interface Diagnostic {
+  code: string;
+  message: string;
+  severity: DiagnosticSeverity;
+  loc?: SourceLocation;
+  suggestion?: string;
+}
+
 export type SlideLayout = 'stack' | 'columns' | 'split' | 'hero' | 'grid' | string;
 
 export interface ThemeReference {
@@ -29,32 +50,36 @@ export interface SlideBackground {
 
 export type TextAlignment = 'left' | 'center' | 'right' | 'justify';
 
-export interface HeadingElement {
+export interface BaseElement {
+  loc?: SourceLocation;
+}
+
+export interface HeadingElement extends BaseElement {
   type: 'heading';
   level: 1 | 2 | 3 | 4 | 5 | 6;
   text: string;
   align?: TextAlignment;
 }
 
-export interface ParagraphElement {
+export interface ParagraphElement extends BaseElement {
   type: 'paragraph';
   text: string;
   align?: TextAlignment;
 }
 
-export interface ListItem {
+export interface ListItem extends BaseElement {
   text: string;
   depth?: number;
   children?: SlideElement[];
 }
 
-export interface ListElement {
+export interface ListElement extends BaseElement {
   type: 'list';
   ordered: boolean;
   items: ListItem[];
 }
 
-export interface ImageElement {
+export interface ImageElement extends BaseElement {
   type: 'image';
   src: string;
   alt?: string;
@@ -63,55 +88,55 @@ export interface ImageElement {
   height?: number | string;
 }
 
-export interface CardElement {
+export interface CardElement extends BaseElement {
   type: 'card';
   title?: string;
   elements: SlideElement[];
   variant?: 'default' | 'outlined' | 'filled';
 }
 
-export interface CodeElement {
+export interface CodeElement extends BaseElement {
   type: 'code';
   code: string;
   language?: string;
   highlightLines?: number[];
 }
 
-export interface QuoteElement {
+export interface QuoteElement extends BaseElement {
   type: 'quote';
   text: string;
   author?: string;
   citation?: string;
 }
 
-export interface TableElement {
+export interface TableElement extends BaseElement {
   type: 'table';
   headers?: string[];
   rows: string[][];
   alignments?: TextAlignment[];
 }
 
-export interface GroupElement {
+export interface GroupElement extends BaseElement {
   type: 'group';
   direction: 'row' | 'column';
   elements: SlideElement[];
   gap?: number | string;
 }
 
-export interface ColumnElement {
+export interface ColumnElement extends BaseElement {
   type: 'column';
   elements: SlideElement[];
   width?: string | number;
 }
 
-export interface ColumnsElement {
+export interface ColumnsElement extends BaseElement {
   type: 'columns';
   columns: ColumnElement[];
   ratios?: string;
   gap?: number | string;
 }
 
-export interface LayoutDirectiveElement {
+export interface LayoutDirectiveElement extends BaseElement {
   type: 'layout-directive';
   mode: string;
   attributes?: Record<string, string>;
@@ -131,7 +156,7 @@ export type SlideElement =
   | ColumnsElement
   | LayoutDirectiveElement;
 
-export interface Slide {
+export interface Slide extends BaseElement {
   id?: string;
   layout?: SlideLayout;
   background?: SlideBackground;
@@ -140,7 +165,8 @@ export interface Slide {
   metadata?: Record<string, unknown>;
 }
 
-export interface Presentation {
+export interface Presentation extends BaseElement {
   metadata: PresentationMetadata;
   slides: Slide[];
+  diagnostics?: Diagnostic[];
 }

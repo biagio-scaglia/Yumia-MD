@@ -3,10 +3,12 @@ import {
   CardElement,
   CodeElement,
   HeadingElement,
+  ImageElement,
   ListElement,
   ParagraphElement,
   Presentation,
   QuoteElement,
+  TableElement,
 } from '@yumiamd/ast';
 import { DefaultLayoutEngine, LayoutNode, Rect, Size, SlideLayoutResult } from '@yumiamd/layout';
 import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
@@ -31,6 +33,19 @@ type PptxInstance = any;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type PptxSlide = any;
 
+const CSS_NAMED_COLORS: Record<string, string> = {
+  white: 'ffffff',
+  black: '000000',
+  red: 'ef4444',
+  blue: '3b82f6',
+  green: '22c55e',
+  yellow: 'eab308',
+  gray: '64748b',
+  grey: '64748b',
+  slate: '0f172a',
+  transparent: 'ffffff',
+};
+
 export class PptxRenderer implements YumiaRenderer<PptxOutput> {
   readonly name = 'PptxRenderer';
   readonly targetFormat = 'pptx';
@@ -52,20 +67,25 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     pptx.title = title;
     pptx.author = author;
 
-    // Define crisp 16:9 widescreen canvas (13.333 x 7.5 inches)
-    const slideWidthInches = 13.333;
+    // Define 16:9 widescreen canvas (13.333 x 7.5 inches) or 4:3 canvas (10 x 7.5 inches)
+    const is43 = presentation.metadata.aspectRatio === '4:3';
+    const slideWidthInches = is43 ? 10.0 : 13.333;
     const slideHeightInches = 7.5;
-    pptx.defineLayout({ name: 'YUMIA_16_9', width: slideWidthInches, height: slideHeightInches });
-    pptx.layout = 'YUMIA_16_9';
+    const layoutName = is43 ? 'YUMIA_4_3' : 'YUMIA_16_9';
 
-    const pixelViewport: Size = { width: 1920, height: 1080 };
+    pptx.defineLayout({ name: layoutName, width: slideWidthInches, height: slideHeightInches });
+    pptx.layout = layoutName;
+
+    const pixelViewport: Size = is43
+      ? { width: 1440, height: 1080 }
+      : { width: 1920, height: 1080 };
     const scaleX = slideWidthInches / pixelViewport.width;
     const scaleY = slideHeightInches / pixelViewport.height;
 
     for (const slide of presentation.slides) {
       const pptxSlide: PptxSlide = pptx.addSlide();
 
-      const bgColor = this.cleanHexColor(theme.colors.background);
+      const bgColor = this.cleanHexColor(slide.background?.value || theme.colors.background);
       pptxSlide.background = { color: bgColor };
 
       const slideLayout: SlideLayoutResult = this.layoutEngine.computeSlide(slide, pixelViewport);
@@ -90,7 +110,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       format: 'pptx',
       data: uint8Array,
       slideCount: presentation.slides.length,
-      fileName: `${title.toLowerCase().replace(/\s+/g, '-')}.pptx`,
+      fileName: `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pptx`,
     };
   }
 
@@ -120,6 +140,12 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         break;
       case 'quote':
         this.renderQuote(pptxSlide, pptx, element, rect, theme);
+        break;
+      case 'table':
+        this.renderTable(pptxSlide, element, rect, theme);
+        break;
+      case 'image':
+        this.renderImage(pptxSlide, element, rect);
         break;
       case 'card':
         this.renderCard(pptxSlide, pptx, node, scaleX, scaleY, theme);
@@ -210,6 +236,94 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       valign: 'top',
       margin: 0,
     });
+  }
+
+  private renderTable(
+    pptxSlide: PptxSlide,
+    table: TableElement,
+    rect: { x: number; y: number; w: number; h: number },
+    theme: YumiaTheme
+  ): void {
+    const tableRows: Array<Array<{ text: string; options?: Record<string, unknown> }>> = [];
+    const headerBg = this.cleanHexColor(theme.colors.primary);
+    const borderColor = this.cleanHexColor(theme.colors.border || '#cbd5e1');
+
+    if (table.headers && table.headers.length > 0) {
+      tableRows.push(
+        table.headers.map((h) => ({
+          text: h,
+          options: {
+            bold: true,
+            color: 'ffffff',
+            fill: { color: headerBg },
+            fontSize: 14,
+            align: 'center',
+          },
+        }))
+      );
+    }
+
+    if (table.rows) {
+      table.rows.forEach((row, rowIndex) => {
+        const rowBg = rowIndex % 2 === 1 ? 'f8fafc' : 'ffffff';
+        tableRows.push(
+          row.map((cell) => ({
+            text: cell,
+            options: {
+              color: this.cleanHexColor(theme.colors.text),
+              fill: { color: rowBg },
+              fontSize: 13,
+            },
+          }))
+        );
+      });
+    }
+
+    if (tableRows.length > 0) {
+      pptxSlide.addTable(tableRows, {
+        x: rect.x,
+        y: rect.y,
+        w: rect.w,
+        border: { type: 'solid', pt: 1, color: borderColor },
+        margin: [4, 8, 4, 8],
+      });
+    }
+  }
+
+  private renderImage(
+    pptxSlide: PptxSlide,
+    image: ImageElement,
+    rect: { x: number; y: number; w: number; h: number }
+  ): void {
+    try {
+      pptxSlide.addImage({
+        path: image.src,
+        x: rect.x,
+        y: rect.y,
+        w: rect.w,
+        h: rect.h,
+      });
+    } catch {
+      // Graceful fallback for missing/remote offline images: draw placeholder box
+      pptxSlide.addShape('rect', {
+        x: rect.x,
+        y: rect.y,
+        w: rect.w,
+        h: rect.h,
+        fill: { color: 'e2e8f0' },
+        line: { color: '94a3b8', width: 1 },
+      });
+      pptxSlide.addText(`[Image: ${image.alt || image.src}]`, {
+        x: rect.x,
+        y: rect.y,
+        w: rect.w,
+        h: rect.h,
+        fontSize: 12,
+        color: '64748b',
+        align: 'center',
+        valign: 'middle',
+      });
+    }
   }
 
   private renderCard(
@@ -369,7 +483,23 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     }
   }
 
-  private cleanHexColor(hex: string): string {
-    return hex.replace('#', '').trim();
+  private cleanHexColor(raw: string | undefined): string {
+    if (!raw) return '000000';
+    const trimmed = raw.trim().toLowerCase();
+
+    if (CSS_NAMED_COLORS[trimmed]) {
+      return CSS_NAMED_COLORS[trimmed]!;
+    }
+
+    const hexMatch = trimmed.match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
+    if (hexMatch && hexMatch[1]) {
+      const hex = hexMatch[1];
+      if (hex.length === 3) {
+        return hex[0]! + hex[0]! + hex[1]! + hex[1]! + hex[2]! + hex[2]!;
+      }
+      return hex;
+    }
+
+    return '000000';
   }
 }
