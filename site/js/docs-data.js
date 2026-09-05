@@ -1,6 +1,7 @@
 /**
  * Yumia Documentation Data Store
  * Complete, authoritative documentation content for the official Yumia Documentation Website.
+ * Uses Font Awesome 6 icons (Zero Emojis).
  */
 
 export const DOCS_SECTIONS = [
@@ -8,7 +9,7 @@ export const DOCS_SECTIONS = [
     id: 'overview',
     title: 'What is Yumia?',
     category: 'Introduction',
-    lead: 'A programming language and compiler for visual documents.',
+    lead: 'A programming language and compiler for visual documents created by Biagio Scaglia.',
     content: `
       <h2>The Core Paradigm Shift</h2>
       <p>Traditional slide tools force you to arrange raw geometry (<code>rectangle</code>, <code>textbox</code>, <code>shape</code>, <code>line</code>). Markdown slide generators simply dump fragile HTML/CSS tags inside slides, creating unmaintainable layouts that cannot export to genuine presentation formats.</p>
@@ -16,7 +17,7 @@ export const DOCS_SECTIONS = [
       <p><strong>Yumia compiles communicative intent into structured visual artifacts.</strong></p>
 
       <div class="callout tip">
-        <div class="callout-title">💡 The Mental Model</div>
+        <div class="callout-title"><i class="fa-solid fa-lightbulb" style="color: var(--yumia-success); margin-right: 0.4rem;"></i> The Mental Model</div>
         <p>Just as <code>HTML ➔ DOM ➔ CSS ➔ Layout ➔ Browser</code> redefined the web, Yumia introduces <code>Yumia Source ➔ Semantic AST ➔ Design System ➔ Composition Engine ➔ Multi-Target Output</code> for visual documents.</p>
       </div>
 
@@ -40,22 +41,22 @@ DESIGN SYSTEM & COMPOSITION ENGINE
       <h2>Key Capabilities</h2>
       <div class="feature-grid">
         <div class="feature-card">
-          <div class="feature-icon">✨</div>
+          <div class="feature-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
           <h4>Intent-First Primitives</h4>
           <p>Express ideas with <code>hero</code>, <code>metric</code>, <code>compare</code>, <code>timeline</code>, <code>card</code>, and <code>chart</code> instead of fragile CSS styles.</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon">🎯</div>
+          <div class="feature-icon"><i class="fa-solid fa-bullseye"></i></div>
           <h4>100% Native PowerPoint</h4>
           <p>Compiles directly to real, fully editable OpenXML PowerPoint shapes, text frames, and Microsoft charts.</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon">🔍</div>
+          <div class="feature-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
           <h4>Design Intelligence</h4>
           <p>Built-in <code>yumia explain</code> and <code>yumia check</code> auditing contrast (WCAG AAA), density, and visual rhythm.</p>
         </div>
         <div class="feature-card">
-          <div class="feature-icon">🤖</div>
+          <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
           <h4>AI-Deterministic</h4>
           <p>Strict indentation grammar and JSON Schema eliminates hallucinated CSS and unclosed HTML tags in LLM pipelines.</p>
         </div>
@@ -72,7 +73,7 @@ DESIGN SYSTEM & COMPOSITION ENGINE
       <p>You can run Yumia immediately without installing anything via <code>npx</code>:</p>
       
       <div class="code-block">
-        <div class="code-header"><span class="code-lang-tag">BASH</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <div class="code-header"><span class="code-lang-tag">BASH</span><button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button></div>
         <pre><code># 1. Initialize a starter presentation with corporate theme
 npx yumiamd init my-deck --theme corporate
 
@@ -88,7 +89,7 @@ npx yumiamd build presentation.yumia.md --out dist/deck.pptx</code></pre>
 
       <h2>Global CLI Installation</h2>
       <div class="code-block">
-        <div class="code-header"><span class="code-lang-tag">BASH</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <div class="code-header"><span class="code-lang-tag">BASH</span><button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button></div>
         <pre><code># npm
 npm install -g yumiamd
 
@@ -103,7 +104,7 @@ yarn global add yumiamd</code></pre>
       <p>Create a file named <code>deck.yumia</code>:</p>
       
       <div class="code-block">
-        <div class="code-header"><span class="code-lang-tag">YUMIA</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <div class="code-header"><span class="code-lang-tag">YUMIA</span><button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button></div>
         <pre><code>document "Cloud Infrastructure v2"
   theme "corporate"
   aspectRatio "16:9"
@@ -193,14 +194,14 @@ slide "Key Performance Indicators"
 
       <h2>Hero Block Example</h2>
       <div class="code-block">
-        <div class="code-header"><span class="code-lang-tag">YUMIA</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <div class="code-header"><span class="code-lang-tag">YUMIA</span><button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button></div>
         <pre><code>slide "Hero Section"
   hero title="Autonomous Cloud Platform" subtitle="Sub-millisecond processing at exabyte scale" badge="Enterprise v2" align="center" emphasis="high"</code></pre>
       </div>
 
       <h2>Callout Block Example</h2>
       <div class="code-block">
-        <div class="code-header"><span class="code-lang-tag">MARKDOWN (.yumia.md)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <div class="code-header"><span class="code-lang-tag">MARKDOWN (.yumia.md)</span><button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button></div>
         <pre><code>:::callout variant="warning" title="Breaking API Changes" icon="lucide:alert-triangle"
 All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the v2 GraphQL API.
 :::</code></pre>
@@ -307,7 +308,7 @@ All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the
       <p>The compiler computes a normalized score reflecting design polish:</p>
 
       <div class="callout tip">
-        <div class="callout-title">🎯 Target Score: 90+</div>
+        <div class="callout-title"><i class="fa-solid fa-bullseye" style="color: var(--yumia-success); margin-right: 0.4rem;"></i> Target Score: 90+</div>
         <p>A score above 90 guarantees balanced hierarchy, high-contrast readability, and optimal information density.</p>
       </div>
     `,

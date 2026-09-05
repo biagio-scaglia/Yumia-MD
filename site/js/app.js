@@ -1,6 +1,7 @@
 /**
  * Yumia Documentation Application Logic
  * Router, Search, Interactive Playground, Theme Switcher & Table of Contents
+ * Uses Font Awesome 6 icons (Zero Emojis).
  */
 
 import { DOCS_SECTIONS, PLAYGROUND_EXAMPLES } from './docs-data.js';
@@ -53,7 +54,7 @@ class YumiaDocsApp {
     localStorage.setItem('yumia-theme', theme);
     const themeIcon = document.getElementById('themeToggleIcon');
     if (themeIcon) {
-      themeIcon.textContent = theme === 'light' ? '🌙' : '☀️';
+      themeIcon.className = theme === 'light' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
     }
   }
 
@@ -106,14 +107,14 @@ class YumiaDocsApp {
       `;
     }
 
-    // Add Interactive Playground & Examples in sidebar
+    // Add Interactive Playground in sidebar with Font Awesome bolt icon
     html += `
       <div class="sidebar-section">
         <div class="sidebar-title">Interactive</div>
         <ul class="sidebar-nav">
           <li>
             <a href="#playground" class="sidebar-link ${this.currentSectionId === 'playground' ? 'active' : ''}">
-              ⚡ Live Playground
+              <i class="fa-solid fa-bolt" style="color: var(--yumia-primary); margin-right: 0.3rem;"></i> Live Playground
             </a>
           </li>
         </ul>
@@ -150,7 +151,7 @@ class YumiaDocsApp {
 
       <div class="playground-container">
         <div class="playground-header">
-          <div class="playground-title">⚡ Yumia Live Design Compiler</div>
+          <div class="playground-title"><i class="fa-solid fa-bolt" style="color: var(--yumia-primary); margin-right: 0.3rem;"></i> Yumia Live Design Compiler</div>
           <div class="playground-controls">
             <label style="font-size: 0.8rem; color: var(--yumia-text-muted);">Template:</label>
             <select id="playgroundTemplateSelect" class="playground-select">
@@ -172,7 +173,7 @@ class YumiaDocsApp {
         </div>
         <div class="playground-status-bar">
           <span id="playgroundSlideCount">Slide: 1 of 1</span>
-          <span id="playgroundQualityScore" style="color: var(--yumia-success); font-weight: 600;">Visual Quality Score: 98/100 (AAA)</span>
+          <span id="playgroundQualityScore" style="color: var(--yumia-success); font-weight: 600;"><i class="fa-solid fa-check" style="margin-right: 0.3rem;"></i> Visual Quality Score: 98/100 (AAA)</span>
         </div>
       </div>
     `;
@@ -311,7 +312,6 @@ class YumiaDocsApp {
      Interactive Playground Compiler Simulator
      -------------------------------------------------------------------------- */
   initPlayground() {
-    // Bind if playground is already open
     if (this.currentSectionId === 'playground') {
       this.bindPlaygroundEvents();
     }
@@ -341,7 +341,6 @@ class YumiaDocsApp {
   }
 
   updatePlaygroundPreview(source, frame) {
-    // Simple fast semantic preview simulator
     const hasHero = source.includes('hero');
     const hasMetric = source.includes('metric');
     const hasGrid = source.includes('grid');
@@ -409,15 +408,15 @@ class YumiaDocsApp {
   }
 }
 
-// Global copy helper
+// Global copy helper using Font Awesome check icon
 window.copyCode = function (btn) {
   const code = btn.closest('.code-block').querySelector('pre code').textContent;
   navigator.clipboard.writeText(code).then(() => {
-    const originalText = btn.textContent;
-    btn.textContent = '✓ Copied!';
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
     btn.style.color = 'var(--yumia-success)';
     setTimeout(() => {
-      btn.textContent = originalText;
+      btn.innerHTML = originalHtml;
       btn.style.color = '';
     }, 1500);
   });
