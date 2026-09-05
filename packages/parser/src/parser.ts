@@ -1015,6 +1015,8 @@ export class DefaultYumiaParser implements YumiaParser {
       }
     }
 
+    const singleSeriesValues: number[] = [];
+
     for (const line of blockLines) {
       const trimmed = line.trim();
       if (!trimmed || trimmed.startsWith('#')) continue;
@@ -1040,11 +1042,29 @@ export class DefaultYumiaParser implements YumiaParser {
           if (l && valStr) {
             labels.push(l);
             const val = parseFloat(valStr) || 0;
-            if (series.length === 0) series.push({ name: 'Data', values: [] });
-            series[0]?.values.push(val);
+            singleSeriesValues.push(val);
           }
         }
+      } else {
+        const kvMatch = trimmed.match(/^[-*]?\s*(.*?)\s*[:=]\s*([+-]?\d+(?:\.\d+)?%?)$/);
+        if (kvMatch && kvMatch[1] && kvMatch[2]) {
+          labels.push(kvMatch[1].trim());
+          const val = parseFloat(kvMatch[2].replace('%', '')) || 0;
+          singleSeriesValues.push(val);
+        }
       }
+    }
+
+    if (singleSeriesValues.length > 0) {
+      if (series.length === 0) {
+        series.push({ name: title || 'Data', values: singleSeriesValues });
+      } else if (series[0]) {
+        series[0].values.push(...singleSeriesValues);
+      }
+    }
+
+    if (series.length === 0) {
+      series.push({ name: title || 'Data', values: [] });
     }
 
     if (labels.length === 0) {

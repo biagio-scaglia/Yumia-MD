@@ -671,7 +671,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
             .fontSize(9)
             .fillColor(theme.colors.text)
             .text(String(val), barX, barY - 12, { width: barW, align: 'center' });
-          if (ch.labels[idx]) {
+          if (ch.labels?.[idx]) {
             doc
               .font('Helvetica')
               .fontSize(9)
