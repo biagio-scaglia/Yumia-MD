@@ -1,76 +1,45 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
   <defs>
-    <!-- Atelier Yumia Alchemical Gradients -->
-    <linearGradient id="atelierGold" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FFF4D0" />
-      <stop offset="35%" stop-color="#F5C451" />
-      <stop offset="70%" stop-color="#E59819" />
-      <stop offset="100%" stop-color="#A25F06" />
-    </linearGradient>
-
-    <linearGradient id="yumiaRoseCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+    <!-- Vibrant Minimalist Gradients -->
+    <linearGradient id="layerTop" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FF4D94" />
-      <stop offset="50%" stop-color="#C04CFD" />
-      <stop offset="100%" stop-color="#00F0FF" />
-    </linearGradient>
-
-    <linearGradient id="memoryCrystal" x1="30%" y1="0%" x2="70%" y2="100%">
-      <stop offset="0%" stop-color="#FFFFFF" />
-      <stop offset="30%" stop-color="#70E5FF" />
-      <stop offset="70%" stop-color="#A855F7" />
       <stop offset="100%" stop-color="#FF2E88" />
     </linearGradient>
 
-    <radialGradient id="alchemicalGlow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#00F0FF" stop-opacity="0.6" />
-      <stop offset="40%" stop-color="#FF2E88" stop-opacity="0.3" />
-      <stop offset="80%" stop-color="#161626" stop-opacity="0.8" />
-      <stop offset="100%" stop-color="#0B0B12" stop-opacity="1" />
-    </radialGradient>
+    <linearGradient id="layerBottom" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F0FF" />
+      <stop offset="100%" stop-color="#3B82F6" />
+    </linearGradient>
 
-    <filter id="alchemyBloom" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="2" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
+    <linearGradient id="coreSpark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#FFF4D0" />
+    </linearGradient>
+
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF2E88" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#00F0FF" stop-opacity="0.8" />
+    </linearGradient>
   </defs>
 
-  <!-- Alchemical Dark Core Shield -->
-  <rect x="4" y="4" width="92" height="92" rx="24" fill="url(#alchemicalGlow)" stroke="url(#atelierGold)" stroke-width="2" />
+  <!-- Background Squircle Container -->
+  <rect x="3" y="3" width="58" height="58" rx="14" fill="#0B0B12" stroke="url(#borderGrad)" stroke-width="1.5" />
 
-  <!-- Outer Celestial Transmutation Circle (Atelier Ring) -->
-  <circle cx="50" cy="50" r="38" stroke="url(#atelierGold)" stroke-width="1.2" stroke-dasharray="4 2 1 2" opacity="0.85" />
-  <circle cx="50" cy="50" r="42" stroke="url(#yumiaRoseCyan)" stroke-width="0.8" opacity="0.6" />
+  <!-- Layer 1: Back Document Plane (Cyan / Blue) -->
+  <rect x="22" y="14" width="28" height="20" rx="4" fill="url(#layerBottom)" opacity="0.85" />
 
-  <!-- Cardinal Celestial Points (4 Stars/Diamonds) -->
-  <polygon points="50,9 52,14 50,19 48,14" fill="url(#atelierGold)" />
-  <polygon points="50,91 52,86 50,81 48,86" fill="url(#atelierGold)" />
-  <polygon points="9,50 14,52 19,50 14,48" fill="url(#atelierGold)" />
-  <polygon points="91,50 86,52 81,50 86,48" fill="url(#atelierGold)" />
+  <!-- Layer 2: Middle Document Plane (Translucent Base) -->
+  <rect x="14" y="22" width="28" height="20" rx="4" fill="#161626" stroke="rgba(255, 255, 255, 0.2)" stroke-width="1.2" />
 
-  <!-- Diagonal Alchemical Memory Sparkles -->
-  <circle cx="23" cy="23" r="2" fill="#00F0FF" />
-  <circle cx="77" cy="23" r="2" fill="#FF4D94" />
-  <circle cx="23" cy="77" r="2" fill="#FFD700" />
-  <circle cx="77" cy="77" r="2" fill="#00F0FF" />
+  <!-- Layer 3: Front Primary Visual Plane (Rose / Pink) -->
+  <rect x="14" y="30" width="28" height="20" rx="4" fill="url(#layerTop)" />
 
-  <!-- Atelier Crescent Moon Arc -->
-  <path d="M 32 30 A 28 28 0 0 0 68 70 A 24 24 0 0 1 32 30 Z" fill="url(#atelierGold)" opacity="0.35" />
+  <!-- Geometric Content Blocks inside Front Document -->
+  <rect x="18" y="34" width="10" height="3" rx="1.5" fill="#FFFFFF" opacity="0.9" />
+  <rect x="18" y="39" width="20" height="2" rx="1" fill="#FFFFFF" opacity="0.4" />
+  <rect x="18" y="43" width="14" height="2" rx="1" fill="#FFFFFF" opacity="0.4" />
 
-  <!-- Stylized Yumia 'Y' Nexus (Alchemical Staff & Memory Tree) -->
-  <!-- Left Branch (Rose/Gold gradient) -->
-  <path d="M 27 24 C 36 34, 44 44, 50 54" stroke="url(#yumiaRoseCyan)" stroke-width="4.5" stroke-linecap="round" filter="url(#alchemyBloom)" />
-  <!-- Right Branch (Cyan/Gold gradient) -->
-  <path d="M 73 24 C 64 34, 56 44, 50 54" stroke="url(#yumiaRoseCyan)" stroke-width="4.5" stroke-linecap="round" filter="url(#alchemyBloom)" />
-  <!-- Center Stem -->
-  <path d="M 50 54 L 50 78" stroke="url(#atelierGold)" stroke-width="4.5" stroke-linecap="round" />
-
-  <!-- Inner Radiant Memory Crystal / Diamond Catalyst -->
-  <polygon points="50,38 60,50 50,62 40,50" fill="url(#memoryCrystal)" stroke="#FFFFFF" stroke-width="1.5" />
-
-  <!-- Center Celestial Alchemy Sparkle / 4-Point Star -->
-  <path d="M 50 43 Q 50 50 43 50 Q 50 50 50 57 Q 50 50 57 50 Q 50 50 50 43 Z" fill="#FFFFFF" />
-
-  <!-- Golden Crown / Nexus Rings -->
-  <circle cx="50" cy="50" r="15" stroke="url(#atelierGold)" stroke-width="1.5" fill="none" opacity="0.75" />
-  <circle cx="50" cy="78" r="2.5" fill="url(#atelierGold)" />
+  <!-- Visual Compiler Spark / Star Core (Top Right Intersection) -->
+  <path d="M 44 26 Q 44 31 39 31 Q 44 31 44 36 Q 44 31 49 31 Q 44 31 44 26 Z" fill="url(#coreSpark)" />
+  <circle cx="44" cy="31" r="1.5" fill="#FFFFFF" />
 </svg>
