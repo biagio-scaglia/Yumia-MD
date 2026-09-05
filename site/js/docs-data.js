@@ -9,6 +9,7 @@ export const DOCS_SECTIONS = [
     id: 'overview',
     title: 'What is Yumia?',
     category: 'Introduction',
+    icon: 'fa-solid fa-book-open',
     lead: 'A programming language and compiler for visual documents created by Biagio Scaglia.',
     content: `
       <h2>The Core Paradigm Shift</h2>
@@ -67,6 +68,7 @@ DESIGN SYSTEM & COMPOSITION ENGINE
     id: 'quickstart',
     title: 'Quick Start',
     category: 'Introduction',
+    icon: 'fa-solid fa-rocket',
     lead: 'Get up and running with Yumia in under 30 seconds.',
     content: `
       <h2>Zero-Install Execution</h2>
@@ -126,6 +128,7 @@ slide "Key Performance Indicators"
     id: 'language-primitives',
     title: 'Visual Primitives',
     category: 'Language Reference',
+    icon: 'fa-solid fa-shapes',
     lead: 'Comprehensive reference of Yumia high-level design intent blocks.',
     content: `
       <h2>Primitives Matrix</h2>
@@ -212,6 +215,7 @@ All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the
     id: 'cli-reference',
     title: 'CLI & Tooling Reference',
     category: 'CLI',
+    icon: 'fa-solid fa-terminal',
     lead: 'Complete documentation for all commands in the Yumia CLI toolchain.',
     content: `
       <h2>CLI Commands Overview</h2>
@@ -292,6 +296,7 @@ All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the
     id: 'design-intelligence',
     title: 'Design Intelligence & Auditing',
     category: 'Design System',
+    icon: 'fa-solid fa-chart-line',
     lead: 'Automated cognitive density, WCAG AAA contrast, and composition rhythm diagnostics.',
     content: `
       <h2>The Quality Engine</h2>
@@ -317,6 +322,7 @@ All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the
     id: 'ai-workflows',
     title: 'AI & LLM Integration',
     category: 'AI Workflows',
+    icon: 'fa-solid fa-microchip',
     lead: 'Deterministic generation architecture designed specifically for AI models.',
     content: `
       <h2>Why Yumia Outperforms Markdown & HTML for LLMs</h2>
@@ -340,6 +346,7 @@ All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the
     id: 'faq',
     title: 'Frequently Asked Questions (FAQ)',
     category: 'Reference',
+    icon: 'fa-solid fa-circle-question',
     lead: 'Answers to common questions about Yumia, its architecture, and comparison with other tools.',
     content: `
       <h2>What is Yumia?</h2>

@@ -96,7 +96,8 @@ class YumiaDocsApp {
                 (s) => `
               <li>
                 <a href="#${s.id}" class="sidebar-link ${s.id === this.currentSectionId ? 'active' : ''}">
-                  ${s.title}
+                  <i class="${s.icon || 'fa-solid fa-file-lines'}" style="margin-right: 0.5rem; width: 16px; text-align: center;"></i>
+                  <span>${s.title}</span>
                 </a>
               </li>
             `
@@ -114,10 +115,26 @@ class YumiaDocsApp {
         <ul class="sidebar-nav">
           <li>
             <a href="#playground" class="sidebar-link ${this.currentSectionId === 'playground' ? 'active' : ''}">
-              <i class="fa-solid fa-bolt" style="color: var(--yumia-primary); margin-right: 0.3rem;"></i> Live Playground
+              <i class="fa-solid fa-bolt" style="color: var(--yumia-primary); margin-right: 0.5rem; width: 16px; text-align: center;"></i>
+              <span>Live Playground</span>
             </a>
           </li>
         </ul>
+      </div>
+
+      <div class="sidebar-section" style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--yumia-border);">
+        <div class="sidebar-title">Author & Creator</div>
+        <div class="author-card" style="padding: 0.75rem; background: var(--yumia-surface-raised); border-radius: 8px; border: 1px solid var(--yumia-border);">
+          <div style="font-weight: 600; font-size: 0.88rem; color: var(--yumia-text-main); display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-user-tie" style="color: var(--yumia-primary);"></i> Biagio Scaglia
+          </div>
+          <div style="font-size: 0.75rem; color: var(--yumia-text-muted); margin: 0.35rem 0 0.5rem 0;">
+            Language Architect & Creator
+          </div>
+          <a href="https://github.com/biagio-scaglia" target="_blank" rel="noopener noreferrer" style="font-size: 0.75rem; color: var(--yumia-primary); display: inline-flex; align-items: center; gap: 0.35rem; text-decoration: none; font-weight: 500;">
+            <i class="fa-brands fa-github"></i> github.com/biagio-scaglia
+          </a>
+        </div>
       </div>
     `;
 
@@ -139,6 +156,15 @@ class YumiaDocsApp {
       <h1>${section.title}</h1>
       <p class="docs-lead">${section.lead}</p>
       ${section.content}
+      <footer class="docs-footer" style="margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--yumia-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; color: var(--yumia-text-muted); font-size: 0.85rem;">
+        <div>
+          <strong>Yumia</strong> — Created & Designed by <a href="https://github.com/biagio-scaglia" target="_blank" rel="noopener noreferrer" style="color: var(--yumia-primary); font-weight: 600; text-decoration: none;"><i class="fa-solid fa-user-tie" style="margin-right: 0.3rem;"></i>Biagio Scaglia</a>
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+          <a href="https://github.com/biagio-scaglia/Yumia-MD" target="_blank" rel="noopener noreferrer" style="color: var(--yumia-text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-brands fa-github"></i> Repository</a>
+          <a href="#playground" style="color: var(--yumia-text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-solid fa-bolt"></i> Playground</a>
+        </div>
+      </footer>
     `;
 
     this.generateToc();
@@ -176,6 +202,14 @@ class YumiaDocsApp {
           <span id="playgroundQualityScore" style="color: var(--yumia-success); font-weight: 600;"><i class="fa-solid fa-check" style="margin-right: 0.3rem;"></i> Visual Quality Score: 98/100 (AAA)</span>
         </div>
       </div>
+      <footer class="docs-footer" style="margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--yumia-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; color: var(--yumia-text-muted); font-size: 0.85rem;">
+        <div>
+          <strong>Yumia</strong> — Created & Designed by <a href="https://github.com/biagio-scaglia" target="_blank" rel="noopener noreferrer" style="color: var(--yumia-primary); font-weight: 600; text-decoration: none;"><i class="fa-solid fa-user-tie" style="margin-right: 0.3rem;"></i>Biagio Scaglia</a>
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: center;">
+          <a href="https://github.com/biagio-scaglia/Yumia-MD" target="_blank" rel="noopener noreferrer" style="color: var(--yumia-text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;"><i class="fa-brands fa-github"></i> Repository</a>
+        </div>
+      </footer>
     `;
 
     this.bindPlaygroundEvents();
@@ -295,15 +329,34 @@ class YumiaDocsApp {
   initMobileNav() {
     const toggleBtn = document.getElementById('mobileMenuToggle');
     const sidebar = document.getElementById('docsSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+
+    const openSidebar = () => {
+      sidebar?.classList.add('open');
+      backdrop?.classList.add('open');
+      toggleBtn?.setAttribute('aria-expanded', 'true');
+    };
+
+    const closeSidebar = () => {
+      sidebar?.classList.remove('open');
+      backdrop?.classList.remove('open');
+      toggleBtn?.setAttribute('aria-expanded', 'false');
+    };
 
     toggleBtn?.addEventListener('click', () => {
-      sidebar?.classList.toggle('open');
+      if (sidebar?.classList.contains('open')) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
     });
 
-    // Close sidebar on link click
+    backdrop?.addEventListener('click', () => closeSidebar());
+
+    // Close sidebar on link click (including child icons and spans)
     sidebar?.addEventListener('click', (e) => {
-      if (e.target.tagName === 'A') {
-        sidebar.classList.remove('open');
+      if (e.target.closest('a')) {
+        closeSidebar();
       }
     });
   }
