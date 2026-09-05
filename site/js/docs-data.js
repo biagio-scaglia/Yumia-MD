@@ -336,6 +336,33 @@ All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the
       </ol>
     `,
   },
+  {
+    id: 'faq',
+    title: 'Frequently Asked Questions (FAQ)',
+    category: 'Reference',
+    lead: 'Answers to common questions about Yumia, its architecture, and comparison with other tools.',
+    content: `
+      <h2>What is Yumia?</h2>
+      <p><strong>Yumia</strong> is a declarative programming language and design compiler designed by <strong>Biagio Scaglia</strong> for creating structured presentations and visual documents. It translates high-level communicative intent (<code>hero</code>, <code>metric</code>, <code>compare</code>, <code>timeline</code>, <code>card</code>, <code>chart</code>) into native editable PowerPoint (.pptx), vector PDF, and interactive HTML5 slides.</p>
+
+      <h2>Who created Yumia?</h2>
+      <p>Yumia was created and architected by <strong>Biagio Scaglia</strong> as an open-source visual document compiler and ecosystem.</p>
+
+      <h2>How does Yumia differ from PowerPoint, Canva, Marp, or Slidev?</h2>
+      <p>Traditional tools force you into two extremes:</p>
+      <ul>
+        <li><strong>PowerPoint / Canva:</strong> GUI tools where geometry is positioned manually with pixel coordinates. Difficult to automate, version with Git, or generate programmatically.</li>
+        <li><strong>Marp / Slidev:</strong> Markdown slide engines that export flat rasterized screenshot images when generating PowerPoint files.</li>
+        <li><strong>Yumia:</strong> A true <em>Design Compiler</em>. It uses pure semantic ASTs and compiles into <strong>100% native OpenXML vector shapes, editable text frames, and Microsoft charts</strong>.</li>
+      </ul>
+
+      <h2>What CLI commands are available?</h2>
+      <p>The Yumia CLI includes: <code>yumia check --optimize</code> (design audit & visual quality score), <code>yumia explain</code> (rhythm and composition breakdown), <code>yumia dev</code> (live-reload server with DevTools inspector), <code>yumia build</code> (multi-target compilation), <code>yumia lint</code>, <code>yumia validate</code>, <code>yumia schema</code>, and <code>yumia deploy</code>.</p>
+
+      <h2>How do AI models generate Yumia documents?</h2>
+      <p>AI models can use Yumia's indentation-based syntax (<code>.yumia</code>) and JSON Schema (<code>yumia schema</code>) to generate documents with zero unclosed HTML tags and zero CSS hallucinations, verifying results automatically via <code>yumia check --json</code>.</p>
+    `,
+  },
 ];
 
 export const PLAYGROUND_EXAMPLES = {

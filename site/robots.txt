@@ -1,4 +1,32 @@
+# robots.txt for Yumia Documentation & AI Crawlers (AEO / GEO Optimized)
 User-agent: *
 Allow: /
 
+# Generative Engine Optimizers & AI Crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Canonical Sitemaps & LLM Context Feeds
 Sitemap: https://yumiamd.org/sitemap.xml
+Sitemap: https://yumiamd.org/llms.txt

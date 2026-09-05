@@ -16,7 +16,7 @@
     />
     <meta
       name="keywords"
-      content="Yumia, YumiaMD, Biagio Scaglia, Design Compiler, Presentation Language, PowerPoint Compiler, PPTX Generator, Vector PDF, Declarative Documents, AI Slides, AI Presentation Compiler, TypeScript, OpenXML, Developer Tooling"
+      content="Yumia, YumiaMD, Biagio Scaglia, Design Compiler, Presentation Language, PowerPoint Compiler, PPTX Generator, Vector PDF, Declarative Documents, AI Slides, AI Presentation Compiler, TypeScript, OpenXML, Developer Tooling, GEO, AEO, Answer Engine Optimization, Generative Engine Optimization"
     />
     <meta name="author" content="Biagio Scaglia" />
     <meta name="creator" content="Biagio Scaglia" />
@@ -58,7 +58,7 @@
     <link rel="manifest" href="site.webmanifest" />
     <meta name="theme-color" content="#FF2E88" />
 
-    <!-- JSON-LD Structured Data Schema -->
+    <!-- JSON-LD Structured Data Schema (SEO + AEO + GEO Optimized) -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -96,6 +96,69 @@
               "target": "https://yumiamd.org/#search?q={search_term_string}",
               "query-input": "required name=search_term_string"
             }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is Yumia?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yumia is a declarative programming language and design compiler designed by Biagio Scaglia. It compiles communicative intent (hero, metric, compare, timeline, card, chart) into 100% native editable PowerPoint (.pptx) presentations, vector PDFs, and interactive HTML5 slides."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Who created Yumia?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yumia was created and architected by Biagio Scaglia as an open-source visual document compiler and ecosystem."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How is Yumia different from Marp, Slidev, or PowerPoint?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Unlike PowerPoint, Yumia is code-first and Git-versionable. Unlike Marp or Slidev, which export flat rasterized screenshots to PowerPoint, Yumia compiles into genuine native OpenXML vector shapes, editable text frames, and real Microsoft charts."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What CLI commands are available in Yumia?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "The Yumia CLI includes: yumia check --optimize (design audit and visual quality score), yumia explain (rhythm and composition breakdown), yumia dev (live-reload server with DevTools inspector), yumia build (multi-target compiler), yumia lint, yumia validate, yumia schema, and yumia deploy."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How do AI and LLMs interact with Yumia?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yumia provides an unambiguous indentation-based grammar (.yumia) and machine-readable JSON Schema (yumia schema) that prevents unclosed HTML tags and CSS hallucinations during generative AI document generation."
+                }
+              }
+            ]
+          },
+          {
+            "@type": "HowTo",
+            "name": "How to compile a Yumia presentation to PowerPoint",
+            "step": [
+              {
+                "@type": "HowToStep",
+                "text": "Install yumiamd globally or run via npx: npx yumiamd init my-deck --theme corporate"
+              },
+              {
+                "@type": "HowToStep",
+                "text": "Author your presentation in .yumia or .yumia.md using intent primitives like hero, metric, and compare"
+              },
+              {
+                "@type": "HowToStep",
+                "text": "Compile directly to PowerPoint: yumia build presentation.yumia --format pptx --out deck.pptx"
+              }
+            ]
           }
         ]
       }

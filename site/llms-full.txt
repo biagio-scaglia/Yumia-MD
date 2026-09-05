@@ -1,0 +1,95 @@
+# Yumia — Complete Technical Specification & Language Reference (llms-full.txt)
+
+Author: Biagio Scaglia (https://github.com/biagio-scaglia)
+Package: yumiamd (v0.1.24)
+Website: https://yumiamd.org
+Repository: https://github.com/biagio-scaglia/Yumia-MD
+
+---
+
+## 1. Abstract & Philosophy
+Yumia is a declarative visual language and design compiler that transforms human or machine-authored documents into professional visual artifacts across PowerPoint (.pptx), PDF (.pdf), and HTML5 (.html).
+
+The core thesis of Yumia is that visual documents should not be authored as raw coordinate shapes (PowerPoint) or unmaintainable CSS strings (Markdown + HTML). Instead, content is expressed as high-level communicative intent (`hero`, `metric`, `compare`, `timeline`, `card`, `chart`), parsed into a pure semantic Abstract Syntax Tree (AST), resolved against design tokens, laid out via a deterministic 2D box engine, and compiled to genuine target native objects.
+
+---
+
+## 2. Grammar & Syntax
+
+### 2.1 Native Yumia Syntax (.yumia)
+- Indentation-based block structure (2 spaces).
+- Document declarations: `document "<Title>"`, `theme "<ThemeName>"`, `aspectRatio "<Ratio>"`, `transition "<Effect>"`.
+- Slides: declared via `slide "<Title>"`.
+- Primitives:
+  - `hero title="<Title>" subtitle="<Subtitle>" badge="<Badge>" align="<left|center>" emphasis="<high|medium|subtle>"`
+  - `callout variant="<info|warning|success|danger|accent>" title="<Title>" icon="<provider:name>"`
+  - `metric "<Value>" label="<Label>" diff="<Change>" variant="<Variant>" trend="<up|down>"`
+  - `compare left="<LeftTitle>" right="<RightTitle>"`
+  - `timeline layout="<horizontal|vertical>"`
+  - `chart type="<bar|line|pie|doughnut>" title="<Title>" labels="<L1,L2>" data="<D1,D2>"`
+  - `card title="<Title>" variant="<Variant>"`
+  - `image src="<Path>" fit="<cover|contain>" radius="<md|lg|full>" shadow="<md|glow>"`
+  - `grid columns=<1..6> gap=<number>`
+  - `stack direction="<horizontal|vertical>" gap=<number>`
+
+### 2.2 Markdown Directives (.yumia.md)
+Extended CommonMark with triple-colon semantic block containers:
+```markdown
+---
+title: System Overview
+theme: corporate
+aspectRatio: "16:9"
+---
+
+:::hero title="Next-Gen Compute" subtitle="Sub-millisecond latency" badge="Enterprise" align="center"
+:::
+
+---
+
+# Performance Indicators
+
+:::grid columns=3 gap=20
+:::metric value="99.999%" label="Uptime SLA" change="+0.009%" variant="success" trend="up"
+:::
+:::metric value="1.2ms" label="p99 Latency" change="-35%" variant="primary" trend="down"
+:::
+:::metric value="14.2M" label="Active Invocations" change="+120%" variant="accent" trend="up"
+:::
+:::
+```
+
+---
+
+## 3. CLI Command Suite
+
+1. `yumia check <file> [--optimize] [--strict] [--json]`:
+   - Runs automated design audit.
+   - Evaluates WCAG 2.1 AA (4.5:1) and AAA (7.0:1) color contrast.
+   - Calculates Visual Quality Score (0–100).
+   - Identifies cognitive information overload (>7 list items or >120 words).
+
+2. `yumia explain <file>`:
+   - Breaks down document composition distribution (hero, metric, comparison, chart, timeline, card, content slides).
+   - Audits modular typography scale, safe-area compliance (90px margin buffer).
+   - Flags visual rhythm monotony (e.g. 3 consecutive identical compositions).
+
+3. `yumia dev <file> [--port 3000] [--open]`:
+   - Starts instant live-reload dev server with SSE hot-reload.
+   - Includes embedded Visual Inspector (`I` / `Alt+Click`) and Speaker View (`S`).
+
+4. `yumia build <file> [--format pptx|pdf|html] [--out <path>]`:
+   - Compiles AST to 100% native editable PowerPoint (OpenXML), vector PDF, or standalone HTML5.
+
+5. `yumia schema`:
+   - Exports the machine-readable JSON Schema for LLM system prompt integration.
+
+6. `yumia deploy <file> [--provider vercel|gh-pages]`:
+   - Prepares production deployment bundles.
+
+---
+
+## 4. Multi-Target Rendering Principles
+
+- **PowerPoint (`PptxRenderer`)**: Uses PptxGenJS to produce real OpenXML vector shapes, editable font-matched text boxes, and genuine Microsoft charts.
+- **PDF (`PdfRenderer`)**: Uses PDFKit to draw vector paths, embed icons, and maintain millimeter typographic precision.
+- **HTML5 (`HtmlRenderer`)**: Emits accessible single-page application with CSS custom property design tokens and hardware-accelerated CSS3 animations.

@@ -1,0 +1,65 @@
+# Yumia
+
+> Yumia is a declarative programming language and design compiler for structured visual documents, presentations, and reports, designed by Biagio Scaglia.
+
+## Overview
+Unlike legacy presentation tools (which rely on raw geometric coordinates) or Markdown slide engines (which inject raw CSS strings), Yumia translates high-level communicative intent (`hero`, `metric`, `compare`, `timeline`, `card`, `chart`) into a deterministic Semantic Abstract Syntax Tree (AST), compiling directly to 100% native editable PowerPoint (.pptx), vector PDF, and interactive HTML5.
+
+## Author & Project Information
+- **Creator & Software Architect**: Biagio Scaglia (https://github.com/biagio-scaglia)
+- **Official Repository**: https://github.com/biagio-scaglia/Yumia-MD
+- **NPM Package**: yumiamd (https://www.npmjs.com/package/yumiamd)
+- **License**: MIT
+- **Primary Language**: TypeScript
+
+## Key Capabilities
+- **Native OpenXML PPTX**: Compiles genuine editable PowerPoint shapes, text boxes, and native Microsoft charts.
+- **Vector PDF**: High-definition typography and precise millimeter box layout via PDFKit.
+- **Interactive HTML5**: Hardware-accelerated slide transitions, speaker notes view, and embedded DevTools Visual Inspector (`I` / `Alt+Click`).
+- **Design Intelligence**: `yumia check --optimize` and `yumia explain` auditing WCAG 2.1 AAA contrast, cognitive information density, safe-area compliance, and composition rhythm.
+- **Deterministic AI Generation**: Strict indentation-based grammar and JSON Schema (`yumia schema`) preventing unclosed HTML tag errors and CSS hallucinations.
+
+## Quick CLI Reference
+```bash
+# Initialize a new presentation project
+npx yumiamd init my-deck --theme corporate
+
+# Start live-reload dev server with Visual Inspector
+yumia dev presentation.yumia --open
+
+# Run automated design audit & visual quality score (0-100)
+yumia check presentation.yumia --optimize
+
+# Explain document composition, rhythm, and design metrics
+yumia explain presentation.yumia
+
+# Compile to 100% native editable PowerPoint (.pptx)
+yumia build presentation.yumia --format pptx --out dist/deck.pptx
+
+# Compile to crisp vector PDF document (.pdf)
+yumia build presentation.yumia --format pdf --out dist/deck.pdf
+```
+
+## Syntax Example (.yumia)
+```yumia
+document "Executive Strategy"
+  theme "corporate"
+  aspectRatio "16:9"
+
+slide "Revenue & Growth"
+  hero title="Hyper-Growth Execution" subtitle="ARR beats quarterly target by 42%" badge="Q4 Audit" align="center"
+
+  grid columns=3 gap=20
+    metric "$24.8M" label="ARR Run-Rate" diff="+142% YoY" variant="success" trend="up"
+    metric "118%" label="Net Retention" diff="+4%" variant="primary" trend="up"
+    metric "9.2x" label="LTV / CAC" diff="+1.8x" variant="accent" trend="up"
+
+  chart type="bar" title="Quarterly ARR ($M)" labels="Q1,Q2,Q3,Q4" data="12.4,15.8,19.2,24.8"
+```
+
+## Documentation Links
+- Full Language Specification: https://yumiamd.org/docs/language.md
+- Compiler Architecture: https://yumiamd.org/docs/architecture.md
+- CLI Reference: https://yumiamd.org/docs/cli.md
+- AI Generation Guidelines: https://yumiamd.org/docs/ai-guidelines.md
+- Complete Machine-Readable Corpus: https://yumiamd.org/llms-full.txt
