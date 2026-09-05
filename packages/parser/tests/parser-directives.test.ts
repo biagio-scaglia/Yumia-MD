@@ -195,6 +195,32 @@ graph LR
     expect(compare.right).toHaveLength(1);
   });
 
+  it('should parse :::compare directive with nested :::column blocks', () => {
+    const source = `
+# Solution Comparison
+
+:::compare
+:::column
+### ❌ Old Way
+- Manual GUI
+- Slow
+:::
+:::column
+### 🚀 New Way
+- Markdown code
+- Instant
+:::
+:::
+`;
+    const presentation = parseYumia(source);
+    const compare = presentation.slides[0]?.elements[1] as CompareElement;
+    expect(compare.type).toBe('compare');
+    expect(compare.left).toHaveLength(2);
+    expect(compare.right).toHaveLength(2);
+    expect(compare.left[0]?.type).toBe('heading');
+    expect(compare.right[0]?.type).toBe('heading');
+  });
+
   it('should parse :::badge element', () => {
     const source = `
 # Version Info

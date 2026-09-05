@@ -1320,10 +1320,7 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
           try {
             window.renderMathInElement(slideEl, {
               delimiters: [
-                { left: '$$', right: '$$', display: true },
-                { left: '\\[', right: '\\]', display: true },
-                { left: '\\(', right: '\\)', display: false },
-                { left: '$', right: '$', display: false }
+                { left: '$$', right: '$$', display: true }
               ],
               throwOnError: false
             });

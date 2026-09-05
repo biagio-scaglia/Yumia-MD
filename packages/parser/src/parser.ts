@@ -1124,6 +1124,14 @@ export class DefaultYumiaParser implements YumiaParser {
     const leftTitle = leftMatch ? leftMatch[1] : undefined;
     const rightTitle = rightMatch ? rightMatch[1] : undefined;
 
+    const hasColumns = blockLines.some((l) => l.trim().startsWith(':::column'));
+    if (hasColumns) {
+      const cols = this.parseColumnsBlock(blockLines, baseLine);
+      const leftElements = cols[0]?.elements || [];
+      const rightElements = cols[1]?.elements || [];
+      return createCompare(leftElements, rightElements, leftTitle, rightTitle);
+    }
+
     let leftLines: string[] = [];
     let rightLines: string[] = [];
     let currentSide: 'left' | 'right' = 'left';
