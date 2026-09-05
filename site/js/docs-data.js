@@ -8,38 +8,38 @@ export const DOCS_SECTIONS = [
   {
     id: 'overview',
     title: 'What is Yumia?',
-    category: 'Introduction',
-    icon: 'fa-solid fa-book-open',
-    lead: 'A programming language and compiler for visual documents created by Biagio Scaglia.',
+    category: 'Philosophy & Concepts',
+    icon: 'fa-solid fa-compass',
+    lead: 'A declarative visual language and design compiler that transforms content and communicative intent into structured visual artifacts.',
     content: `
       <h2>The Core Paradigm Shift</h2>
-      <p>Traditional slide tools force you to arrange raw geometry (<code>rectangle</code>, <code>textbox</code>, <code>shape</code>, <code>line</code>). Markdown slide generators simply dump fragile HTML/CSS tags inside slides, creating unmaintainable layouts that cannot export to genuine presentation formats.</p>
+      <p>Traditional slide and document tools force creators to manually position and align raw geometry (<code>rectangle</code>, <code>textbox</code>, <code>shape</code>, <code>line</code>). Markdown slide generators simply inject fragile HTML and CSS classes into slides, producing fragile layouts that cannot export to genuine, editable presentation formats.</p>
       
-      <p><strong>Yumia compiles communicative intent into structured visual artifacts.</strong></p>
+      <p><strong>Yumia defines a new category: A Programming Language for Visual Documents.</strong></p>
 
       <div class="callout tip">
         <div class="callout-title"><i class="fa-solid fa-lightbulb" style="color: var(--yumia-success); margin-right: 0.4rem;"></i> The Mental Model</div>
-        <p>Just as <code>HTML ➔ DOM ➔ CSS ➔ Layout ➔ Browser</code> redefined the web, Yumia introduces <code>Yumia Source ➔ Semantic AST ➔ Design System ➔ Composition Engine ➔ Multi-Target Output</code> for visual documents.</p>
+        <p>Just as <code>HTML ➔ DOM ➔ CSS ➔ Layout Engine ➔ Browser</code> revolutionized the web, Yumia introduces <code>Yumia Source ➔ Semantic AST ➔ Design Intelligence ➔ Layout Engine ➔ Multi-Target Output</code> for visual documents.</p>
       </div>
 
       <h2>The Compiler Pipeline</h2>
       <div class="code-block">
         <div class="code-header"><span class="code-lang-tag">ARCHITECTURE</span></div>
-        <pre><code>CONTENT & COMMUNICATIVE INTENT
-            │
-            ▼
-   YUMIA SEMANTIC AST
-            │
-            ▼
-DESIGN SYSTEM & COMPOSITION ENGINE
-            │
-    ┌───────┼───────┐
-    ▼       ▼       ▼
-  PPTX     PDF    HTML5
-(OpenXML)(Vector)(DevTools)</code></pre>
+        <pre><code>CONTENT & COMMUNICATIVE INTENT (.yumia / .yumia.md)
+                      │
+                      ▼
+             YUMIA SEMANTIC AST
+                      │
+                      ▼
+        DESIGN INTELLIGENCE & LAYOUT ENGINE
+                      │
+      ┌───────────────┼───────────────┬───────────────┐
+      ▼               ▼               ▼               ▼
+ NATIVE PPTX      VECTOR PDF     HTML5 DECK         SVG
+ (OpenXML XML)   (Vector Fonts)  (DevTools UI)   (Components)</code></pre>
       </div>
 
-      <h2>Key Capabilities</h2>
+      <h2>Core Capabilities</h2>
       <div class="feature-grid">
         <div class="feature-card">
           <div class="feature-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
@@ -65,14 +65,107 @@ DESIGN SYSTEM & COMPOSITION ENGINE
     `,
   },
   {
+    id: 'philosophy',
+    title: 'The Yumia Philosophy',
+    category: 'Philosophy & Concepts',
+    icon: 'fa-solid fa-brain',
+    lead: 'The four fundamental architectural pillars that distinguish Yumia from drag-and-drop tools and markdown converters.',
+    content: `
+      <h2>Why Yumia is Not Canva</h2>
+      <p>GUI editors like <strong>Canva</strong> and <strong>PowerPoint</strong> are built on manual pixel manipulation: drag, drop, align, resize. They cannot be versioned with Git, automated in CI/CD pipelines, tested programmatically, or generated deterministically by AI agents.</p>
+      
+      <p>Markdown converters like <strong>Marp</strong> or <strong>Slidev</strong> attempt to bridge this gap, but rely on fragile CSS classes and produce flat rasterized screenshot images when exporting to presentation formats.</p>
+
+      <p><strong>Yumia is a true Programming Language:</strong> source code goes into a compiler, and a deterministic, native visual document comes out.</p>
+
+      <div class="docs-table-wrapper">
+        <table class="docs-table">
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>GUI Tools (Canva, PPT)</th>
+              <th>Markdown Converters</th>
+              <th>Yumia (Visual Language)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Source Format</strong></td>
+              <td>Binary / Proprietary JSON</td>
+              <td>Markdown + HTML/CSS hacks</td>
+              <td><strong>Pure Semantic DSL / AST</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Design Model</strong></td>
+              <td>Manual Pixel Geometry</td>
+              <td>Fragile CSS classes</td>
+              <td><strong>Declarative Communicative Intent</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Version Control</strong></td>
+              <td>None (Blob files)</td>
+              <td>Partial (CSS diff noise)</td>
+              <td><strong>100% Git-Native & Diffable</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Automation / CI</strong></td>
+              <td>Impossible</td>
+              <td>Basic Web Export</td>
+              <td><strong>Headless CLI & Multi-Target Build</strong></td>
+            </tr>
+            <tr>
+              <td><strong>PowerPoint Output</strong></td>
+              <td>Native (Manual)</td>
+              <td>Flat Raster Screenshots</td>
+              <td><strong>100% Native OpenXML Vector Shapes</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Design Verification</strong></td>
+              <td>Human eye inspection</td>
+              <td>None</td>
+              <td><strong>Design Intelligence (WCAG AAA, Rhythm)</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>The Four Pillars</h2>
+
+      <h3>01 — Documents are Code</h3>
+      <p>A document is not an arbitrary collection of pixels. It is structured source text that can be versioned, reviewed in Pull Requests, branched, tested in continuous integration pipelines, and generated by backend microservices.</p>
+
+      <h3>02 — Design is Declarative</h3>
+      <p>Creators should never specify <em>"shift this box 13 pixels to the right"</em>. You declare <strong>what</strong> you want to communicate (<code>metric</code>, <code>compare</code>, <code>timeline</code>, <code>hero</code>), and the Yumia layout engine calculates optimal typography hierarchies, margins, contrast, and cognitive density.</p>
+
+      <h3>03 — Content & Themes are Strictly Decoupled</h3>
+      <p>The semantic content of a document does not know about pixel colors or font families. Switching between <code>theme "corporate"</code>, <code>theme "cyberpunk"</code>, and <code>theme "terminal"</code> transforms the visual identity instantly across all output formats without altering a single word of content.</p>
+
+      <h3>04 — One Source, Multi-Target Determinism</h3>
+      <p>A single Yumia document compiles deterministically to all major presentation and document targets without rasterization compromises:</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang-tag">MULTI-TARGET ECOSYSTEM</span></div>
+        <pre><code>                    YUMIA SOURCE (.yumia)
+                              │
+                    ┌─────────┼─────────┐
+                    ▼         ▼         ▼
+                  HTML5      PDF      PPTX
+                    │         │         │
+                    └─────────┼─────────┘
+                              ▼
+                         SVG / ASSETS</code></pre>
+      </div>
+    `,
+  },
+  {
     id: 'quickstart',
     title: 'Quick Start',
-    category: 'Introduction',
+    category: 'Language & Syntax',
     icon: 'fa-solid fa-rocket',
-    lead: 'Get up and running with Yumia in under 30 seconds.',
+    lead: 'Get up and running with the Yumia compiler in under 30 seconds.',
     content: `
       <h2>Zero-Install Execution</h2>
-      <p>You can run Yumia immediately without installing anything via <code>npx</code>:</p>
+      <p>You can compile and preview Yumia documents immediately via <code>npx</code>:</p>
       
       <div class="code-block">
         <div class="code-header"><span class="code-lang-tag">BASH</span><button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button></div>
@@ -125,9 +218,79 @@ slide "Key Performance Indicators"
     `,
   },
   {
+    id: 'syntax-grammar',
+    title: 'Syntax & Grammar',
+    category: 'Language & Syntax',
+    icon: 'fa-solid fa-code',
+    lead: 'Formal grammar, semantic document targets, directives, and indentation rules.',
+    content: `
+      <h2>Dual Grammar Support</h2>
+      <p>Yumia provides two syntax flavors designed for different workflows:</p>
+      
+      <ul>
+        <li><strong>Native Yumia DSL (<code>.yumia</code>):</strong> Clean, indentation-based grammar with strict AST predictability. Optimal for AI generation and developer speed.</li>
+        <li><strong>Markdown Hybrid (<code>.yumia.md</code>):</strong> Standard Markdown extended with Yumia directive blocks (<code>:::card</code>, <code>:::metric</code>). Optimal for content writers.</li>
+      </ul>
+
+      <h2>Semantic Target Directives</h2>
+      <p>Yumia supports multiple target document formats beyond slides:</p>
+
+      <div class="docs-table-wrapper">
+        <table class="docs-table">
+          <thead>
+            <tr>
+              <th>Directive</th>
+              <th>Target Artifact</th>
+              <th>Default Aspect Ratio / Page Size</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>document</code> / <code>@slide</code></td>
+              <td>Presentation Slide Deck</td>
+              <td>16:9 (1920 × 1080) or 4:3</td>
+            </tr>
+            <tr>
+              <td><code>@article</code></td>
+              <td>Technical Whitepaper / Article</td>
+              <td>A4 / Letter (Vertical Scroll)</td>
+            </tr>
+            <tr>
+              <td><code>@report</code></td>
+              <td>Executive Briefing / Financial Summary</td>
+              <td>A4 Landscape / Multi-page</td>
+            </tr>
+            <tr>
+              <td><code>@poster</code></td>
+              <td>Conference Poster / Infographic</td>
+              <td>A0 / Custom Banner Ratio</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Indentation & Structure Rules</h2>
+      <p>In <code>.yumia</code> files, nesting is defined by 2-space indentation:</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang-tag">YUMIA DSL</span></div>
+        <pre><code>document "System Architecture"
+  theme "cyberpunk"
+  aspectRatio "16:9"
+
+slide "Cluster Node Topology"
+  grid columns=2 gap=24
+    card title="Ingress Gateway" variant="primary"
+      text "Handles SSL termination and HTTP/3 edge routing."
+    card title="Service Mesh" variant="success"
+      text "mTLS zero-trust communication across all worker nodes."</code></pre>
+      </div>
+    `,
+  },
+  {
     id: 'language-primitives',
     title: 'Visual Primitives',
-    category: 'Language Reference',
+    category: 'Language & Syntax',
     icon: 'fa-solid fa-shapes',
     lead: 'Comprehensive reference of Yumia high-level design intent blocks.',
     content: `
@@ -212,9 +375,47 @@ All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the
     `,
   },
   {
+    id: 'themes-styling',
+    title: 'Themes & Design Tokens',
+    category: 'Language & Syntax',
+    icon: 'fa-solid fa-palette',
+    lead: 'Design token architecture, built-in themes, and custom theme authoring.',
+    content: `
+      <h2>Built-in Themes</h2>
+      <p>Yumia ships with production-grade themes calibrated for contrast, typography rhythm, and brand tone:</p>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h4><code>corporate</code></h4>
+          <p>Crisp slate, cobalt blue, and emerald accents. Optimized for executive presentations, board decks, and quarterly reviews.</p>
+        </div>
+        <div class="feature-card">
+          <h4><code>cyberpunk</code></h4>
+          <p>Deep abyss black, neon magenta (<code>#FF2E88</code>), and electric cyan (<code>#00F0FF</code>). Designed for tech keynotes and developer talks.</p>
+        </div>
+        <div class="feature-card">
+          <h4><code>terminal</code></h4>
+          <p>Monochrome matrix green and monospace typography. Ideal for infrastructure reports and DevOps audits.</p>
+        </div>
+        <div class="feature-card">
+          <h4><code>academic</code></h4>
+          <p>High-contrast serif typography and generous line spacing for scientific papers, theses, and research summaries.</p>
+        </div>
+      </div>
+
+      <h2>Theme Switching Example</h2>
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang-tag">YUMIA</span></div>
+        <pre><code># Change theme by setting a single directive:
+document "Security Report"
+  theme "terminal"  # Change to "corporate" or "cyberpunk" instantly</code></pre>
+      </div>
+    `,
+  },
+  {
     id: 'cli-reference',
     title: 'CLI & Tooling Reference',
-    category: 'CLI',
+    category: 'Compiler & Tooling',
     icon: 'fa-solid fa-terminal',
     lead: 'Complete documentation for all commands in the Yumia CLI toolchain.',
     content: `
@@ -295,7 +496,7 @@ All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the
   {
     id: 'design-intelligence',
     title: 'Design Intelligence & Auditing',
-    category: 'Design System',
+    category: 'Compiler & Tooling',
     icon: 'fa-solid fa-chart-line',
     lead: 'Automated cognitive density, WCAG AAA contrast, and composition rhythm diagnostics.',
     content: `
@@ -321,7 +522,7 @@ All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the
   {
     id: 'ai-workflows',
     title: 'AI & LLM Integration',
-    category: 'AI Workflows',
+    category: 'Ecosystem & Workflows',
     icon: 'fa-solid fa-microchip',
     lead: 'Deterministic generation architecture designed specifically for AI models.',
     content: `
@@ -345,7 +546,7 @@ All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the
   {
     id: 'faq',
     title: 'Frequently Asked Questions (FAQ)',
-    category: 'Reference',
+    category: 'Ecosystem & Workflows',
     icon: 'fa-solid fa-circle-question',
     lead: 'Answers to common questions about Yumia, its architecture, and comparison with other tools.',
     content: `

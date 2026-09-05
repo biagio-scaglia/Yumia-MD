@@ -12,6 +12,12 @@ Unlike legacy presentation tools (which rely on raw geometric coordinates) or Ma
 - **License**: MIT
 - **Primary Language**: TypeScript
 
+## The Yumia Philosophy
+1. **01 — Documents are Code**: Visual documents are structured, deterministic source text. Version controlled with Git, tested in CI pipelines, and reviewable in PRs.
+2. **02 — Design is Declarative**: Intent over raw geometry. Creators express communicative intent (`hero`, `metric`, `compare`, `timeline`, `card`, `chart`), while the layout engine and design intelligence calculate optimal typography, spacing, and WCAG AAA contrast.
+3. **03 — Content & Themes are Decoupled**: Switching `theme "corporate"` to `theme "cyberpunk"` or `theme "terminal"` alters the visual identity instantly without modifying content.
+4. **04 — One Source, Multi-Target Determinism**: A single source file compiles directly to genuine editable PowerPoint (.pptx), vector PDF, interactive HTML5, and SVG artifacts.
+
 ## Key Capabilities
 - **Native OpenXML PPTX**: Compiles genuine editable PowerPoint shapes, text boxes, and native Microsoft charts.
 - **Vector PDF**: High-definition typography and precise millimeter box layout via PDFKit.
