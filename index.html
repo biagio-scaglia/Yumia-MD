@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary SEO Metadata -->
+    <title>Yumia — A Programming Language for Visual Documents | Created by Biagio Scaglia</title>
+    <meta
+      name="title"
+      content="Yumia — A Programming Language for Visual Documents | Created by Biagio Scaglia"
+    />
+    <meta
+      name="description"
+      content="Official documentation for Yumia by Biagio Scaglia. A declarative visual language and design compiler that transforms content and intent into native PowerPoint (.pptx), vector PDF, and interactive HTML5 presentations."
+    />
+    <meta
+      name="keywords"
+      content="Yumia, YumiaMD, Biagio Scaglia, Design Compiler, Presentation Language, PowerPoint Compiler, PPTX Generator, Vector PDF, Declarative Documents, AI Slides, AI Presentation Compiler, TypeScript, OpenXML, Developer Tooling, GEO, AEO, Answer Engine Optimization, Generative Engine Optimization"
+    />
+    <meta name="author" content="Biagio Scaglia" />
+    <meta name="creator" content="Biagio Scaglia" />
+    <meta name="publisher" content="Biagio Scaglia" />
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+    <link rel="canonical" href="https://biagio-scaglia.github.io/Yumia-MD/" />
+
+    <!-- Open Graph / Facebook / LinkedIn -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://biagio-scaglia.github.io/Yumia-MD/" />
+    <meta property="og:site_name" content="Yumia Documentation" />
+    <meta property="og:title" content="Yumia — A Programming Language for Visual Documents" />
+    <meta
+      property="og:description"
+      content="Describe what you want to communicate. Yumia compiles communicative intent into 100% native editable PowerPoint (.pptx), vector PDF, and interactive HTML5 slides. Created by Biagio Scaglia."
+    />
+    <meta property="og:image" content="site/favicon.svg" />
+    <meta property="og:image:alt" content="Yumia Alchemical Logo" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="article:author" content="Biagio Scaglia" />
+
+    <!-- Twitter / X Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://biagio-scaglia.github.io/Yumia-MD/" />
+    <meta name="twitter:title" content="Yumia — A Programming Language for Visual Documents" />
+    <meta
+      name="twitter:description"
+      content="A declarative visual language and multi-target compiler for presentations, documents, and reports. Created by Biagio Scaglia."
+    />
+    <meta name="twitter:image" content="site/favicon.svg" />
+    <meta name="twitter:creator" content="@biagioscaglia" />
+    <meta name="twitter:site" content="@yumiamd" />
+
+    <!-- PWA & Mobile Icons -->
+    <link rel="icon" href="site/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="site/site.webmanifest" />
+    <meta name="theme-color" content="#FF2E88" />
+
+    <!-- JSON-LD Structured Data Schema (SEO + AEO + GEO Optimized) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "SoftwareApplication",
+            "name": "Yumia",
+            "alternateName": "YumiaMD",
+            "operatingSystem": "Cross-platform (Windows, macOS, Linux)",
+            "applicationCategory": "DeveloperApplication",
+            "description": "A declarative visual language and compiler that transforms content and design intent into native editable PowerPoint (.pptx), vector PDF, and interactive HTML5 presentations.",
+            "url": "https://biagio-scaglia.github.io/Yumia-MD/",
+            "author": {
+              "@type": "Person",
+              "name": "Biagio Scaglia",
+              "url": "https://github.com/biagio-scaglia"
+            },
+            "license": "https://opensource.org/licenses/MIT",
+            "softwareVersion": "0.1.24"
+          },
+          {
+            "@type": "Person",
+            "name": "Biagio Scaglia",
+            "url": "https://github.com/biagio-scaglia",
+            "jobTitle": "Software Architect & Creator of Yumia",
+            "sameAs": ["https://github.com/biagio-scaglia", "https://www.npmjs.com/package/yumiamd"]
+          },
+          {
+            "@type": "WebSite",
+            "url": "https://biagio-scaglia.github.io/Yumia-MD/",
+            "name": "Yumia Documentation",
+            "description": "The official documentation website for Yumia by Biagio Scaglia.",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://biagio-scaglia.github.io/Yumia-MD/#search?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is Yumia?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yumia is a declarative programming language and design compiler designed by Biagio Scaglia. It compiles communicative intent (hero, metric, compare, timeline, card, chart) into 100% native editable PowerPoint (.pptx) presentations, vector PDFs, and interactive HTML5 slides."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Who created Yumia?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yumia was created and architected by Biagio Scaglia as an open-source visual document compiler and ecosystem."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How is Yumia different from Marp, Slidev, or PowerPoint?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Unlike PowerPoint, Yumia is code-first and Git-versionable. Unlike Marp or Slidev, which export flat rasterized screenshots to PowerPoint, Yumia compiles into genuine native OpenXML vector shapes, editable text frames, and real Microsoft charts."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What CLI commands are available in Yumia?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "The Yumia CLI includes: yumia check --optimize (design audit and visual quality score), yumia explain (rhythm and composition breakdown), yumia dev (live-reload server with DevTools inspector), yumia build (multi-target compiler), yumia lint, yumia validate, yumia schema, and yumia deploy."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How do AI and LLMs interact with Yumia?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yumia provides an unambiguous indentation-based grammar (.yumia) and machine-readable JSON Schema (yumia schema) that prevents unclosed HTML tags and CSS hallucinations during generative AI document generation."
+                }
+              }
+            ]
+          },
+          {
+            "@type": "HowTo",
+            "name": "How to compile a Yumia presentation to PowerPoint",
+            "step": [
+              {
+                "@type": "HowToStep",
+                "text": "Install yumiamd globally or run via npx: npx yumiamd init my-deck --theme corporate"
+              },
+              {
+                "@type": "HowToStep",
+                "text": "Author your presentation in .yumia or .yumia.md using intent primitives like hero, metric, and compare"
+              },
+              {
+                "@type": "HowToStep",
+                "text": "Compile directly to PowerPoint: yumia build presentation.yumia --format pptx --out deck.pptx"
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <!-- Font Awesome 6 (Official Icons - No Emojis) -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="site/css/design-system.css" />
+
+    <!-- Google Fonts for Editorial Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Site Header -->
+    <header class="site-header" role="banner">
+      <div class="brand-container">
+        <button
+          id="mobileMenuToggle"
+          class="icon-btn mobile-menu-toggle"
+          aria-label="Toggle navigation menu"
+        >
+          <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <a href="#overview" class="brand-logo" aria-label="Yumia Documentation Home">
+          <!-- Atelier Yumia Alchemical Logo Mark -->
+          <img
+            src="site/favicon.svg"
+            alt="Yumia Logo"
+            width="32"
+            height="32"
+            style="filter: drop-shadow(0 0 8px rgba(255, 46, 136, 0.4))"
+          />
+          <span
+            style="
+              background: linear-gradient(135deg, #fff4d0 0%, #ff2e88 50%, #00f0ff 100%);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              font-weight: 800;
+              letter-spacing: -0.02em;
+            "
+            >Yumia</span
+          >
+        </a>
+        <span class="brand-badge" title="Official Release v0.1.24">v0.1.24</span>
+      </div>
+
+      <div class="header-actions">
+        <!-- Search Trigger -->
+        <button id="searchTrigger" class="search-trigger" aria-label="Search documentation">
+          <i class="fa-solid fa-magnifying-glass" style="font-size: 0.85rem"></i>
+          <span>Search docs...</span>
+          <kbd>/</kbd>
+        </button>
+
+        <!-- Theme Switcher -->
+        <button
+          id="themeToggleBtn"
+          class="icon-btn"
+          aria-label="Toggle dark/light theme"
+          title="Toggle theme (Press T)"
+        >
+          <i id="themeToggleIcon" class="fa-solid fa-sun"></i>
+        </button>
+
+        <!-- GitHub Link -->
+        <a
+          href="https://github.com/biagio-scaglia/Yumia-MD"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="icon-btn"
+          aria-label="Yumia on GitHub (Biagio Scaglia)"
+          title="GitHub Repository"
+        >
+          <i class="fa-brands fa-github" style="font-size: 1.15rem"></i>
+        </a>
+      </div>
+    </header>
+
+    <!-- Docs Layout Container -->
+    <div class="docs-layout">
+      <!-- Left Navigation Sidebar -->
+      <aside
+        id="docsSidebar"
+        class="docs-sidebar"
+        role="navigation"
+        aria-label="Documentation navigation"
+      >
+        <nav id="sidebarNav">
+          <!-- Dynamically rendered categories & links -->
+        </nav>
+      </aside>
+
+      <!-- Center Main Content -->
+      <main class="docs-main" role="main">
+        <article id="docsContent" class="docs-content">
+          <!-- Dynamically rendered content section -->
+        </article>
+      </main>
+
+      <!-- Right Table of Contents -->
+      <aside class="docs-toc" role="complementary" aria-label="On this page">
+        <div class="toc-title">On this page</div>
+        <ul id="tocList" class="toc-list">
+          <!-- Dynamically generated TOC links -->
+        </ul>
+      </aside>
+    </div>
+
+    <!-- Search Modal Dialog -->
+    <div
+      id="searchModal"
+      class="search-modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Documentation Search"
+    >
+      <div class="search-modal">
+        <div class="search-input-wrapper">
+          <i
+            class="fa-solid fa-magnifying-glass"
+            style="color: var(--yumia-text-muted); font-size: 1rem; margin-right: 0.5rem"
+          ></i>
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="Search documentation, commands, primitives, author (Biagio Scaglia)..."
+            autocomplete="off"
+          />
+          <kbd
+            style="
+              font-size: 0.75rem;
+              color: var(--yumia-text-dim);
+              background: var(--yumia-surface-raised);
+              padding: 0.2rem 0.4rem;
+              border-radius: 4px;
+            "
+            >ESC</kbd
+          >
+        </div>
+        <ul id="searchResults" class="search-results">
+          <!-- Real-time search results -->
+        </ul>
+      </div>
+    </div>
+
+    <!-- JavaScript Module -->
+    <script type="module" src="site/js/app.js"></script>
+  </body>
+</html>
