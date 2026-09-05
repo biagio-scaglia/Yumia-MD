@@ -74,6 +74,42 @@ title: Images Deck
     expect(altIssue?.message).toContain('missing descriptive alt text');
   });
 
+  it('explains document composition, metrics, and design intelligence', () => {
+    const source = `---
+title: System Architecture
+theme: corporate
+aspectRatio: "16:9"
+---
+
+:::hero title="Next Cloud" subtitle="Distributed compute" align="center"
+:::
+
+---
+
+# Metrics Overview
+:::metric value="99.99%" label="Uptime" variant="success"
+:::
+
+---
+
+# Growth Comparison
+:::compare left="Old Way" right="New Way"
+- Slow
+:::vs
+- Fast
+:::
+`;
+    const explanation = compiler.explain(source);
+    expect(explanation.slidesCount).toBe(3);
+    expect(explanation.theme).toBe('corporate');
+    expect(explanation.composition.heroSlides).toBe(1);
+    expect(explanation.composition.metricSlides).toBe(1);
+    expect(explanation.composition.comparisonSlides).toBe(1);
+    expect(explanation.design.typographyScale).toBeDefined();
+    expect(explanation.design.densityScore).toBeGreaterThan(0);
+    expect(explanation.design.visualHierarchyScore).toBeGreaterThan(0);
+  });
+
   it('enforces strict mode (fails with exit code / passed=false on warning)', () => {
     const source = `---
 title: Strict Deck

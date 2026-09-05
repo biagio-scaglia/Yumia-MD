@@ -3,7 +3,7 @@ import { DefaultLayoutEngine, LayoutEngine, PresentationLayoutResult, Size } fro
 import { DefaultYumiaParser, ParserOptions, YumiaParser } from '@yumiamd/parser';
 import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
 import { defaultTheme, resolveTheme, YumiaTheme } from '@yumiamd/theme';
-import { LintOptions, LintReport, YumiaLinter } from './linter.js';
+import { DocumentExplanation, LintOptions, LintReport, YumiaLinter } from './linter.js';
 
 export interface CompilerConfig {
   parser?: YumiaParser;
@@ -60,6 +60,17 @@ export class YumiaCompiler {
         ? this.parse(sourceOrPresentation)
         : sourceOrPresentation;
     return this.linter.lint(presentation, {
+      ...(this.viewport ? { viewport: this.viewport } : {}),
+      ...options,
+    });
+  }
+
+  explain(sourceOrPresentation: string | Presentation, options?: LintOptions): DocumentExplanation {
+    const presentation =
+      typeof sourceOrPresentation === 'string'
+        ? this.parse(sourceOrPresentation)
+        : sourceOrPresentation;
+    return this.linter.explain(presentation, {
       ...(this.viewport ? { viewport: this.viewport } : {}),
       ...options,
     });

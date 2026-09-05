@@ -30,6 +30,14 @@ describe('yumia CLI', () => {
     expect(res.output).toContain('Yumia Lint');
   });
 
+  it('should explain document composition and design intelligence', async () => {
+    const res = await runCli(['node', 'yumia', 'explain', samplePath]);
+    expect(res.exitCode).toBe(0);
+    expect(res.output).toContain('Yumia Design Explanation');
+    expect(res.output).toContain('Composition Distribution');
+    expect(res.output).toContain('Design Intelligence');
+  });
+
   it('should inspect presentation AST and layout', async () => {
     const astRes = await runCli(['node', 'yumia', 'inspect', samplePath]);
     expect(astRes.exitCode).toBe(0);

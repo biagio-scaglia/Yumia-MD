@@ -20,10 +20,12 @@ Usage:
   yumia <command> [options] [file]
 
 Commands:
-  init [name]        Scaffold a new YumiaMD presentation project
-  dev <file>         Start live-reload dev server with instant HTML preview
+  init [name]        Scaffold a new Yumia presentation project
+  dev <file>         Start live-reload dev server with instant HTML preview & Inspector
+  check <file>       Run design audit, contrast & density checks (--optimize)
+  explain <file>     Explain document composition, design metrics, and visual rhythm
   watch <file>       Watch presentation file and recompile automatically on save
-  validate <file>    Validate a .yumia.md presentation syntax and structure
+  validate <file>    Validate a presentation syntax and AST structure
   lint <file>        Analyze presentation for layout overflows and accessibility
   inspect <file>     Inspect the AST and geometric layout tree
   schema             Output machine-readable JSON schema for AI agents
@@ -356,6 +358,89 @@ Opening slide introducing the presentation deck.
       return {
         exitCode: 1,
         output: `✗ Design audit failed: ${msg}`,
+      };
+    }
+  }
+
+  if (command === 'explain') {
+    if (!target) {
+      const msg = 'Error: Please specify a file to explain.';
+      return { exitCode: 1, output: isJson ? JSON.stringify({ error: msg }) : msg };
+    }
+    try {
+      const source = readFileSync(target, 'utf-8');
+      const compiler = new YumiaCompiler();
+      const exp = compiler.explain(source, { strict: isStrict });
+
+      if (isJson) {
+        return {
+          exitCode: 0,
+          output: JSON.stringify({ target, ...exp }, null, 2),
+        };
+      }
+
+      const compLines = [
+        `  Hero slides:       ${exp.composition.heroSlides}`,
+        `  Metric slides:     ${exp.composition.metricSlides}`,
+        `  Comparison slides: ${exp.composition.comparisonSlides}`,
+        `  Chart slides:      ${exp.composition.chartSlides}`,
+        `  Timeline slides:   ${exp.composition.timelineSlides}`,
+        `  Card / Grid:       ${exp.composition.cardSlides}`,
+        `  Content slides:    ${exp.composition.contentSlides}`,
+      ];
+
+      const designLines = [
+        `  Typography scale:  ${exp.design.typographyScale}`,
+        `  Contrast:          ${exp.design.contrast}`,
+        `  Safe area:         ${exp.design.safeArea}`,
+        `  Density score:     ${exp.design.densityScore}/100`,
+        `  Visual hierarchy:  ${exp.design.visualHierarchyScore}/100`,
+      ];
+
+      const diagLines =
+        exp.diagnostics.length > 0
+          ? exp.diagnostics.map((d) => `  ⚠ ${d.message}`).join('\n')
+          : '  ✓ No rhythm or density imbalances detected.';
+
+      const sugLines =
+        exp.suggestions.length > 0
+          ? exp.suggestions.map((s) => `  → ${s}`).join('\n')
+          : '  ✓ Layout and structure are balanced.';
+
+      const out = [
+        `Yumia Design Explanation for '${target}'`,
+        `================================================`,
+        `Document Analysis`,
+        `  Slides:            ${exp.slidesCount}`,
+        `  Theme:             ${exp.theme}`,
+        `  Aspect Ratio:      ${exp.aspectRatio}`,
+        ``,
+        `Composition Distribution`,
+        ...compLines,
+        ``,
+        `Design Intelligence`,
+        ...designLines,
+        ``,
+        `Diagnostics & Rhythm`,
+        diagLines,
+        ``,
+        `Design Suggestions`,
+        sugLines,
+        `================================================`,
+      ].join('\n');
+
+      return {
+        exitCode: 0,
+        output: out,
+      };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (isJson) {
+        return { exitCode: 1, output: JSON.stringify({ error: msg }) };
+      }
+      return {
+        exitCode: 1,
+        output: `✗ Explain failed: ${msg}`,
       };
     }
   }
