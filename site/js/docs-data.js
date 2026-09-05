@@ -43,22 +43,22 @@ export const DOCS_SECTIONS = [
       <div class="feature-grid">
         <div class="feature-card">
           <div class="feature-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-          <h4>Intent-First Primitives</h4>
+          <h3>Intent-First Primitives</h3>
           <p>Express ideas with <code>hero</code>, <code>metric</code>, <code>compare</code>, <code>timeline</code>, <code>card</code>, and <code>chart</code> instead of fragile CSS styles.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon"><i class="fa-solid fa-bullseye"></i></div>
-          <h4>100% Native PowerPoint</h4>
+          <h3>100% Native PowerPoint</h3>
           <p>Compiles directly to real, fully editable OpenXML PowerPoint shapes, text frames, and Microsoft charts.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
-          <h4>Design Intelligence</h4>
+          <h3>Design Intelligence</h3>
           <p>Built-in <code>yumia explain</code> and <code>yumia check</code> auditing contrast (WCAG AAA), density, and visual rhythm.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
-          <h4>AI-Deterministic</h4>
+          <h3>AI-Deterministic</h3>
           <p>Strict indentation grammar and JSON Schema eliminates hallucinated CSS and unclosed HTML tags in LLM pipelines.</p>
         </div>
       </div>
@@ -386,19 +386,19 @@ All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the
 
       <div class="feature-grid">
         <div class="feature-card">
-          <h4><code>corporate</code></h4>
+          <h3><code>corporate</code></h3>
           <p>Crisp slate, cobalt blue, and emerald accents. Optimized for executive presentations, board decks, and quarterly reviews.</p>
         </div>
         <div class="feature-card">
-          <h4><code>cyberpunk</code></h4>
+          <h3><code>cyberpunk</code></h3>
           <p>Deep abyss black, neon magenta (<code>#FF2E88</code>), and electric cyan (<code>#00F0FF</code>). Designed for tech keynotes and developer talks.</p>
         </div>
         <div class="feature-card">
-          <h4><code>terminal</code></h4>
+          <h3><code>terminal</code></h3>
           <p>Monochrome matrix green and monospace typography. Ideal for infrastructure reports and DevOps audits.</p>
         </div>
         <div class="feature-card">
-          <h4><code>academic</code></h4>
+          <h3><code>academic</code></h3>
           <p>High-contrast serif typography and generous line spacing for scientific papers, theses, and research summaries.</p>
         </div>
       </div>

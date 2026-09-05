@@ -24,12 +24,12 @@
   --yumia-border-focus: var(--yumia-primary);
 
   --yumia-text: #f8fafc;
-  --yumia-text-muted: #94a3b8;
-  --yumia-text-dim: #64748b;
+  --yumia-text-muted: #cbd5e1;
+  --yumia-text-dim: #94a3b8;
   --yumia-text-inverse: #0b0b12;
 
   --yumia-code-bg: #0e0e18;
-  --yumia-code-border: rgba(255, 255, 255, 0.06);
+  --yumia-code-border: rgba(255, 255, 255, 0.08);
 
   /* Status Tokens */
   --yumia-success: #10b981;
@@ -38,8 +38,8 @@
   --yumia-warning-bg: rgba(245, 158, 11, 0.12);
   --yumia-danger: #ef4444;
   --yumia-danger-bg: rgba(239, 68, 68, 0.12);
-  --yumia-info: #3b82f6;
-  --yumia-info-bg: rgba(59, 130, 246, 0.12);
+  --yumia-info: #38bdf8;
+  --yumia-info-bg: rgba(56, 189, 248, 0.12);
 
   /* Typography Stack */
   --font-sans:
@@ -87,8 +87,8 @@
   --yumia-border-focus: var(--yumia-primary);
 
   --yumia-text: #0f172a;
-  --yumia-text-muted: #475569;
-  --yumia-text-dim: #94a3b8;
+  --yumia-text-muted: #334155;
+  --yumia-text-dim: #64748b;
   --yumia-text-inverse: #ffffff;
 
   --yumia-code-bg: #f1f5f9;
@@ -684,6 +684,7 @@ input {
   margin-bottom: 0.75rem;
 }
 
+.feature-card h3,
 .feature-card h4 {
   font-size: 1.05rem;
   font-weight: 700;

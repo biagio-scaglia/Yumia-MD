@@ -62,16 +62,18 @@ class YumiaDocsApp {
      Router & Navigation
      -------------------------------------------------------------------------- */
   initRouter() {
-    window.addEventListener('hashchange', () => this.handleRoute());
-    this.handleRoute();
+    window.addEventListener('hashchange', () => this.handleRoute(false));
+    this.handleRoute(true);
   }
 
-  handleRoute() {
+  handleRoute(isInitial = false) {
     const hash = window.location.hash.replace('#', '') || 'overview';
     this.currentSectionId = hash;
     this.renderSidebar();
     this.renderContent(hash);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!isInitial && window.scrollY > 0) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   renderSidebar() {
