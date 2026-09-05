@@ -119,4 +119,57 @@ Card body text.
     expect(pdfResult.format).toBe('pdf');
     expect(pdfResult.data.length).toBeGreaterThan(100);
   });
+
+  it('should parse and render rich native visual elements (images, charts, compare, timeline, math, mermaid)', async () => {
+    const visualSample = `
+document "Visual Engine Showcase"
+  theme "terminal"
+
+slide "Visual Engine Features"
+  image "https://images.unsplash.com/photo-1518770660439-4636190af475" alt="Hardware" fit="cover" height="200px" radius="12px"
+  
+  chart type="bar" title="Performance Gains"
+    labels Q1, Q2, Q3, Q4
+    series "Speed: 10, 25, 45, 90"
+    series "Throughput: 5, 15, 30, 75"
+
+  compare leftTitle="Before" rightTitle="After"
+    left
+      text "Slow manual layout"
+    right
+      text "Automated declarative composition"
+
+  timeline layout="horizontal"
+    item date="2025" title="Core Engine" desc="Compiler"
+    item date="2026" title="Visual Engine" desc="Tokens & Layout"
+
+  mermaid
+    graph LR
+      A[Native Yumia] --> B[Unified AST]
+      B --> C[HTML5]
+      B --> D[PDF]
+      B --> E[PPTX]
+
+  math "E = mc^2"
+`;
+
+    const ast = parseNativeYumia(visualSample);
+    expect(ast.slides[0]!.elements.some((el) => el.type === 'image')).toBe(true);
+    expect(ast.slides[0]!.elements.some((el) => el.type === 'chart')).toBe(true);
+    expect(ast.slides[0]!.elements.some((el) => el.type === 'compare')).toBe(true);
+    expect(ast.slides[0]!.elements.some((el) => el.type === 'timeline')).toBe(true);
+    expect(ast.slides[0]!.elements.some((el) => el.type === 'mermaid')).toBe(true);
+    expect(ast.slides[0]!.elements.some((el) => el.type === 'math')).toBe(true);
+
+    const compiler = new YumiaCompiler();
+    const htmlRenderer = new HtmlRenderer();
+    const result = await compiler.render(ast, htmlRenderer);
+    expect(result.html).toContain('yumia-image-wrapper');
+    expect(result.html).toContain('yumia-chart-container');
+    expect(result.html).toContain('yumia-compare');
+    expect(result.html).toContain('yumia-timeline');
+    expect(result.html).toContain('mermaid');
+    expect(result.html).toContain('yumia-math-container');
+    expect(result.html).toContain('fonts.googleapis.com');
+  });
 });

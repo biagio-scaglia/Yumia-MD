@@ -108,10 +108,14 @@ export interface ListElement extends BaseElement {
 export interface ImageElement extends BaseElement {
   type: 'image';
   src: string;
-  alt?: string;
-  caption?: string;
-  width?: number | string;
-  height?: number | string;
+  alt?: string | undefined;
+  caption?: string | undefined;
+  width?: number | string | undefined;
+  height?: number | string | undefined;
+  fit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down' | string | undefined;
+  radius?: number | string | undefined;
+  aspectRatio?: string | undefined;
+  shadow?: boolean | string | undefined;
 }
 
 export interface CardElement extends BaseElement {

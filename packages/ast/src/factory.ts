@@ -81,12 +81,25 @@ export function createList(items: (string | ListItem)[], ordered: boolean = fals
   };
 }
 
-export function createImage(src: string, alt?: string, caption?: string): ImageElement {
+export function createImage(
+  src: string,
+  alt?: string | undefined,
+  caption?: string | undefined,
+  options?: {
+    width?: number | string | undefined;
+    height?: number | string | undefined;
+    fit?: string | undefined;
+    radius?: number | string | undefined;
+    aspectRatio?: string | undefined;
+    shadow?: boolean | string | undefined;
+  }
+): ImageElement {
   return {
     type: 'image',
     src,
     ...(alt ? { alt } : {}),
     ...(caption ? { caption } : {}),
+    ...(options || {}),
   };
 }
 

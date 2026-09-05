@@ -1,21 +1,28 @@
 import {
   BadgeElement,
   CardElement,
+  ChartDataSeries,
   ColumnElement,
   MetricElement,
   Presentation,
   PresentationMetadata,
   Slide,
   SlideElement,
+  TimelineItem,
   createBadge,
   createCard,
+  createChart,
   createCode,
   createColumn,
   createColumns,
+  createCompare,
   createGrid,
   createHeading,
   createIcon,
+  createImage,
   createList,
+  createMath,
+  createMermaid,
   createMetric,
   createParagraph,
   createPresentation,
@@ -23,6 +30,8 @@ import {
   createSection,
   createSlide,
   createStack,
+  createTable,
+  createTimeline,
   createToc,
 } from '@yumiamd/ast';
 import { parseHighlightLines } from './parser.js';
@@ -386,6 +395,170 @@ export class NativeYumiaParser {
           nextIdx++;
         }
         return { element: createList(items, false), nextIdx };
+      }
+
+      case 'image':
+      case 'img': {
+        const srcMatch = tok.args.match(/^(?:src=)?["']([^"']+)["']/);
+        const altMatch = tok.args.match(/\balt=["']([^"']+)["']/);
+        const capMatch = tok.args.match(/\bcaption=["']([^"']+)["']/);
+        const fitMatch = tok.args.match(/\bfit=["']?([^"'\s]+)["']?/);
+        const widthMatch = tok.args.match(/\bwidth=["']?([^"'\s]+)["']?/);
+        const heightMatch = tok.args.match(/\bheight=["']?([^"'\s]+)["']?/);
+        const radiusMatch = tok.args.match(/\bradius=["']?([^"'\s]+)["']?/);
+        const aspectMatch = tok.args.match(/\baspect=["']?([^"'\s]+)["']?/);
+
+        const src = srcMatch ? srcMatch[1]! : this.stripQuotes(tok.args);
+        return {
+          element: createImage(
+            src,
+            altMatch ? altMatch[1] : undefined,
+            capMatch ? capMatch[1] : undefined,
+            {
+              fit: fitMatch ? fitMatch[1] : undefined,
+              width: widthMatch ? widthMatch[1] : undefined,
+              height: heightMatch ? heightMatch[1] : undefined,
+              radius: radiusMatch ? radiusMatch[1] : undefined,
+              aspectRatio: aspectMatch ? aspectMatch[1] : undefined,
+            }
+          ),
+          nextIdx: idx + 1,
+        };
+      }
+
+      case 'chart': {
+        const typeMatch = tok.args.match(/type=["']?([^"'\s]+)["']?/);
+        const titleMatch = tok.args.match(/title=["']([^"']+)["']/);
+        const chartType = (typeMatch ? typeMatch[1] : 'bar') as 'bar' | 'line' | 'pie';
+        const title = titleMatch ? titleMatch[1] : undefined;
+
+        const labels: string[] = [];
+        const series: ChartDataSeries[] = [];
+        let nextIdx = idx + 1;
+
+        while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
+          const sub = tokens[nextIdx]!;
+          if (sub.command === 'labels') {
+            const rawLabels = sub.args.split(',').map((l) => this.stripQuotes(l.trim()));
+            labels.push(...rawLabels);
+          } else if (sub.command === 'series') {
+            const sNameMatch = sub.args.match(/^["']?([^:"']+):/);
+            const name = sNameMatch ? sNameMatch[1]!.trim() : 'Series';
+            const dataStr = sub.args.replace(/^["']?[^:"']+:?\s*/, '').replace(/["']$/, '');
+            const values = dataStr
+              .split(',')
+              .map((v) => parseFloat(v.trim()))
+              .filter((v) => !isNaN(v));
+            series.push({ name, values });
+          }
+          nextIdx++;
+        }
+
+        if (labels.length === 0) labels.push('A', 'B', 'C');
+        if (series.length === 0) series.push({ name: 'Data', values: [10, 20, 30] });
+
+        return { element: createChart(chartType, labels, series, title), nextIdx };
+      }
+
+      case 'compare': {
+        const leftTitleMatch = tok.args.match(/left(?:Title)?=["']([^"']+)["']/);
+        const rightTitleMatch = tok.args.match(/right(?:Title)?=["']([^"']+)["']/);
+        const leftTitle = leftTitleMatch ? leftTitleMatch[1] : undefined;
+        const rightTitle = rightTitleMatch ? rightTitleMatch[1] : undefined;
+
+        const leftEls: SlideElement[] = [];
+        const rightEls: SlideElement[] = [];
+        let currentSide: 'left' | 'right' = 'left';
+        let nextIdx = idx + 1;
+
+        while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
+          const sub = tokens[nextIdx]!;
+          if (sub.command === 'left') {
+            currentSide = 'left';
+            nextIdx++;
+            continue;
+          } else if (sub.command === 'right') {
+            currentSide = 'right';
+            nextIdx++;
+            continue;
+          }
+          const childRes = this.parseElement(tokens, nextIdx);
+          if (childRes) {
+            if (currentSide === 'left') leftEls.push(childRes.element);
+            else rightEls.push(childRes.element);
+            nextIdx = childRes.nextIdx;
+          } else {
+            nextIdx++;
+          }
+        }
+
+        return { element: createCompare(leftEls, rightEls, leftTitle, rightTitle), nextIdx };
+      }
+
+      case 'timeline': {
+        const layoutMatch = tok.args.match(/layout=["']?(horizontal|vertical)["']?/);
+        const layout = (layoutMatch ? layoutMatch[1] : 'horizontal') as 'horizontal' | 'vertical';
+        const items: TimelineItem[] = [];
+        let nextIdx = idx + 1;
+
+        while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
+          const sub = tokens[nextIdx]!;
+          if (sub.command === 'item') {
+            const dateMatch = sub.args.match(/date=["']([^"']+)["']/);
+            const titleMatch = sub.args.match(/title=["']([^"']+)["']/);
+            const descMatch = sub.args.match(/desc(?:ription)?=["']([^"']+)["']/);
+            items.push({
+              date: dateMatch ? dateMatch[1]! : '2026',
+              title: titleMatch ? titleMatch[1]! : 'Milestone',
+              description: descMatch ? descMatch[1] : undefined,
+            });
+          }
+          nextIdx++;
+        }
+
+        return { element: createTimeline(items, layout), nextIdx };
+      }
+
+      case 'mermaid': {
+        const mLines: string[] = [];
+        let nextIdx = idx + 1;
+        while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
+          mLines.push(tokens[nextIdx]!.text);
+          nextIdx++;
+        }
+        return { element: createMermaid(mLines.join('\n')), nextIdx };
+      }
+
+      case 'math': {
+        let expr = this.stripQuotes(tok.args);
+        let nextIdx = idx + 1;
+        if (!expr) {
+          const mathLines: string[] = [];
+          while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
+            mathLines.push(tokens[nextIdx]!.text);
+            nextIdx++;
+          }
+          expr = mathLines.join('\n');
+        }
+        return { element: createMath(expr), nextIdx };
+      }
+
+      case 'table': {
+        let headers: string[] | undefined = undefined;
+        const rows: string[][] = [];
+        let nextIdx = idx + 1;
+
+        while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
+          const sub = tokens[nextIdx]!;
+          if (sub.command === 'headers' || sub.command === 'header') {
+            headers = sub.args.split(',').map((h) => this.stripQuotes(h.trim()));
+          } else if (sub.command === 'row') {
+            rows.push(sub.args.split(',').map((c) => this.stripQuotes(c.trim())));
+          }
+          nextIdx++;
+        }
+
+        return { element: createTable(rows, headers), nextIdx };
       }
 
       case 'quote': {

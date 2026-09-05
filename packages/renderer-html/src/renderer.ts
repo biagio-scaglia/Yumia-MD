@@ -132,6 +132,7 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
   <title>${this.escapeHtml(title)}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Orbitron:wght@500;700;900&family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap">
   ${customStyles}
   ${customScripts}
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
@@ -1717,9 +1718,20 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     const transType = typeof transition === 'string' ? transition : transition.type;
     const transClass = `transition-${transType || 'fade'}`;
 
-    const isWatermarkEnabled = watermarkOpt !== false;
+    const isWatermarkEnabled =
+      watermarkOpt !== undefined &&
+      watermarkOpt !== false &&
+      watermarkOpt !== 'none' &&
+      watermarkOpt !== 'false' &&
+      watermarkOpt !== 'off';
     const watermarkText =
-      typeof watermarkOpt === 'string' && watermarkOpt.trim().length > 0 ? watermarkOpt : 'YumiaMD';
+      typeof watermarkOpt === 'string' &&
+      watermarkOpt.trim().length > 0 &&
+      watermarkOpt !== 'true' &&
+      watermarkOpt !== 'yes' &&
+      watermarkOpt !== 'on'
+        ? watermarkOpt
+        : 'Yumia';
     const watermarkHtml = isWatermarkEnabled
       ? `<div class="yumia-watermark">${this.escapeHtml(watermarkText)}</div>`
       : '';
@@ -1897,7 +1909,34 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       case 'image': {
         const img = element as ImageElement;
         const alt = img.alt ? `alt="${this.escapeHtml(img.alt)}"` : '';
-        return `<img src="${this.escapeHtml(img.src)}" ${alt} style="max-width: 100%; border-radius: 8px;">`;
+        const width = img.width
+          ? typeof img.width === 'number'
+            ? `${img.width}px`
+            : img.width
+          : '100%';
+        const height = img.height
+          ? typeof img.height === 'number'
+            ? `${img.height}px`
+            : img.height
+          : 'auto';
+        const fit = img.fit || 'cover';
+        const radius =
+          img.radius !== undefined
+            ? typeof img.radius === 'number'
+              ? `${img.radius}px`
+              : img.radius
+            : 'var(--yumia-radius-card)';
+        const shadowStyle = img.shadow ? 'box-shadow: 0 12px 30px rgba(0,0,0,0.45);' : '';
+        const aspect = img.aspectRatio ? `aspect-ratio: ${img.aspectRatio};` : '';
+        const cap = img.caption
+          ? `<figcaption style="margin-top: 6px; font-size: 0.85rem; color: var(--yumia-muted); text-align: center;">${this.formatInline(img.caption)}</figcaption>`
+          : '';
+
+        return `
+        <figure class="yumia-image-wrapper" style="margin: 0.4rem 0; width: ${width}; max-width: 100%; display: flex; flex-direction: column; align-items: center;">
+          <img src="${this.escapeHtml(img.src)}" ${alt} style="width: 100%; height: ${height}; object-fit: ${fit}; border-radius: ${radius}; ${aspect} ${shadowStyle} border: 1.5px solid var(--yumia-border);">
+          ${cap}
+        </figure>`;
       }
       case 'metric': {
         const m = element as MetricElement;
