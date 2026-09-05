@@ -234,9 +234,11 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     }
 
     .yumia-slide-wrapper {
-      position: relative;
-      width: min(94vw, calc(94vh * (${is43 ? '4 / 3' : '16 / 9'})));
-      height: min(calc(94vw / (${is43 ? '4 / 3' : '16 / 9'})), 94vh);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       aspect-ratio: var(--yumia-ratio);
       background-color: var(--yumia-bg);
       border-radius: var(--yumia-radius-default);
@@ -244,7 +246,10 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       overflow: hidden;
       display: none;
       flex-direction: column;
-      padding: 4.5% 5.5%;
+      justify-content: flex-start;
+      align-items: stretch;
+      padding: clamp(2rem, 4vw, 3.5rem) clamp(2.5rem, 5vw, 4.5rem);
+      box-sizing: border-box;
       animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -262,38 +267,40 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       font-family: var(--yumia-font-heading), system-ui, -apple-system, sans-serif;
       font-weight: 700;
       line-height: var(--yumia-line-height-tight);
-      margin-bottom: 0.7em;
+      margin-bottom: 0.4em;
       letter-spacing: var(--yumia-letter-spacing-tight);
       overflow-wrap: break-word;
       word-break: break-word;
     }
 
     h1 {
-      font-size: clamp(2rem, 3.8vw, 3.4rem);
+      font-size: clamp(1.8rem, 3.2vw, 2.9rem);
       color: var(--yumia-primary);
+      line-height: 1.15;
     }
 
     h2 {
-      font-size: clamp(1.6rem, 2.8vw, 2.5rem);
+      font-size: clamp(1.5rem, 2.6vw, 2.3rem);
       color: var(--yumia-text);
+      line-height: 1.2;
     }
 
     h3 {
-      font-size: clamp(1.3rem, 2.2vw, 1.9rem);
+      font-size: clamp(1.25rem, 2vw, 1.8rem);
       color: var(--yumia-text);
     }
 
     h4 {
-      font-size: clamp(1.1rem, 1.7vw, 1.4rem);
+      font-size: clamp(1.05rem, 1.5vw, 1.35rem);
       color: var(--yumia-muted);
     }
 
     /* Paragraphs */
     p {
-      font-size: clamp(1rem, 1.4vw, 1.25rem);
+      font-size: clamp(0.95rem, 1.35vw, 1.2rem);
       line-height: var(--yumia-line-height-normal);
       color: var(--yumia-text);
-      margin-bottom: 0.8em;
+      margin-bottom: 0.6em;
       overflow-wrap: break-word;
     }
 
@@ -318,14 +325,14 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
 
     /* Lists */
     ul, ol {
-      font-size: clamp(1rem, 1.35vw, 1.2rem);
-      line-height: 1.65;
-      margin-bottom: 1em;
+      font-size: clamp(0.95rem, 1.3vw, 1.15rem);
+      line-height: 1.6;
+      margin-bottom: 0.8em;
       padding-left: 1.5em;
     }
 
     li {
-      margin-bottom: 0.5em;
+      margin-bottom: 0.4em;
       color: var(--yumia-text);
     }
 
@@ -333,12 +340,41 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       color: var(--yumia-primary);
     }
 
+    /* Grid & Stack Layout Containers */
+    .yumia-grid {
+      display: grid;
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+      gap: clamp(1rem, 1.8vw, 1.6rem);
+      align-items: stretch;
+      margin-top: 0.4rem;
+    }
+
+    .yumia-stack {
+      display: flex;
+      width: 100%;
+      flex: 1;
+      min-height: 0;
+      gap: clamp(1rem, 1.8vw, 1.6rem);
+      align-items: stretch;
+      margin-top: 0.4rem;
+    }
+
+    .yumia-stack.stack-horizontal > * {
+      flex: 1 1 0px;
+      min-width: 0;
+      height: 100%;
+    }
+
     /* Columns */
     .yumia-columns {
       display: grid;
-      gap: 1.5rem;
+      gap: clamp(1rem, 1.8vw, 1.6rem);
       width: 100%;
-      margin: 0.8rem 0;
+      flex: 1;
+      min-height: 0;
+      margin: 0.4rem 0;
       align-items: stretch;
     }
 
@@ -346,18 +382,29 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       display: flex;
       flex-direction: column;
       gap: 0.8rem;
+      height: 100%;
     }
 
     /* Cards */
     .yumia-card {
       background: var(--yumia-surface);
       border: 1.5px solid var(--yumia-border);
-      border-radius: 12px;
-      padding: 1.25rem 1.5rem;
+      border-radius: 14px;
+      padding: clamp(1.2rem, 2vw, 1.8rem);
       display: flex;
       flex-direction: column;
-      gap: 0.6rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      justify-content: flex-start;
+      gap: 0.7rem;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      height: 100%;
+      min-height: 0;
+      box-sizing: border-box;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .yumia-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
     }
 
     .yumia-card[data-variant="primary"] {
@@ -381,6 +428,13 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       color: var(--yumia-success);
     }
 
+    .yumia-card[data-variant="accent"] {
+      border-color: var(--yumia-accent);
+    }
+    .yumia-card[data-variant="accent"] .yumia-card-title {
+      color: var(--yumia-accent);
+    }
+
     .yumia-card[data-variant="info"] {
       border-color: var(--yumia-info);
     }
@@ -390,30 +444,41 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
 
     .yumia-card-title {
       font-family: var(--yumia-font-heading);
-      font-size: 1.25rem;
+      font-size: clamp(1.1rem, 1.6vw, 1.35rem);
       font-weight: 700;
       color: var(--yumia-primary);
-      margin-bottom: 0.3rem;
+      margin-bottom: 0.2rem;
     }
 
     /* Metrics */
     .yumia-metric {
       background: var(--yumia-surface);
       border: 1.5px solid var(--yumia-border);
-      border-radius: 12px;
-      padding: 1rem 1.2rem;
+      border-radius: 14px;
+      padding: clamp(1.4rem, 2.5vw, 2.4rem) clamp(1rem, 2vw, 1.8rem);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      gap: 0.25rem;
+      gap: 0.5rem;
+      height: 100%;
+      min-height: 150px;
+      box-sizing: border-box;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .yumia-metric:hover {
+      transform: translateY(-2px);
     }
 
     .yumia-metric[data-variant="primary"] { border-color: var(--yumia-primary); }
     .yumia-metric[data-variant="primary"] .yumia-metric-value { color: var(--yumia-primary); }
     .yumia-metric[data-variant="success"] { border-color: var(--yumia-success); }
     .yumia-metric[data-variant="success"] .yumia-metric-value { color: var(--yumia-success); }
+    .yumia-metric[data-variant="accent"] { border-color: var(--yumia-accent); }
+    .yumia-metric[data-variant="accent"] .yumia-metric-value { color: var(--yumia-accent); }
     .yumia-metric[data-variant="info"] { border-color: var(--yumia-info); }
     .yumia-metric[data-variant="info"] .yumia-metric-value { color: var(--yumia-info); }
     .yumia-metric[data-variant="warning"] { border-color: var(--yumia-warning); }
@@ -422,27 +487,54 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     .yumia-metric[data-variant="danger"] .yumia-metric-value { color: var(--yumia-danger); }
 
     .yumia-metric-label {
-      font-size: 0.75rem;
+      font-size: clamp(0.72rem, 1vw, 0.9rem);
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       color: var(--yumia-muted);
     }
 
     .yumia-metric-value {
       font-family: var(--yumia-font-heading);
-      font-size: clamp(1.8rem, 3.2vw, 2.6rem);
+      font-size: clamp(2.3rem, 4.2vw, 3.8rem);
       font-weight: 800;
-      line-height: 1.1;
+      line-height: 1.05;
       color: var(--yumia-primary);
     }
 
     .yumia-metric-change {
-      font-size: 0.85rem;
+      font-size: clamp(0.8rem, 1.1vw, 1rem);
       font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.08);
     }
     .yumia-metric-change.positive { color: var(--yumia-success); }
     .yumia-metric-change.negative { color: var(--yumia-danger); }
+
+    /* Chart Containers */
+    .yumia-chart-container {
+      width: 100%;
+      flex: 1;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: var(--yumia-surface);
+      border: 1.5px solid var(--yumia-border);
+      border-radius: 14px;
+      padding: clamp(1rem, 2vw, 1.6rem);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .yumia-chart-title {
+      font-family: var(--yumia-font-heading);
+      font-size: clamp(1.1rem, 1.5vw, 1.35rem);
+      font-weight: 700;
+      color: var(--yumia-primary);
+      margin-bottom: 0.6rem;
+      text-align: center;
+    }
 
     /* Tables */
     table {
@@ -1864,7 +1956,7 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
         const ic = element as IconElement;
         const iconSvg = defaultIconResolver.toSvg(
           ic.name,
-          ic.size || 24,
+          ic.size || 28,
           ic.color || 'currentColor',
           'yumia-icon'
         );
@@ -1872,25 +1964,27 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       }
       case 'grid': {
         const g = element as GridElement;
-        const cols = typeof g.columns === 'number' ? `repeat(${g.columns}, 1fr)` : g.columns;
+        const cols =
+          typeof g.columns === 'number' ? `repeat(${g.columns}, minmax(0, 1fr))` : g.columns;
         const gap =
           g.gap !== undefined ? (typeof g.gap === 'number' ? `${g.gap}px` : g.gap) : '1.5rem';
         const inner = g.elements
           .map((child) => this.renderElement(child, theme, presentation))
           .join('\n');
-        return `<div class="yumia-grid" style="display:grid; grid-template-columns:${cols}; gap:${gap}; width:100%;">${inner}</div>`;
+        return `<div class="yumia-grid" style="grid-template-columns:${cols}; gap:${gap};">${inner}</div>`;
       }
       case 'stack': {
         const st = element as StackElement;
-        const dir = st.direction === 'horizontal' ? 'row' : 'column';
+        const isHoriz = st.direction === 'horizontal';
+        const dir = isHoriz ? 'row' : 'column';
         const gap =
-          st.gap !== undefined ? (typeof st.gap === 'number' ? `${st.gap}px` : st.gap) : '1rem';
+          st.gap !== undefined ? (typeof st.gap === 'number' ? `${st.gap}px` : st.gap) : '1.5rem';
         const align = st.align ? `align-items:${st.align};` : '';
         const justify = st.justify ? `justify-content:${st.justify};` : '';
         const inner = st.elements
           .map((child) => this.renderElement(child, theme, presentation))
           .join('\n');
-        return `<div class="yumia-stack" style="display:flex; flex-direction:${dir}; gap:${gap}; ${align} ${justify} width:100%;">${inner}</div>`;
+        return `<div class="yumia-stack ${isHoriz ? 'stack-horizontal' : 'stack-vertical'}" style="flex-direction:${dir}; gap:${gap}; ${align} ${justify}">${inner}</div>`;
       }
       case 'compare': {
         return this.renderCompare(element as CompareElement, theme);
@@ -1969,11 +2063,21 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     if (c.chartType === 'line') {
       const allValues = series.flatMap((s) => s.values);
       const maxVal = Math.max(...allValues, 1);
-      const width = 500;
-      const height = 180;
-      const padding = 35;
+      const width = 640;
+      const height = 240;
+      const padding = 45;
       const plotW = width - padding * 2;
       const plotH = height - padding * 2;
+
+      const gridLines = [0.25, 0.5, 0.75, 1.0]
+        .map((ratio) => {
+          const y = height - padding - ratio * plotH;
+          const valLabel = Math.round(ratio * maxVal);
+          return `
+          <line x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
+          <text x="${padding - 8}" y="${y + 4}" text-anchor="end" fill="${theme.colors.muted || '#64748b'}" font-size="10" font-family="sans-serif">${valLabel}</text>`;
+        })
+        .join('');
 
       let pathsHtml = '';
       series.forEach((s, sIdx) => {
@@ -1987,26 +2091,27 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
         const circles = pts
           .map(
             (pt) =>
-              `<circle cx="${pt.split(',')[0]}" cy="${pt.split(',')[1]}" r="4" fill="${sColor}" />`
+              `<circle cx="${pt.split(',')[0]}" cy="${pt.split(',')[1]}" r="5" fill="${sColor}" stroke="var(--yumia-surface)" stroke-width="2" />`
           )
           .join('');
         pathsHtml += `
-        <polyline fill="none" stroke="${sColor}" stroke-width="3" stroke-linecap="round" points="${pointsStr}" />
+        <polyline fill="none" stroke="${sColor}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" points="${pointsStr}" />
         ${circles}`;
       });
 
       const labelTexts = labels
         .map((l, i) => {
           const x = padding + (i / Math.max(labels.length - 1, 1)) * plotW;
-          return `<text x="${x}" y="${height - 10}" text-anchor="middle" fill="${theme.colors.muted || '#94a3b8'}" font-size="11" font-family="sans-serif">${this.escapeHtml(l)}</text>`;
+          return `<text x="${x}" y="${height - 12}" text-anchor="middle" fill="${theme.colors.muted || '#94a3b8'}" font-size="11" font-weight="600" font-family="sans-serif">${this.escapeHtml(l)}</text>`;
         })
         .join('');
 
       return `
       <div class="yumia-chart-container">
         ${titleHtml}
-        <svg viewBox="0 0 ${width} ${height}" style="width:100%; max-height:220px;">
-          <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.15)" stroke-width="1" />
+        <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:100%; max-height:280px;">
+          ${gridLines}
+          <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" />
           ${pathsHtml}
           ${labelTexts}
         </svg>
@@ -2017,10 +2122,10 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       const values = series[0]?.values || [];
       const total = values.reduce((a, b) => a + b, 0) || 1;
       let cumulativePercent = 0;
-      const radius = 60;
-      const cx = 100;
-      const cy = 100;
-      const strokeWidth = c.chartType === 'doughnut' ? 24 : 60;
+      const radius = 65;
+      const cx = 110;
+      const cy = 110;
+      const strokeWidth = c.chartType === 'doughnut' ? 26 : 65;
       const circ = 2 * Math.PI * radius;
 
       const slices = values
@@ -2038,31 +2143,41 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
         .map((l, i) => {
           const sColor = colors[i % colors.length]!;
           const pct = Math.round(((values[i] || 0) / total) * 100);
-          return `<div style="display:flex; align-items:center; gap:8px; font-size:12px; margin:4px 0;"><span style="width:10px; height:10px; border-radius:50%; background:${sColor};"></span><span style="color:var(--yumia-text);">${this.escapeHtml(l)} (${pct}%)</span></div>`;
+          return `<div style="display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; margin:6px 0;"><span style="width:12px; height:12px; border-radius:50%; background:${sColor}; box-shadow:0 0 6px ${sColor};"></span><span style="color:var(--yumia-text);">${this.escapeHtml(l)} <strong style="color:var(--yumia-primary);">(${pct}%)</strong></span></div>`;
         })
         .join('');
 
       return `
       <div class="yumia-chart-container">
         ${titleHtml}
-        <div style="display:flex; align-items:center; justify-content:center; gap:28px; width:100%;">
-          <svg viewBox="0 0 200 200" style="width:160px; height:160px; transform: rotate(-90deg);">
+        <div style="display:flex; align-items:center; justify-content:center; gap:36px; width:100%; padding:10px 0;">
+          <svg viewBox="0 0 220 220" style="width:180px; height:180px; transform: rotate(-90deg);">
             ${slices}
           </svg>
-          <div style="display:flex; flex-direction:column;">${legend}</div>
+          <div style="display:flex; flex-direction:column; justify-content:center;">${legend}</div>
         </div>
       </div>`;
     }
 
-    // Default: Bar Chart
+    // Default: High-Res Bar Chart
     const values = series[0]?.values || [];
     const maxVal = Math.max(...values, 1);
-    const width = 500;
-    const height = 180;
-    const padding = 35;
+    const width = 640;
+    const height = 240;
+    const padding = 45;
     const plotW = width - padding * 2;
     const plotH = height - padding * 2;
-    const barWidth = Math.min(48, Math.max(16, (plotW / Math.max(values.length, 1)) * 0.6));
+    const barWidth = Math.min(56, Math.max(20, (plotW / Math.max(values.length, 1)) * 0.55));
+
+    const gridLines = [0.25, 0.5, 0.75, 1.0]
+      .map((ratio) => {
+        const y = height - padding - ratio * plotH;
+        const valLabel = Math.round(ratio * maxVal);
+        return `
+        <line x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
+        <text x="${padding - 8}" y="${y + 4}" text-anchor="end" fill="${theme.colors.muted || '#64748b'}" font-size="10" font-family="sans-serif">${valLabel}</text>`;
+      })
+      .join('');
 
     const bars = values
       .map((val, i) => {
@@ -2072,17 +2187,18 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
         const color = colors[i % colors.length]!;
         const label = labels[i] || '';
         return `
-        <rect x="${x}" y="${y}" width="${barWidth}" height="${barH}" rx="4" fill="${color}" opacity="0.9" />
-        <text x="${x + barWidth / 2}" y="${y - 6}" text-anchor="middle" fill="${color}" font-size="11" font-weight="600" font-family="sans-serif">${val}</text>
-        <text x="${x + barWidth / 2}" y="${height - 12}" text-anchor="middle" fill="${theme.colors.muted || '#94a3b8'}" font-size="11" font-family="sans-serif">${this.escapeHtml(label)}</text>`;
+        <rect x="${x}" y="${y}" width="${barWidth}" height="${barH}" rx="6" fill="${color}" opacity="0.95" />
+        <text x="${x + barWidth / 2}" y="${y - 8}" text-anchor="middle" fill="${color}" font-size="12" font-weight="700" font-family="sans-serif">${val}</text>
+        <text x="${x + barWidth / 2}" y="${height - 12}" text-anchor="middle" fill="${theme.colors.text || '#f8fafc'}" font-size="11" font-weight="600" font-family="sans-serif">${this.escapeHtml(label)}</text>`;
       })
       .join('');
 
     return `
     <div class="yumia-chart-container">
       ${titleHtml}
-      <svg viewBox="0 0 ${width} ${height}" style="width:100%; max-height:220px;">
-        <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.15)" stroke-width="1" />
+      <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:100%; max-height:280px;">
+        ${gridLines}
+        <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" />
         ${bars}
       </svg>
     </div>`;
