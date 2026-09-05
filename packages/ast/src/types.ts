@@ -258,7 +258,58 @@ export interface LayoutDirectiveElement extends BaseElement {
 export interface MathElement extends BaseElement {
   type: 'math';
   expression: string;
-  displayMode?: boolean;
+  displayMode?: boolean | undefined;
+}
+
+export interface IconElement extends BaseElement {
+  type: 'icon';
+  name: string;
+  provider?: string | undefined;
+  size?: number | string | undefined;
+  color?: string | undefined;
+}
+
+export interface GridElement extends BaseElement {
+  type: 'grid';
+  columns: number | string;
+  elements: SlideElement[];
+  gap?: number | string | undefined;
+}
+
+export interface StackElement extends BaseElement {
+  type: 'stack';
+  direction: 'horizontal' | 'vertical';
+  elements: SlideElement[];
+  gap?: number | string | undefined;
+  align?: 'start' | 'center' | 'end' | 'stretch' | undefined;
+  justify?: 'start' | 'center' | 'end' | 'space-between' | undefined;
+}
+
+export interface ComponentElement extends BaseElement {
+  type: 'component';
+  name: string;
+  props?: Record<string, unknown> | undefined;
+  elements?: SlideElement[] | undefined;
+}
+
+export interface SlotElement extends BaseElement {
+  type: 'slot';
+  name?: string | undefined;
+  elements?: SlideElement[] | undefined;
+}
+
+export interface ResolvedStyle {
+  color?: string | undefined;
+  backgroundColor?: string | undefined;
+  borderColor?: string | undefined;
+  borderRadius?: number | undefined;
+  padding?: number | string | undefined;
+  fontSize?: number | string | undefined;
+  fontWeight?: string | number | undefined;
+  fontFamily?: string | undefined;
+  shadow?: string | undefined;
+  opacity?: number | undefined;
+  custom?: Record<string, string | number> | undefined;
 }
 
 export type SlideElement =
@@ -279,6 +330,11 @@ export type SlideElement =
   | CompareElement
   | BadgeElement
   | MathElement
+  | IconElement
+  | GridElement
+  | StackElement
+  | ComponentElement
+  | SlotElement
   | GroupElement
   | ColumnElement
   | ColumnsElement

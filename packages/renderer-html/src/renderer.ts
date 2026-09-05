@@ -6,7 +6,9 @@ import {
   ColumnElement,
   ColumnsElement,
   CompareElement,
+  GridElement,
   HeadingElement,
+  IconElement,
   ImageElement,
   ListElement,
   MathElement,
@@ -18,11 +20,12 @@ import {
   SectionElement,
   Slide,
   SlideElement,
+  StackElement,
   TableElement,
   TimelineElement,
   TocElement,
 } from '@yumiamd/ast';
-import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
+import { RenderContext, YumiaRenderer, defaultIconResolver } from '@yumiamd/renderer';
 import { defaultTheme, resolveTheme, ThemeOverrides, YumiaTheme } from '@yumiamd/theme';
 
 export interface HtmlRenderOptions {
@@ -1856,6 +1859,38 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       }
       case 'timeline': {
         return this.renderTimeline(element as TimelineElement);
+      }
+      case 'icon': {
+        const ic = element as IconElement;
+        const iconSvg = defaultIconResolver.toSvg(
+          ic.name,
+          ic.size || 24,
+          ic.color || 'currentColor',
+          'yumia-icon'
+        );
+        return `<span class="yumia-icon-wrapper" style="display:inline-flex; align-items:center; vertical-align:middle;">${iconSvg}</span>`;
+      }
+      case 'grid': {
+        const g = element as GridElement;
+        const cols = typeof g.columns === 'number' ? `repeat(${g.columns}, 1fr)` : g.columns;
+        const gap =
+          g.gap !== undefined ? (typeof g.gap === 'number' ? `${g.gap}px` : g.gap) : '1.5rem';
+        const inner = g.elements
+          .map((child) => this.renderElement(child, theme, presentation))
+          .join('\n');
+        return `<div class="yumia-grid" style="display:grid; grid-template-columns:${cols}; gap:${gap}; width:100%;">${inner}</div>`;
+      }
+      case 'stack': {
+        const st = element as StackElement;
+        const dir = st.direction === 'horizontal' ? 'row' : 'column';
+        const gap =
+          st.gap !== undefined ? (typeof st.gap === 'number' ? `${st.gap}px` : st.gap) : '1rem';
+        const align = st.align ? `align-items:${st.align};` : '';
+        const justify = st.justify ? `justify-content:${st.justify};` : '';
+        const inner = st.elements
+          .map((child) => this.renderElement(child, theme, presentation))
+          .join('\n');
+        return `<div class="yumia-stack" style="display:flex; flex-direction:${dir}; gap:${gap}; ${align} ${justify} width:100%;">${inner}</div>`;
       }
       case 'compare': {
         return this.renderCompare(element as CompareElement, theme);

@@ -1,0 +1,39 @@
+document "Yumia Native Language & Architecture"
+  theme "cyberpunk"
+  author "Compiler & Core Team"
+  aspectRatio "16:9"
+  transition "zoom"
+  watermark "YUMIA CORE"
+
+slide "Welcome to Yumia Native"
+  heading "A Pure Proprietary Language for Documents & Decks"
+  text "Engineered for humans, compiler determinism, and generative AI systems."
+  badge "Version 2.0 Native" variant="accent"
+  notes
+    This presentation was written in pure Yumia Native (.yumia) language syntax.
+
+slide "Unified Architectural Pipeline"
+  grid columns=3 gap=20
+    card title="Unified AST & IR" variant="primary"
+      icon "lucide:layers" size=36 color="#00F0FF"
+      text "Decoupled abstract syntax tree independent of markdown or HTML markup."
+    card title="Multi-Provider Icons" variant="success"
+      icon "material:rocket" size=36 color="#10B981"
+      text "First-class abstraction supporting Lucide, Material, Tabler, FA, and SVG."
+    card title="Universal Renderers" variant="accent"
+      icon "fa:shield" size=36 color="#FF2E88"
+      text "Compile cleanly into interactive HTML5, PPTX presentations, and Vector PDF."
+
+slide "Performance & Determinism"
+  stack direction="horizontal" gap=20
+    metric "0.5ms" label="Parse Latency" diff="-65%" variant="primary"
+    metric "100%" label="Backward Compatible" diff="+100%" variant="success"
+    metric "3 Targets" label="HTML, PPTX, PDF" diff="Native" variant="accent"
+
+slide "Code Highlighting & Execution"
+  code lang="typescript" highlight="2,4-5"
+    import { parseNativeYumia, YumiaCompiler } from '@yumiamd/core';
+    import { HtmlRenderer, PdfRenderer, PptxRenderer } from '@yumiamd/renderer';
+
+    const ast = parseNativeYumia(source);
+    const html = await new YumiaCompiler().render(ast, new HtmlRenderer());

@@ -7,7 +7,9 @@ import {
   ColumnElement,
   ColumnsElement,
   CompareElement,
+  GridElement,
   HeadingElement,
+  IconElement,
   ListElement,
   MathElement,
   MermaidElement,
@@ -18,6 +20,7 @@ import {
   SectionElement,
   Slide,
   SlideElement,
+  StackElement,
   TableElement,
   TimelineElement,
   TocElement,
@@ -855,6 +858,49 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         });
 
         return curY + items.length * (itemH + 8) + 8;
+      }
+
+      case 'icon': {
+        const ic = element as IconElement;
+        const iconText = `★ ${ic.name.replace(/^[^:]+:/, '').toUpperCase()}`;
+        doc.font('Helvetica-Bold').fontSize(11).fillColor(theme.colors.primary);
+        doc.text(iconText, x, y, { width: 120 });
+        return y + 20;
+      }
+
+      case 'grid': {
+        const g = element as GridElement;
+        const colCount =
+          typeof g.columns === 'number' ? g.columns : parseInt(String(g.columns), 10) || 2;
+        const gap = 16;
+        const availableWidth = width - gap * (colCount - 1);
+        const colWidth = availableWidth / colCount;
+
+        let maxY = y;
+        for (let i = 0; i < g.elements.length; i++) {
+          const colIdx = i % colCount;
+          const colX = x + colIdx * (colWidth + gap);
+          const childY = this.renderElement(
+            doc,
+            g.elements[i]!,
+            colX,
+            y,
+            colWidth,
+            theme,
+            presentation
+          );
+          if (childY > maxY) maxY = childY;
+        }
+        return maxY + 8;
+      }
+
+      case 'stack': {
+        const st = element as StackElement;
+        let curY = y;
+        for (const child of st.elements) {
+          curY = this.renderElement(doc, child, x, curY, width, theme, presentation) + 8;
+        }
+        return curY;
       }
 
       default:

@@ -7,8 +7,11 @@ import {
   ColumnElement,
   ColumnsElement,
   CompareElement,
+  ComponentElement,
+  GridElement,
   GroupElement,
   HeadingElement,
+  IconElement,
   ImageElement,
   LayoutDirectiveElement,
   ListElement,
@@ -23,6 +26,8 @@ import {
   SectionElement,
   Slide,
   SlideElement,
+  SlotElement,
+  StackElement,
   TableElement,
   TimelineElement,
   TimelineItem,
@@ -275,5 +280,71 @@ export function createLayoutDirective(
     type: 'layout-directive',
     mode,
     ...(attributes ? { attributes } : {}),
+  };
+}
+
+export function createIcon(
+  name: string,
+  provider?: string,
+  size?: number | string,
+  color?: string
+): IconElement {
+  return {
+    type: 'icon',
+    name,
+    ...(provider ? { provider } : {}),
+    ...(size !== undefined ? { size } : {}),
+    ...(color ? { color } : {}),
+  };
+}
+
+export function createGrid(
+  elements: SlideElement[],
+  columns: number | string = 2,
+  gap?: number | string
+): GridElement {
+  return {
+    type: 'grid',
+    columns,
+    elements,
+    ...(gap !== undefined ? { gap } : {}),
+  };
+}
+
+export function createStack(
+  elements: SlideElement[],
+  direction: 'horizontal' | 'vertical' = 'vertical',
+  gap?: number | string,
+  align?: 'start' | 'center' | 'end' | 'stretch',
+  justify?: 'start' | 'center' | 'end' | 'space-between'
+): StackElement {
+  return {
+    type: 'stack',
+    direction,
+    elements,
+    ...(gap !== undefined ? { gap } : {}),
+    ...(align ? { align } : {}),
+    ...(justify ? { justify } : {}),
+  };
+}
+
+export function createComponent(
+  name: string,
+  props?: Record<string, unknown>,
+  elements?: SlideElement[]
+): ComponentElement {
+  return {
+    type: 'component',
+    name,
+    ...(props ? { props } : {}),
+    ...(elements ? { elements } : {}),
+  };
+}
+
+export function createSlot(name?: string, elements?: SlideElement[]): SlotElement {
+  return {
+    type: 'slot',
+    ...(name ? { name } : {}),
+    ...(elements ? { elements } : {}),
   };
 }

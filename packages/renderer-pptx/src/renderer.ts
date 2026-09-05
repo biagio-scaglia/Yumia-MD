@@ -6,6 +6,7 @@ import {
   CodeElement,
   CompareElement,
   HeadingElement,
+  IconElement,
   ImageElement,
   ListElement,
   MathElement,
@@ -270,6 +271,30 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       case 'math':
         this.renderMath(pptxSlide, pptx, element as MathElement, rect, theme);
         break;
+      case 'icon': {
+        const ic = element as IconElement;
+        const iconName = ic.name.replace(/^[^:]+:/, '').toUpperCase();
+        pptxSlide.addText(`★ ${iconName}`, {
+          x: rect.x,
+          y: rect.y,
+          w: Math.max(rect.w, 1.5),
+          h: Math.max(rect.h, 0.4),
+          fontSize: 14,
+          bold: true,
+          color: this.cleanHexColor(theme.colors.primary),
+          valign: 'middle',
+        });
+        break;
+      }
+      case 'grid':
+      case 'stack': {
+        if (node.children) {
+          for (const childNode of node.children) {
+            this.renderNode(pptxSlide, pptx, childNode, scaleX, scaleY, theme, presentation);
+          }
+        }
+        break;
+      }
       default:
         break;
     }

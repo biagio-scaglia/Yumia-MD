@@ -20,7 +20,9 @@ import {
   createColumn,
   createColumns,
   createCompare,
+  createGrid,
   createHeading,
+  createIcon,
   createImage,
   createLayoutDirective,
   createList,
@@ -32,11 +34,13 @@ import {
   createQuote,
   createSection,
   createSlide,
+  createStack,
   createTable,
   createTimeline,
   createToc,
 } from '@yumiamd/ast';
 import { ParserOptions, YumiaParser } from './types.js';
+import { NativeYumiaParser } from './native-parser.js';
 
 export function parseHighlightLines(highlightStr?: string): number[] {
   if (!highlightStr) return [];
@@ -67,6 +71,18 @@ export class DefaultYumiaParser implements YumiaParser {
     this.diagnostics = [];
     if (!source || typeof source !== 'string') {
       return createPresentation({}, []);
+    }
+
+    const trimmed = source.trimStart();
+    // Auto-detect Native Yumia Language syntax
+    if (
+      trimmed.startsWith('document ') ||
+      trimmed.startsWith('document\n') ||
+      trimmed.startsWith('slide ') ||
+      trimmed.startsWith('slide\n')
+    ) {
+      const nativeParser = new NativeYumiaParser();
+      return nativeParser.parse(source);
     }
 
     const normalized = source.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
@@ -475,7 +491,7 @@ export class DefaultYumiaParser implements YumiaParser {
           const variantMatch = directiveHeader.match(/variant=['"](.*?)['"]/);
           const descMatch = directiveHeader.match(/description=['"](.*?)['"]/);
           const unitMatch = directiveHeader.match(/unit=['"](.*?)['"]/);
-          const changeMatch = directiveHeader.match(/change=['"](.*?)['"]/);
+          const changeMatch = directiveHeader.match(/(?:change|diff)=['"](.*?)['"]/);
           const value = valueMatch ? valueMatch[1]! : '0';
           const label = labelMatch ? labelMatch[1]! : '';
           const variant = variantMatch ? variantMatch[1]! : undefined;
@@ -745,6 +761,44 @@ export class DefaultYumiaParser implements YumiaParser {
         } else if (directiveName === 'math') {
           const expr = blockLines.join('\n').trim();
           const el = createMath(expr, true);
+          el.loc = {
+            start: { line: directiveStartLine, column: 1 },
+            end: { line: baseLine + i - 1, column: 1 },
+          };
+          elements.push(el);
+        } else if (directiveName === 'icon') {
+          const nameMatch = directiveArg.match(/^(?:name=)?["']?([^"'\s]+)["']?/);
+          const name = nameMatch ? nameMatch[1]! : directiveArg.trim();
+          const sizeMatch = directiveArg.match(/\bsize=["']?([^"'\s]+)["']?/);
+          const colorMatch = directiveArg.match(/\bcolor=["']?([^"'\s]+)["']?/);
+          const el = createIcon(
+            name,
+            undefined,
+            sizeMatch ? sizeMatch[1] : undefined,
+            colorMatch ? colorMatch[1] : undefined
+          );
+          el.loc = {
+            start: { line: directiveStartLine, column: 1 },
+            end: { line: baseLine + i - 1, column: 1 },
+          };
+          elements.push(el);
+        } else if (directiveName === 'grid') {
+          const colsMatch = directiveArg.match(/\bcolumns=["']?([^"'\s]+)["']?/);
+          const gapMatch = directiveArg.match(/\bgap=["']?([^"'\s]+)["']?/);
+          const columns = colsMatch ? parseInt(colsMatch[1]!, 10) || colsMatch[1]! : 2;
+          const { elements: gridChildren } = this.parseLines(blockLines, blockBaseLine);
+          const el = createGrid(gridChildren, columns, gapMatch ? gapMatch[1] : undefined);
+          el.loc = {
+            start: { line: directiveStartLine, column: 1 },
+            end: { line: baseLine + i - 1, column: 1 },
+          };
+          elements.push(el);
+        } else if (directiveName === 'stack') {
+          const dirMatch = directiveArg.match(/\bdirection=["']?(horizontal|vertical)["']?/);
+          const direction = dirMatch ? (dirMatch[1] as 'horizontal' | 'vertical') : 'vertical';
+          const gapMatch = directiveArg.match(/\bgap=["']?([^"'\s]+)["']?/);
+          const { elements: stackChildren } = this.parseLines(blockLines, blockBaseLine);
+          const el = createStack(stackChildren, direction, gapMatch ? gapMatch[1] : undefined);
           el.loc = {
             start: { line: directiveStartLine, column: 1 },
             end: { line: baseLine + i - 1, column: 1 },
