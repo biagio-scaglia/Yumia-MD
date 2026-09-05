@@ -290,7 +290,7 @@ YumiaMD is developed as a modular monorepo and distributed as a self-contained *
 | :----------------------- | :---------------------------------------------------------------- |
 | `@yumiamd/ast`           | Pure semantic presentation AST data structures with locations     |
 | `@yumiamd/parser`        | Converts Markdown + Presentation DSL & Tables into AST            |
-| `@yumiamd/theme`         | Semantic design tokens (6 themes + custom colors & typography)    |
+| `@yumiamd/theme`         | Semantic design tokens (12+ built-in themes + custom overrides)   |
 | `@yumiamd/layout`        | Deterministic geometric placement (stack, columns, cards, bounds) |
 | `@yumiamd/renderer`      | Base renderer abstractions and rendering context                  |
 | `@yumiamd/renderer-pptx` | **Native editable PowerPoint (`.pptx`) generation engine**        |
@@ -298,6 +298,26 @@ YumiaMD is developed as a modular monorepo and distributed as a self-contained *
 | `@yumiamd/renderer-html` | **Interactive HTML5 deck + Dual-Window Speaker View (`.html`)**   |
 | `@yumiamd/core`          | Compiler pipeline coordinator, linter & schema generation         |
 | **`yumiamd`**            | **Unified All-in-One package & CLI published to NPM**             |
+
+---
+
+## 🎨 Rich Built-in Themes
+
+YumiaMD ships with 12 carefully calibrated color palettes and design systems:
+
+| Theme Name                         | Description                         | Key Colors                                             |
+| :--------------------------------- | :---------------------------------- | :----------------------------------------------------- |
+| **`cyberpunk`**                    | High-energy dark neon               | `#FF2E88` Pink, `#00F0FF` Cyan, `#0B0B12` Dark         |
+| **`nord`**                         | Arctic north-bluish developer theme | `#88C0D0` Frost, `#81A1C1` Ice, `#2E3440` Polar        |
+| **`dracula`**                      | Iconic gothic vampire dark theme    | `#BD93F9` Violet, `#FF79C6` Pink, `#282A36` Dark       |
+| **`tokyo-night`** / **`midnight`** | Sleek Tokyo Night indigo & magenta  | `#7AA2F7` Blue, `#BB9AF7` Purple, `#1A1B26` Dark       |
+| **`emerald`** / **`forest`**       | Deep luxury eco & forest green      | `#10B981` Emerald, `#34D399` Mint, `#022C22` Pine      |
+| **`synthwave`** / **`sunset`**     | 80s retro neon sunset glow          | `#FF71CE` Neon Pink, `#01CDFE` Cyan, `#1A0E2E` Deep    |
+| **`corporate`**                    | Enterprise business presentation    | `#1E3A8A` Navy, `#2563EB` Royal Blue, `#FFFFFF` Light  |
+| **`minimal`**                      | Monochrome Swiss-style typography   | `#111111` Charcoal, `#F5F5F7` Light Gray               |
+| **`terminal`**                     | Retro hacker CRT phosphor green     | `#00FF66` Terminal Green, `#0C0C0C` Pure Black         |
+| **`academic`**                     | Scholarly ivory paper with crimson  | `#8B0000` Crimson, `#2C2B29` Charcoal, `#F5F2EB` Cream |
+| **`default`**                      | Modern clean interface theme        | `#2563EB` Blue, `#7C3AED` Purple, `#FFFFFF` White      |
 
 ---
 
