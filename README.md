@@ -1,384 +1,353 @@
-# YumiaMD
+# Yumia
 
-> **YumiaMD** — A Markdown-based presentation language and compiler designed for humans and AI.
+> **Yumia** — A declarative language and compiler for structured visual documents and presentations.
 
 [![CI](https://github.com/biagio-scaglia/Yumia-MD/actions/workflows/ci.yml/badge.svg)](https://github.com/biagio-scaglia/Yumia-MD/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/yumiamd.svg?color=blue)](https://www.npmjs.com/package/yumiamd)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-YumiaMD is a modern presentation compiler. It provides a human-readable and AI-friendly way to author slide decks in plain Markdown with rich presentation directives (`:::columns`, `:::card`, `:::chart`, `:::mermaid`, `:::timeline`, `:::compare`, `:::math`, `:::badge`, `:::transition`, `:::step`, `:::notes`), and compiles them into **native, fully editable PowerPoint (.pptx)** presentations (with embedded fonts and corporate `.potx` template support), crisp vector PDFs, and interactive HTML5 decks.
+Yumia is a declarative visual language and multi-target compiler. It provides an indentation-based human and AI-friendly syntax (`.yumia`) and a Markdown-compatible surface (`.yumia.md`) to define structured slides, visual layouts, multi-provider icons, cards, metrics, and data charts, compiling them into **native, fully editable PowerPoint (.pptx)** presentations, crisp vector **PDF documents**, and interactive **HTML5 decks**.
 
 ---
 
-## The Problem
+## 1. Show, Don't Tell
 
-Creating slide decks today usually forces a frustrating trade-off:
+### Native Yumia Syntax (`presentation.yumia`)
 
-- **Visual GUI Tools (PowerPoint, Keynote)**: Great for layout and native objects, but hostile to version control, diffs, automation, and AI generation workflows.
-- **HTML/Markdown Deck Tools (Marp, Reveal.js, Slidev)**: Great for web display and code-first authoring, but export static PDFs or flat rasterized PPTX images rather than native, editable PowerPoint objects.
+```yumia
+document "Distributed Systems Overview"
+  theme "cyberpunk"
+  aspectRatio "16:9"
+  transition "zoom"
 
-YumiaMD provides a true compiler architecture designed around **semantic decoupling**:
+slide "Architecture Pipeline"
+  heading "Next-Gen Document Language"
+  badge "v0.1.20" variant="accent"
 
-```text
-presentation.yumia.md
-          │
-          ▼
-   @yumiamd/parser
-          │
-          ▼
-    Presentation AST
-          │
-          ▼
-  Deterministic Layout Engine
-          │
-          ▼
-   ┌──────┼────────┐
-   ▼      ▼        ▼
- PPTX    PDF      HTML
+  grid columns=3 gap=20
+    card title="Unified AST" variant="primary"
+      icon "lucide:layers" size=32 color="#00F0FF"
+      text "Semantic node representation decoupled from output formats."
+
+    card title="Multi-Provider Icons" variant="success"
+      icon "material:rocket" size=32 color="#10B981"
+      text "First-class abstraction supporting Lucide, Material, Tabler, FA, and SVG."
+
+    card title="Universal Renderers" variant="accent"
+      icon "fa:shield" size=32 color="#FF2E88"
+      text "Compile cleanly into interactive HTML5, native PPTX, and Vector PDF."
+
+slide "Key Performance Metrics"
+  stack direction="horizontal" gap=16
+    metric "0.5ms" label="Parse Latency" diff="-65%" variant="primary"
+    metric "100%" label="Backward Compatible" diff="+100%" variant="success"
+    metric "3 Targets" label="HTML, PPTX, PDF" diff="Native" variant="accent"
 ```
 
-> **Native Object Principle**: A slide compiled to PowerPoint is **not** an image or HTML/CSS screenshot. Headings, bullet lists, vector card shapes, native chart objects, timelines, badges, and notes are generated as **100% native OpenXML PowerPoint objects** that you can click, edit, and re-theme in Microsoft PowerPoint or Google Slides.
-
----
-
-## 🎨 Rich Directive Syntax
-
-````markdown
----
-title: System Overview & Scientific Metrics
-theme: default
-aspectRatio: '16:9'
-author: Biagio Scaglia
-transition: push
-embedFonts: true
-template: corporate.potx
-watermark: 'YumiaMD'
----
-
-# High-Performance State Machines
-
-Deterministic reactive workflows compiled across targets.
-
-:::badge text="v0.1.19" variant="primary" :::
-:::badge text="Production Ready" variant="success" :::
-
-:::notes
-Opening slide introducing deterministic workflows and target capabilities.
-:::
-
----
-
-# Multi-Column & Comparisons
-
-:::transition type="fade" duration="0.5s"
-
-:::compare left="Traditional Approach" right="YumiaMD Architecture"
-
-- Manual slide design in GUI
-- Read-only screenshot exports
-- Inconsistent branding across decks
-
-:::vs
-
-- Semantic Markdown + AI tooling
-- 100% Native editable PowerPoint objects
-- Deterministic layout & vector graphics
-
-:::
-
----
-
-# Section Dividers & Table of Contents
-
-:::section "Part 1: Architecture & Internals" subtitle="Deep dive into layout geometry and coordinates" number="01"
-:::
-
----
-
-:::toc "📑 Table of Contents"
-
-1. Architecture - Parser AST & Deterministic Layout
-2. Multi-Target - PPTX, Vector PDF & Interactive HTML5
-3. Code Highlighting - Line Steps & Highlighting
-   :::
-
----
-
-# Code Blocks with Line Highlighting & Focus
-
-```typescript {2,5-7}
-import { compile } from 'yumiamd';
-
-// Highlighted focus line
-const source = await readFile('./presentation.yumia.md', 'utf-8');
-const result = await compile(source, {
-  format: 'pptx',
-  theme: 'cyberpunk',
-});
-```
-````
-
-:::notes
-In HTML non-highlighted lines are dimmed with focus on highlighted lines. In PPTX & PDF, code boxes are formatted with line numbers and native accent styling.
-:::
-
----
-
-# Scientific Equations & Mathematical Modeling
-
-:::math
-i \hbar \frac{\partial}{\partial t} \Psi(\mathbf{r}, t) = \left[ -\frac{\hbar^2}{2m}\nabla^2 + V(\mathbf{r}, t) \right] \Psi(\mathbf{r}, t)
-:::
-
-$$
-\int_{-\infty}^{\infty} e^{-a x^2} dx = \sqrt{\frac{\pi}{a}}
-$$
-
-:::notes
-Rendered with Cambria Math in PowerPoint, vector paths in PDF, and styled math containers in HTML.
-:::
-
----
-
-# Native Charts & Data Visualization
-
-:::chart type="bar" title="Performance Benchmark (ops/sec)" labels="Core Parser, Layout Engine, PDFKit, PPTX Gen" data="1200, 850, 430, 680"
-
-:::notes
-Compiled as native editable PowerPoint chart objects and crisp vector SVGs/PDFs!
-:::
-
----
-
-# Architecture & Diagrams
-
-:::mermaid
-graph LR
-A[Markdown Source] --> B[Yumia Parser]
-B --> C[Presentation AST]
-C --> D[Layout Engine]
-D --> E[Native PPTX]
-D --> F[Vector PDF]
-D --> G[HTML5 Deck]
-:::
-
----
-
-# Roadmap Timeline & Progressive Steps
-
-:::timeline layout="horizontal"
-
-- [Q1 2026] Core Compiler: AST parser, layout engine & PPTX generation
-- [Q2 2026] Multi-Format: Vector PDF & Interactive HTML5 Speaker View
-- [Q3 2026] Rich Directives: Native charts, Mermaid, timelines, TOC & sections
-- [Q4 2026] Enterprise: Master templates, font embedding, line highlights & print
-  :::
-
-:::step
-
-- ⚡ **Next Step**: Seamless CI/CD slide pipelines with `yumia deploy`!
-  :::
-
-````
-
----
-
-## ⚡ Quick Start
-
-You can run YumiaMD immediately without installing anything via `npx`:
+### Compilation
 
 ```bash
-# Initialize a new presentation project
-npx yumiamd init my-deck
+# Compile to native, editable PowerPoint (.pptx)
+yumia build presentation.yumia --format pptx
 
-# Start live-reloading dev server
-npx yumiamd dev presentation.yumia.md --open
+# Compile to vector PDF
+yumia build presentation.yumia --format pdf
 
-# Compile presentation directly to native editable PowerPoint (.pptx)
-npx yumiamd build presentation.yumia.md --out dist/presentation.pptx
-````
+# Start local dev server with hot reload
+yumia dev presentation.yumia --port 3000
+```
 
 ---
 
-## 📦 Installation & CLI Usage
+## 2. Why Yumia?
 
-### 1. Global CLI Tool
+Creating presentations and visual documents has traditionally forced an inconvenient compromise:
 
-Install the `yumia` / `yumiamd` command-line tool globally:
+- **Visual GUI Tools (PowerPoint, Keynote)**: Excellent for WYSIWYG placement, but hostile to Git version control, branch diffing, automated CI/CD builds, and generative AI pipelines.
+- **Web/Markdown Slide Tools (Marp, Slidev, Reveal.js)**: Excellent for developer authoring, but export static screenshot-based PDFs or flat rasterized images inside PPTX containers.
+- **Raw HTML/CSS**: Highly flexible, but excessively verbose for document and slide authoring.
+
+Yumia bridges this divide by functioning as a true compiler:
+
+```text
+       ┌───────────────────────┐       ┌───────────────────────┐
+       │     Native Yumia      │       │     Markdown Yumia    │
+       │       (.yumia)        │       │       (.yumia.md)     │
+       └──────────┬────────────┘       └──────────┬────────────┘
+                  │                               │
+                  ▼                               ▼
+       ┌───────────────────────┐       ┌───────────────────────┐
+       │   NativeYumiaParser   │       │   DefaultYumiaParser  │
+       └──────────┬────────────┘       └──────────┬────────────┘
+                  │                               │
+                  └───────────────┬───────────────┘
+                                  ▼
+                       ┌─────────────────────┐
+                       │      Yumia AST      │
+                       │   (Pure Semantic)   │
+                       └──────────┬──────────┘
+                                  │
+                                  ▼
+                       ┌─────────────────────┐
+                       │   Style Resolution  │
+                       │  + Icon Resolution  │
+                       └──────────┬──────────┘
+                                  │
+             ┌────────────────────┼────────────────────┐
+             ▼                    ▼                    ▼
+     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+     │ HtmlRenderer │     │ PptxRenderer │     │ PdfRenderer  │
+     └──────┬───────┘     └──────┬───────┘     └──────┬───────┘
+            ▼                    ▼                    ▼
+       Interactive           Editable              Vector
+         HTML5                 PPTX                 PDF
+```
+
+> **Native Object Guarantee**: In PowerPoint exports, elements are **not** static images. Text boxes, cards, metrics, and charts are generated as **100% native OpenXML shape and table objects** that can be customized in Microsoft PowerPoint or Google Slides.
+
+---
+
+## 3. Installation & Quick Start
+
+### Global CLI
 
 ```bash
 npm install -g yumiamd
-# or
+# or using pnpm:
 pnpm add -g yumiamd
 ```
 
-```bash
-# Initialize a starter project (optionally with custom theme & colors)
-yumia init my-deck --theme cyberpunk --primary "#FF2E88"
-
-# Start instant live-reload dev server with HTML preview (zero config!)
-yumia dev presentation.yumia.md --open
-
-# Compile to native editable PowerPoint (.pptx)
-yumia build presentation.yumia.md --out dist/presentation.pptx
-
-# Compile to crisp vector PDF document (.pdf)
-yumia build presentation.yumia.md --format pdf --out dist/presentation.pdf
-
-# Compile to standalone interactive HTML5 presentation deck (.html)
-yumia build presentation.yumia.md --format html --out dist/presentation.html
-
-# Deploy presentation deck (static, GitHub Pages, or Vercel)
-yumia deploy presentation.yumia.md --provider gh-pages --out public
-
-# Watch presentation file and recompile automatically on save
-yumia watch presentation.yumia.md --format pdf
-
-# Validate markdown syntax and AST structure (supports --json for CI/CD & AI agents)
-yumia validate presentation.yumia.md --json
-
-# Lint presentation for overflow, high density, and accessibility
-yumia lint presentation.yumia.md --strict
-
-# Inspect AST and deterministic layout bounding boxes
-yumia inspect presentation.yumia.md --layout
-
-# Export machine-readable JSON schema for LLMs & AI agents
-yumia schema
-```
-
-### 2. Node.js & TypeScript Library
-
-Use YumiaMD programmatically in your applications:
+### Local Project
 
 ```bash
-npm install yumiamd
+# Initialize a new presentation project
+yumia init my-deck
+cd my-deck
+
+# Start live preview
+yumia dev presentation.yumia.md
 ```
+
+---
+
+## 4. Language Features
+
+Yumia supports two complementary syntax surfaces that compile into the exact same Abstract Syntax Tree (AST):
+
+### 1. Native Yumia (`.yumia`)
+
+An indentation-based, clean DSL engineered for humans and AI models:
+
+| Primitive  | Syntax Example                                | Purpose                                      |
+| :--------- | :-------------------------------------------- | :------------------------------------------- |
+| `document` | `document "Title"`                            | Top-level metadata, theme, ratio, transition |
+| `slide`    | `slide "Slide Title"`                         | Defines a new slide boundary                 |
+| `heading`  | `heading "Title"` or `h1 "Title"`             | Slide headings (levels 1–4)                  |
+| `text`     | `text "Body copy"` or `p "Text"`              | Paragraph body text                          |
+| `grid`     | `grid columns=3 gap=20`                       | Multi-column grid container                  |
+| `stack`    | `stack direction="horizontal"`                | Linear flex stack layout                     |
+| `card`     | `card title="..." variant="primary"`          | Styled theme card container                  |
+| `metric`   | `metric "99.9%" label="Uptime" diff="+0.4%"`  | KPI stat callout card                        |
+| `icon`     | `icon "lucide:rocket" size=32`                | Multi-provider icon element                  |
+| `badge`    | `badge "v1.0" variant="success"`              | Status pill badge                            |
+| `code`     | `code lang="ts" highlight="2,4-6"`            | Syntax highlighted code with line focus      |
+| `section`  | `section "Part 1" subtitle="..." number="01"` | Distinct visual section slide                |
+| `toc`      | `toc "Table of Contents"`                     | Automatic presentation agenda                |
+| `notes`    | `notes \n Speaker notes text`                 | Speaker presenter notes                      |
+
+### 2. Markdown Yumia (`.yumia.md`)
+
+Standard Markdown syntax extended with semantic directives:
+
+```markdown
+---
+title: 'Distributed Systems'
+theme: 'cyberpunk'
+aspectRatio: '16:9'
+---
+
+# Architecture Overview
+
+:::grid columns=3 gap=20
+:::card Title="Compute" variant="primary"
+:::icon lucide:cpu size=32 :::
+Cluster worker nodes.
+:::
+:::card Title="Storage" variant="success"
+:::icon lucide:database size=32 :::
+Distributed object store.
+:::
+:::card Title="Network" variant="accent"
+:::icon lucide:globe size=32 :::
+Mesh ingress routing.
+:::
+:::
+
+:::metric value="99.99%" label="Availability" diff="+0.05%" variant="success" :::
+```
+
+---
+
+## 5. Multi-Provider Icon System
+
+Yumia treats icons as a **first-class abstraction** rather than a hardcoded icon package:
+
+```text
+Yumia Icon ("lucide:rocket" | "material:shield" | "fa:github")
+                    │
+                    ▼
+           @yumiamd/renderer: IconResolver
+                    │
+                    ▼
+        Provider Registry (Lucide, Material, FontAwesome, Tabler, Heroicons, Custom SVG)
+```
+
+```yumia
+icon "lucide:rocket" size=32 color="#00F0FF"
+icon "material:shield" size=28
+icon "fa:github"
+icon "tabler:activity"
+```
+
+- **Offline Bundling**: Built-in SVG definitions for instant offline compilation.
+- **Strict / Lenient Mode**: Missing icons render a stylized fallback glyph without crashing the build pipeline.
+
+---
+
+## 6. Built-in Themes & Custom Theming
+
+Yumia includes built-in themes optimized for dark/light presentations:
+
+- `default` — High-contrast modern indigo/slate dark theme.
+- `cyberpunk` — Vibrant neon cyan (`#00F0FF`) and pink (`#FF2E88`) palette.
+- `corporate` — Crisp enterprise navy blue and white styling.
+- `minimal` — Clean monochrome typography and subtle borders.
+- `terminal` — Monospace developer theme with green/amber highlights.
+- `academic` — Formal serif typography tailored for research and papers.
+
+Override any theme token on the fly via CLI or frontmatter:
+
+```bash
+yumia build deck.yumia --theme corporate --primary "#2563EB" --bg "#FFFFFF"
+```
+
+---
+
+## 7. CLI Reference
+
+```text
+Usage:
+  yumia <command> [options] [file]
+
+Commands:
+  dev <file>         Start live-reload dev server with instant HTML preview
+  build <file>       Compile to PowerPoint (.pptx), PDF (.pdf), or HTML (.html)
+  validate <file>    Validate syntax, directives, and metadata without compiling
+  lint <file>        Analyze presentation for layout overflows and contrast
+  inspect <file>     Inspect the AST and geometric layout tree
+  init [name]        Scaffold a new presentation project
+  schema             Output JSON schema for AI agents and IDE autocomplete
+  deploy <file>      Export presentation to a static directory for hosting
+
+Options:
+  --format, -f <fmt> Target format: pptx (default) | pdf | html
+  --theme, -t <name> Base theme: default | cyberpunk | minimal | corporate | terminal | academic
+  --primary, -p      Override primary accent color (hex)
+  --bg, --background Override background color (hex)
+  --port <number>    Dev server port (default: 3000)
+  --watch, -w        Watch file and rebuild on save
+  --strict           Treat lint warnings as errors (exit code 1)
+  --json             Output results in machine-readable JSON
+```
+
+---
+
+## 8. Programmatic API
 
 ```typescript
-import { compile, parse, YumiaCompiler } from 'yumiamd';
-import fs from 'node:fs';
+import { parseNativeYumia, YumiaCompiler } from '@yumiamd/core';
+import { HtmlRenderer } from '@yumiamd/renderer-html';
+import { PdfRenderer } from '@yumiamd/renderer-pdf';
+import { PptxRenderer } from '@yumiamd/renderer-pptx';
 
-const markdown = fs.readFileSync('presentation.yumia.md', 'utf-8');
+const source = `
+document "API Demo"
+  theme "cyberpunk"
 
-// 1. Validate syntax & inspect diagnostics
+slide "Hello World"
+  heading "Built with Yumia"
+  text "Programmatically compiled."
+`;
+
 const compiler = new YumiaCompiler();
-const validation = compiler.validate(markdown);
-console.log(`Valid: ${validation.valid}, Slides: ${validation.slideCount}`);
+const ast = parseNativeYumia(source);
 
-// 2. Compile directly to PPTX, PDF, or HTML
-const { buffer } = await compile(markdown, { format: 'pptx' });
-fs.writeFileSync('output.pptx', buffer);
+// Compile to HTML
+const htmlOutput = await compiler.render(ast, new HtmlRenderer());
 
-const { data: pdfBuffer } = await compile(markdown, { format: 'pdf' });
-fs.writeFileSync('output.pdf', Buffer.from(pdfBuffer));
+// Compile to PPTX Buffer
+const pptxOutput = await compiler.render(ast, new PptxRenderer());
 
-const { html } = await compile(markdown, { format: 'html' });
-fs.writeFileSync('output.html', html);
-
-// 3. Export JSON schema for LLM generation
-const schema = compiler.getSchema();
+// Compile to Vector PDF Buffer
+const pdfOutput = await compiler.render(ast, new PdfRenderer());
 ```
 
 ---
 
-## 🏛️ Architecture & Internal Modules
+## 9. Monorepo Architecture
 
-YumiaMD is developed as a modular monorepo and distributed as a self-contained **All-in-One package (`yumiamd`)**:
-
-| Module                   | Responsibility                                                    |
-| :----------------------- | :---------------------------------------------------------------- |
-| `@yumiamd/ast`           | Pure semantic presentation AST data structures with locations     |
-| `@yumiamd/parser`        | Converts Markdown + Presentation DSL & Tables into AST            |
-| `@yumiamd/theme`         | Semantic design tokens (12+ built-in themes + custom overrides)   |
-| `@yumiamd/layout`        | Deterministic geometric placement (stack, columns, cards, bounds) |
-| `@yumiamd/renderer`      | Base renderer abstractions and rendering context                  |
-| `@yumiamd/renderer-pptx` | **Native editable PowerPoint (`.pptx`) generation engine**        |
-| `@yumiamd/renderer-pdf`  | **Crisp Vector PDF (`.pdf`) document compiler**                   |
-| `@yumiamd/renderer-html` | **Interactive HTML5 deck + Dual-Window Speaker View (`.html`)**   |
-| `@yumiamd/core`          | Compiler pipeline coordinator, linter & schema generation         |
-| **`yumiamd`**            | **Unified All-in-One package & CLI published to NPM**             |
-
----
-
-## 🎨 Rich Built-in Themes
-
-YumiaMD ships with 12 carefully calibrated color palettes and design systems:
-
-| Theme Name                         | Description                         | Key Colors                                             |
-| :--------------------------------- | :---------------------------------- | :----------------------------------------------------- |
-| **`cyberpunk`**                    | High-energy dark neon               | `#FF2E88` Pink, `#00F0FF` Cyan, `#0B0B12` Dark         |
-| **`nord`**                         | Arctic north-bluish developer theme | `#88C0D0` Frost, `#81A1C1` Ice, `#2E3440` Polar        |
-| **`dracula`**                      | Iconic gothic vampire dark theme    | `#BD93F9` Violet, `#FF79C6` Pink, `#282A36` Dark       |
-| **`tokyo-night`** / **`midnight`** | Sleek Tokyo Night indigo & magenta  | `#7AA2F7` Blue, `#BB9AF7` Purple, `#1A1B26` Dark       |
-| **`emerald`** / **`forest`**       | Deep luxury eco & forest green      | `#10B981` Emerald, `#34D399` Mint, `#022C22` Pine      |
-| **`synthwave`** / **`sunset`**     | 80s retro neon sunset glow          | `#FF71CE` Neon Pink, `#01CDFE` Cyan, `#1A0E2E` Deep    |
-| **`corporate`**                    | Enterprise business presentation    | `#1E3A8A` Navy, `#2563EB` Royal Blue, `#FFFFFF` Light  |
-| **`minimal`**                      | Monochrome Swiss-style typography   | `#111111` Charcoal, `#F5F5F7` Light Gray               |
-| **`terminal`**                     | Retro hacker CRT phosphor green     | `#00FF66` Terminal Green, `#0C0C0C` Pure Black         |
-| **`academic`**                     | Scholarly ivory paper with crimson  | `#8B0000` Crimson, `#2C2B29` Charcoal, `#F5F2EB` Cream |
-| **`default`**                      | Modern clean interface theme        | `#2563EB` Blue, `#7C3AED` Purple, `#FFFFFF` White      |
+```text
+packages/
+├── ast/             # Semantic AST interfaces and node factories
+├── parser/          # Native Yumia parser, Markdown parser, and migrator
+├── layout/          # Coordinate engine and box-model layout computation
+├── theme/           # Design tokens, color palettes, and theme resolver
+├── renderer/        # Abstract renderer contracts and multi-provider icon resolver
+├── renderer-html/   # Interactive HTML5 presentation runner
+├── renderer-pptx/   # Native OpenXML PowerPoint generator
+├── renderer-pdf/    # Vector PDF document compiler
+├── core/            # High-level compiler orchestration and AST linter
+└── cli/             # Multi-command CLI tool and dev server
+```
 
 ---
 
-## 🌐 Multi-Target Presentation Rendering
+## 10. AI-First Workflow
 
-| Feature / Directive               | PowerPoint (`.pptx`)                     | Vector PDF (`.pdf`)         | HTML5 Interactive (`.html`)        |
-| :-------------------------------- | :--------------------------------------- | :-------------------------- | :--------------------------------- |
-| **Output Type**                   | Native OpenXML shapes & text             | Native vector paths & text  | Responsive interactive web app     |
-| **Headings & Cards**              | Native PPTX rounded rects                | Vector rounded boxes        | Glassmorphic CSS cards             |
-| **Data Charts (`:::chart`)**      | Editable PowerPoint Chart objects        | Native vector PDF graphics  | Responsive interactive SVG charts  |
-| **Diagrams (`:::mermaid`)**       | Formatted code container                 | Formatted code container    | Client-side Mermaid.js rendering   |
-| **Timelines (`:::timeline`)**     | Native vector shapes & connectors        | Vector nodes & step lines   | Responsive CSS timeline steps      |
-| **Comparisons (`:::compare`)**    | Multi-column vector containers           | Side-by-side vector boxes   | Dual-column comparison grid        |
-| **Math (`:::math` / `$$`)**       | Formatted Cambria Math box with accent   | Vector boxed equation paths | Glassmorphic math box container    |
-| **Transitions (`:::transition`)** | Native OpenXML slide transition effects  | Clean page sequence         | CSS3 keyframe slide animations     |
-| **Corporate Templates**           | Native `.potx` master slide reuse        | Consistent theme layout     | Themed web layout                  |
-| **Font Embedding**                | Embedded TTF/WOFF in presentation file   | Embedded PDF fonts          | Web-safe font / webfont delivery   |
-| **Badges (`:::badge`)**           | Vector pill shapes with theme colors     | Vector badge pills          | Themed inline badge elements       |
-| **Step Reveal (`:::step`)**       | Native click transitions                 | Visible print layout        | Progressive reveal keyboard clicks |
-| **Section Slides (`:::section`)** | Themed hero divider card with pill badge | Themed vector divider box   | Themed section hero card           |
-| **Table of Contents (`:::toc`)**  | 2-column numbered agenda cards           | Numbered vector list badges | Interactive responsive TOC grid    |
-| **Code Line Highlighting**        | Native line numbers & focus color        | Numbered lines & focus box  | Dimmed lines & focused step lines  |
-| **Print & PDF Export**            | Export to PPTX / PDF                     | Native vector PDF           | Clean 16:9 page print (`Ctrl+P`)   |
-| **Brand Watermark**               | Embedded footer watermark text           | Vector footer branding      | Subtle interactive corner mark     |
-| **Speaker View**                  | Native PPTX slide notes                  | Notes summary section       | Dedicated dual-screen window (`S`) |
+Yumia is designed for seamless generative AI integration:
+
+1. **Unambiguous Grammar**: Indentation and semantic keywords remove the syntactic ambiguities of nested Markdown HTML blocks.
+2. **Deterministic Schema**: Run `yumia schema` to extract the full JSON schema for LLM system prompts.
+3. **Machine-Readable Diagnostics**: Use `--json` in CI or agent loops to receive structured error codes, line numbers, and actionable suggestions.
 
 ---
 
-## Development & Testing
+## 11. Migration from YumiaMD (.yumia.md)
 
-This monorepo uses **pnpm** and **TypeScript** (strict mode).
+To convert legacy Markdown presentation decks into the native Yumia language format:
+
+```typescript
+import { migrateMarkdownToNative } from '@yumiamd/parser';
+
+const nativeSource = migrateMarkdownToNative(legacyMarkdownSource);
+```
+
+---
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on setting up the local workspace, running tests, and submitting PRs.
 
 ```bash
-# Install all dependencies across workspaces
+git clone https://github.com/biagio-scaglia/Yumia-MD.git
+cd Yumia-MD
 pnpm install
-
-# Build all packages
 pnpm build
-
-# Typecheck workspace packages
-pnpm typecheck
-
-# Run test suite with Vitest (19 test files, 80 unit & integration tests)
 pnpm test
-
-# Lint code with ESLint
-pnpm lint
-
-# Format code with Prettier
-pnpm format
-```
-
-### Release & Publish to NPM
-
-```bash
-# Increment version, build, test, publish to NPM, commit, tag, and push to GitHub:
-pnpm release patch
 ```
 
 ---
 
 ## License
 
-[MIT](LICENSE) © 2026 Biagio Scaglia
+MIT © [Biagio Scaglia](https://github.com/biagio-scaglia)

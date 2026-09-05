@@ -1,85 +1,120 @@
-# YumiaMD Architecture
+# Yumia Architecture & Compiler Design
 
-YumiaMD is designed around a strict unidirectional compiler pipeline with clear separation of concerns across parsing, semantics, layout, and rendering.
+This document details the internal architecture, data structures, and pipeline flow of **Yumia**.
 
-## Pipeline Flow
+---
+
+## 1. Architectural Pipeline
 
 ```text
-Source (.yumia.md)
-       │
-       ▼
- ┌─────────────┐
- │   parser    │  Converts Markdown + Presentation DSL into AST
- └─────────────┘
-       │
-       ▼
- ┌─────────────┐
- │     ast     │  Pure semantic presentation data structures
- └─────────────┘
-       │
-       ▼
- ┌─────────────┐
- │    theme    │  Semantic tokens (colors, typography, spacing)
- └─────────────┘
-       │
-       ▼
- ┌─────────────┐
- │   layout    │  Deterministic geometric placement (stack, columns, cards, bounds)
- └─────────────┘
-       │
-       ▼
- ┌─────────────┐
- │  renderer   │  Target-specific compiler (PPTX, PDF, HTML)
- └─────────────┘
+       ┌───────────────────────┐       ┌───────────────────────┐
+       │     Native Yumia      │       │     Markdown Yumia    │
+       │       (.yumia)        │       │       (.yumia.md)     │
+       └──────────┬────────────┘       └──────────┬────────────┘
+                  │                               │
+                  ▼                               ▼
+       ┌───────────────────────┐       ┌───────────────────────┐
+       │   NativeYumiaParser   │       │   DefaultYumiaParser  │
+       └──────────┬────────────┘       └──────────┬────────────┘
+                  │                               │
+                  └───────────────┬───────────────┘
+                                  ▼
+                       ┌─────────────────────┐
+                       │      Yumia AST      │
+                       │   (Pure Semantic)   │
+                       └──────────┬──────────┘
+                                  │
+                                  ▼
+                       ┌─────────────────────┐
+                       │   Style Resolution  │
+                       │  + Icon Resolution  │
+                       └──────────┬──────────┘
+                                  │
+                                  ▼
+                       ┌─────────────────────┐
+                       │  Deterministic IR   │
+                       │  + Layout Engine    │
+                       └──────────┬──────────┘
+                                  │
+             ┌────────────────────┼────────────────────┐
+             ▼                    ▼                    ▼
+     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
+     │ HtmlRenderer │     │ PptxRenderer │     │ PdfRenderer  │
+     └──────┬───────┘     └──────┬───────┘     └──────┬───────┘
+            ▼                    ▼                    ▼
+       Interactive           Editable              Vector
+         HTML5                 PPTX                 PDF
 ```
 
-## Packages Overview
+---
 
-| Package                  | Responsibility                                                 | Dependencies                                                                          |
-| :----------------------- | :------------------------------------------------------------- | :------------------------------------------------------------------------------------ |
-| `@yumiamd/ast`           | Pure semantic presentation AST data structures                 | None                                                                                  |
-| `@yumiamd/parser`        | Parses frontmatter, slides, and presentation markdown into AST | `@yumiamd/ast`                                                                        |
-| `@yumiamd/theme`         | Theme definitions, tokens, and default palettes                | None                                                                                  |
-| `@yumiamd/layout`        | Computes geometry, bounding boxes, overflow, and coordinates   | `@yumiamd/ast`                                                                        |
-| `@yumiamd/renderer`      | Core renderer abstraction and rendering context                | `@yumiamd/ast`, `@yumiamd/layout`, `@yumiamd/theme`                                   |
-| `@yumiamd/renderer-pptx` | **Native editable PowerPoint (`.pptx`) presentation compiler** | `@yumiamd/ast`, `@yumiamd/renderer`, `@yumiamd/layout`, `@yumiamd/theme`, `pptxgenjs` |
-| `@yumiamd/renderer-pdf`  | **Crisp Vector PDF (`.pdf`) document compiler**                | `@yumiamd/ast`, `@yumiamd/renderer`, `@yumiamd/layout`, `@yumiamd/theme`, `pdfkit`    |
-| `@yumiamd/renderer-html` | **Interactive HTML5 deck + Speaker View (`.html`) compiler**   | `@yumiamd/ast`, `@yumiamd/renderer`, `@yumiamd/layout`, `@yumiamd/theme`              |
-| `@yumiamd/core`          | High-level orchestration layer coordinating all stages         | All core packages                                                                     |
-| `yumiamd`                | Command-line developer tool (`yumia`)                          | `@yumiamd/core`, `@yumiamd/ast`, `@yumiamd/parser`, all renderers                     |
+## 2. Core Packages
 
-## Multi-Target Compiler Philosophy
+| Package                    | Purpose                                                                                  | Dependencies                                                        |
+| :------------------------- | :--------------------------------------------------------------------------------------- | :------------------------------------------------------------------ |
+| `@yumiamd/ast`             | Pure TypeScript interfaces defining the Presentation AST, elements, and factory helpers. | None (Zero-dependency)                                              |
+| `@yumiamd/theme`           | Design tokens, color palettes, and theme resolution algorithms.                          | `@yumiamd/ast`                                                      |
+| `@yumiamd/layout`          | 2D box-model geometry computation and layout coordinate engine.                          | `@yumiamd/ast`                                                      |
+| `@yumiamd/parser`          | Native Yumia indentation parser, Markdown directive parser, and legacy migrator.         | `@yumiamd/ast`                                                      |
+| `@yumiamd/renderer`        | Universal renderer interfaces, render contexts, and `IconResolver` registry.             | `@yumiamd/ast`, `@yumiamd/theme`                                    |
+| `@yumiamd/renderer-html`   | Interactive HTML5 presentation runner with KaTeX, Mermaid, and speaker mode.             | `@yumiamd/ast`, `@yumiamd/renderer`, `@yumiamd/theme`               |
+| `@yumiamd/renderer-pptx`   | Native OpenXML PowerPoint generator producing 100% editable shapes and tables.           | `pptxgenjs`, `@yumiamd/ast`, `@yumiamd/layout`, `@yumiamd/renderer` |
+| `@yumiamd/renderer-pdf`    | Vector PDF document generator with precise coordinate layout.                            | `pdfkit`, `@yumiamd/ast`, `@yumiamd/renderer`                       |
+| `@yumiamd/core`            | High-level compiler orchestration, AST linter, and schema definitions.                   | All packages above                                                  |
+| `yumiamd` (`packages/cli`) | Command line interface, live dev server, formatters, and deployment exports.             | `@yumiamd/core`                                                     |
 
-### 1. PowerPoint (`.pptx`) — Native Object Engine
+---
 
-Unlike tools that convert slides into full-screen raster images or SVG captures, YumiaMD produces **native, editable shapes and text runs** in PowerPoint:
+## 3. AST Semantic Model
 
-- **Headings and paragraphs**: Mapped to native OpenXML TextFrames with font family, size, line height, and color tokens.
-- **Lists**: Rendered as native PPTX bullet items with proper indentation levels.
-- **Cards**: Rendered as native vector rounded rectangle shapes with theme fill and border styling, containing child elements.
-- **Charts (`:::chart`)**: Compiled directly into native PowerPoint chart objects (`pptx.addChart()`) editable directly within Microsoft PowerPoint.
-- **Math (`:::math` / `$$`)**: Rendered with rounded equation container shapes, accent bar, and `Cambria Math` scientific typography.
-- **Transitions (`:::transition`)**: Slide transition effects (`push`, `fade`, `wipe`, `zoom`, `split`) mapped directly to OpenXML slide transition metadata.
-- **Corporate Templates (`.potx`)**: Full support for `--template` to inherit enterprise master slides and layout themes.
-- **Font Embedding**: Presentation package font embedding for perfect offline fidelity across client workstations.
-- **Timelines (`:::timeline`)**: Rendered with vector node circles, text frames, and connector line shapes.
-- **Comparisons (`:::compare`)**: Multi-column vector container shapes with headers and vs badges.
-- **Badges (`:::badge`)**: Vector pill shapes with theme color tokens.
-- **Speaker notes**: Attached directly to slide metadata via OpenXML note frames.
+The Abstract Syntax Tree is decoupled from any HTML or styling library. All nodes extend `BaseElement`:
 
-### 2. Interactive HTML5 (`.html`) — Interactive & Speaker Mode
+```typescript
+export interface BaseElement {
+  loc?: SourceLocation;
+  step?: number;
+}
 
-- Standalone self-contained HTML single-page app with embedded CSS design tokens.
-- Dynamic responsive SVG chart rendering and client-side Mermaid.js diagram compilation.
-- Hardware-accelerated slide transitions (`fadeIn`, `pushIn`, `wipeIn`, `zoomIn`).
-- Mathematical equation container styling (`.yumia-math-container`).
-- Step animations (`:::step`) with keyboard click triggers.
-- Multi-screen Speaker View (`S` key) communicating via `BroadcastChannel` with slide timer, notes, and preview.
-- Overview grid (`ESC` key) and full-screen presentation mode (`F` key).
+export type SlideElement =
+  | HeadingElement
+  | ParagraphElement
+  | ListElement
+  | ImageElement
+  | CardElement
+  | MetricElement
+  | CodeElement
+  | SectionElement
+  | TocElement
+  | QuoteElement
+  | TableElement
+  | ChartElement
+  | MermaidElement
+  | TimelineElement
+  | CompareElement
+  | BadgeElement
+  | MathElement
+  | IconElement
+  | GridElement
+  | StackElement
+  | ComponentElement
+  | SlotElement
+  | ColumnElement
+  | ColumnsElement;
+```
 
-### 3. Vector PDF (`.pdf`) — Pixel-Perfect Print Target
+---
 
-- Direct vector rendering via PDFKit at 1920x1080 canonical slide dimensions.
-- High-resolution typography with Unicode and emoji fallback sanitization.
-- Vector chart bars, lines, and pie slices drawn directly on PDF vector canvas.
-- Vector boxed mathematical formulas with accent indicator bars and italicized typesetting.
+## 4. Multi-Target Rendering Principles
+
+1. **HTML5 (`HtmlRenderer`)**:
+   - Compiles AST nodes into semantic HTML5 with custom CSS variables (`--yumia-primary`, `--yumia-background`).
+   - Supports keyboard navigation, fullscreen, speaker notes window, live overview, and `@media print` PDF generation.
+
+2. **PowerPoint (`PptxRenderer`)**:
+   - Elements are mapped to OpenXML shapes, text boxes, and table cells.
+   - Text remains editable with proper font faces (`headingFont`, `bodyFont`).
+   - Charts are compiled into native Microsoft Chart OpenXML structures.
+
+3. **PDF (`PdfRenderer`)**:
+   - Layout nodes are mapped into vector drawing paths and typography commands using PDFKit.
+   - Supports custom DPI coordinate scaling, page breaks, and embedded vector graphics.
