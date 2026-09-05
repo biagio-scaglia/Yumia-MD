@@ -200,6 +200,7 @@ pnpm add -g yumiamd
 
 ## 📄 Documentation
 
+- [CLI & Tooling Reference](docs/cli.md) — Complete guide to `yumia check`, `explain`, `dev`, `build`, and options.
 - [Language Specification](docs/language.md) — Complete syntax reference for Native & Markdown modes.
 - [Architecture & Design Compiler](docs/architecture.md) — Pipeline flow and internal data structures.
 - [AI Integration Guidelines](docs/ai-guidelines.md) — System prompts and deterministic generation workflows.
