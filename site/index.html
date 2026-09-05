@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary SEO Metadata -->
+    <title>Yumia — A Programming Language for Visual Documents | Created by Biagio Scaglia</title>
+    <meta
+      name="title"
+      content="Yumia — A Programming Language for Visual Documents | Created by Biagio Scaglia"
+    />
+    <meta
+      name="description"
+      content="Official documentation for Yumia by Biagio Scaglia. A declarative visual language and design compiler that transforms content and intent into native PowerPoint (.pptx), vector PDF, and interactive HTML5 presentations."
+    />
+    <meta
+      name="keywords"
+      content="Yumia, YumiaMD, Biagio Scaglia, Design Compiler, Presentation Language, PowerPoint Compiler, PPTX Generator, Vector PDF, Declarative Documents, AI Slides, AI Presentation Compiler, TypeScript, OpenXML, Developer Tooling"
+    />
+    <meta name="author" content="Biagio Scaglia" />
+    <meta name="creator" content="Biagio Scaglia" />
+    <meta name="publisher" content="Biagio Scaglia" />
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+    <link rel="canonical" href="https://yumiamd.org/" />
+
+    <!-- Open Graph / Facebook / LinkedIn -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://yumiamd.org/" />
+    <meta property="og:site_name" content="Yumia Documentation" />
+    <meta property="og:title" content="Yumia — A Programming Language for Visual Documents" />
+    <meta
+      property="og:description"
+      content="Describe what you want to communicate. Yumia compiles communicative intent into 100% native editable PowerPoint (.pptx), vector PDF, and interactive HTML5 slides. Created by Biagio Scaglia."
+    />
+    <meta property="og:image" content="https://yumiamd.org/favicon.svg" />
+    <meta property="og:image:alt" content="Yumia Alchemical Logo" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="article:author" content="Biagio Scaglia" />
+
+    <!-- Twitter / X Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://yumiamd.org/" />
+    <meta name="twitter:title" content="Yumia — A Programming Language for Visual Documents" />
+    <meta
+      name="twitter:description"
+      content="A declarative visual language and multi-target compiler for presentations, documents, and reports. Created by Biagio Scaglia."
+    />
+    <meta name="twitter:image" content="https://yumiamd.org/favicon.svg" />
+    <meta name="twitter:creator" content="@biagioscaglia" />
+    <meta name="twitter:site" content="@yumiamd" />
+
+    <!-- PWA & Mobile Icons -->
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="site.webmanifest" />
+    <meta name="theme-color" content="#FF2E88" />
+
+    <!-- JSON-LD Structured Data Schema -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "SoftwareApplication",
+            "name": "Yumia",
+            "alternateName": "YumiaMD",
+            "operatingSystem": "Cross-platform (Windows, macOS, Linux)",
+            "applicationCategory": "DeveloperApplication",
+            "description": "A declarative visual language and compiler that transforms content and design intent into native editable PowerPoint (.pptx), vector PDF, and interactive HTML5 presentations.",
+            "url": "https://yumiamd.org",
+            "author": {
+              "@type": "Person",
+              "name": "Biagio Scaglia",
+              "url": "https://github.com/biagio-scaglia"
+            },
+            "license": "https://opensource.org/licenses/MIT",
+            "softwareVersion": "0.1.24"
+          },
+          {
+            "@type": "Person",
+            "name": "Biagio Scaglia",
+            "url": "https://github.com/biagio-scaglia",
+            "jobTitle": "Software Architect & Creator of Yumia",
+            "sameAs": ["https://github.com/biagio-scaglia", "https://www.npmjs.com/package/yumiamd"]
+          },
+          {
+            "@type": "WebSite",
+            "url": "https://yumiamd.org/",
+            "name": "Yumia Documentation",
+            "description": "The official documentation website for Yumia by Biagio Scaglia.",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://yumiamd.org/#search?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ]
+      }
+    </script>
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/design-system.css" />
+
+    <!-- Google Fonts for Editorial Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Site Header -->
+    <header class="site-header" role="banner">
+      <div class="brand-container">
+        <button
+          id="mobileMenuToggle"
+          class="icon-btn mobile-menu-toggle"
+          aria-label="Toggle navigation menu"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          >
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+
+        <a href="#overview" class="brand-logo" aria-label="Yumia Documentation Home">
+          <!-- Atelier Yumia Alchemical Logo Mark -->
+          <img
+            src="favicon.svg"
+            alt="Yumia Logo"
+            width="32"
+            height="32"
+            style="filter: drop-shadow(0 0 8px rgba(255, 46, 136, 0.4))"
+          />
+          <span
+            style="
+              background: linear-gradient(135deg, #fff4d0 0%, #ff2e88 50%, #00f0ff 100%);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              font-weight: 800;
+              letter-spacing: -0.02em;
+            "
+            >Yumia</span
+          >
+        </a>
+        <span class="brand-badge" title="Official Release v0.1.24">v0.1.24</span>
+      </div>
+
+      <div class="header-actions">
+        <!-- Search Trigger -->
+        <button id="searchTrigger" class="search-trigger" aria-label="Search documentation">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span>Search docs...</span>
+          <kbd>/</kbd>
+        </button>
+
+        <!-- Theme Switcher -->
+        <button
+          id="themeToggleBtn"
+          class="icon-btn"
+          aria-label="Toggle dark/light theme"
+          title="Toggle theme (Press T)"
+        >
+          <span id="themeToggleIcon">☀️</span>
+        </button>
+
+        <!-- GitHub Link -->
+        <a
+          href="https://github.com/biagio-scaglia/Yumia-MD"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="icon-btn"
+          aria-label="Yumia on GitHub (Biagio Scaglia)"
+          title="GitHub Repository"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"
+            />
+          </svg>
+        </a>
+      </div>
+    </header>
+
+    <!-- Docs Layout Container -->
+    <div class="docs-layout">
+      <!-- Left Navigation Sidebar -->
+      <aside
+        id="docsSidebar"
+        class="docs-sidebar"
+        role="navigation"
+        aria-label="Documentation navigation"
+      >
+        <nav id="sidebarNav">
+          <!-- Dynamically rendered categories & links -->
+        </nav>
+      </aside>
+
+      <!-- Center Main Content -->
+      <main class="docs-main" role="main">
+        <article id="docsContent" class="docs-content">
+          <!-- Dynamically rendered content section -->
+        </article>
+      </main>
+
+      <!-- Right Table of Contents -->
+      <aside class="docs-toc" role="complementary" aria-label="On this page">
+        <div class="toc-title">On this page</div>
+        <ul id="tocList" class="toc-list">
+          <!-- Dynamically generated TOC links -->
+        </ul>
+      </aside>
+    </div>
+
+    <!-- Search Modal Dialog -->
+    <div
+      id="searchModal"
+      class="search-modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Documentation Search"
+    >
+      <div class="search-modal">
+        <div class="search-input-wrapper">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input
+            type="text"
+            id="searchInput"
+            class="search-input"
+            placeholder="Search documentation, commands, primitives, author (Biagio Scaglia)..."
+            autocomplete="off"
+          />
+          <kbd
+            style="
+              font-size: 0.75rem;
+              color: var(--yumia-text-dim);
+              background: var(--yumia-surface-raised);
+              padding: 0.2rem 0.4rem;
+              border-radius: 4px;
+            "
+            >ESC</kbd
+          >
+        </div>
+        <ul id="searchResults" class="search-results">
+          <!-- Real-time search results -->
+        </ul>
+      </div>
+    </div>
+
+    <!-- JavaScript Module -->
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
