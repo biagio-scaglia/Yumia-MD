@@ -673,9 +673,10 @@ export class DefaultYumiaParser implements YumiaParser {
           };
           elements.push(el);
         } else if (directiveName === 'section') {
-          const titleMatch = directiveArg.match(/\btitle=(?:"([^"]*)"|'([^']*)'|(\S+))/);
-          const subtitleMatch = directiveArg.match(/\bsubtitle=(?:"([^"]*)"|'([^']*)'|(\S+))/);
-          const numberMatch = directiveArg.match(/\bnumber=(?:"([^"]*)"|'([^']*)'|(\S+))/);
+          const allSectionText = [directiveArg, ...blockLines].join(' ');
+          const titleMatch = allSectionText.match(/\btitle=(?:"([^"]*)"|'([^']*)'|(\S+))/);
+          const subtitleMatch = allSectionText.match(/\bsubtitle=(?:"([^"]*)"|'([^']*)'|(\S+))/);
+          const numberMatch = allSectionText.match(/\bnumber=(?:"([^"]*)"|'([^']*)'|(\S+))/);
           let subtitle = subtitleMatch
             ? (subtitleMatch[1] ?? subtitleMatch[2] ?? subtitleMatch[3])
             : undefined;
@@ -690,10 +691,13 @@ export class DefaultYumiaParser implements YumiaParser {
               .trim();
             title = stripped.replace(/^['"](.*)['"]$/, '$1').trim() || undefined;
           }
-          if (blockLines.length > 0) {
-            if (!title) title = blockLines[0]?.trim() || '';
-            if (!subtitle && blockLines.length > 1)
-              subtitle = blockLines.slice(1).join('\n').trim();
+          if (!title && blockLines.length > 0) {
+            const plainLines = blockLines.filter(
+              (l) => !l.includes('subtitle=') && !l.includes('number=')
+            );
+            if (plainLines.length > 0) title = plainLines[0]?.trim();
+            if (!subtitle && plainLines.length > 1)
+              subtitle = plainLines.slice(1).join('\n').trim();
           }
           const el = createSection(title || 'Section', subtitle, number);
           el.loc = {

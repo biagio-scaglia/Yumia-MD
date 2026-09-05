@@ -293,9 +293,6 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       margin-bottom: 0.8em;
       overflow-wrap: break-word;
     }
-      color: var(--yumia-text);
-      margin-bottom: 0.8em;
-    }
 
     p strong, li strong {
       color: var(--yumia-primary);
