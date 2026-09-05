@@ -56,6 +56,8 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     const aspectRatio = presentation.metadata.aspectRatio || '16:9';
     const is43 = aspectRatio === '4:3';
     const ratioAspect = is43 ? '4 / 3' : '16 / 9';
+    const ratioW = is43 ? 4 : 16;
+    const ratioH = is43 ? 3 : 9;
 
     const options = (context.options || {}) as HtmlRenderOptions;
     const liveReloadScript = options.liveReload
@@ -203,6 +205,8 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       --yumia-radius-card: ${theme.components?.card?.borderRadius ?? theme.radius.default}px;
       --yumia-shadow-glow: ${theme.shadows?.glow || 'none'};
       --yumia-ratio: ${ratioAspect};
+      --yumia-ratio-w: ${ratioW};
+      --yumia-ratio-h: ${ratioH};
     }
 
     * {
@@ -224,10 +228,24 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       user-select: none;
     }
 
+    #deck-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #050508;
+    }
+
     #yumia-deck {
       position: relative;
       width: 100%;
       height: 100%;
+      max-width: calc(100vh * var(--yumia-ratio-w) / var(--yumia-ratio-h));
+      max-height: calc(100vw * var(--yumia-ratio-h) / var(--yumia-ratio-w));
+      aspect-ratio: var(--yumia-ratio);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -235,8 +253,7 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
 
     .yumia-slide-wrapper {
       position: absolute;
-      top: 0;
-      left: 0;
+      inset: 0;
       width: 100%;
       height: 100%;
       aspect-ratio: var(--yumia-ratio);
