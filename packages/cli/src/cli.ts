@@ -10,7 +10,7 @@ import { HtmlRenderer } from '@yumiamd/renderer-html';
 import { PdfRenderer } from '@yumiamd/renderer-pdf';
 import { startDevServer } from './dev-server.js';
 
-export const VERSION = '0.1.23';
+export const VERSION = '0.1.24';
 
 export function printHelp(): string {
   return `
