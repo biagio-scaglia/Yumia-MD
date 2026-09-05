@@ -1,15 +1,19 @@
-# Yumia
+<div align="center">
+  <img src="site/favicon.svg" alt="Yumia Alchemical Logo" width="80" height="80" />
+  <h1>Yumia</h1>
+  <p><strong>A programming language for visual documents.</strong></p>
+  <p>Describe what you want to communicate. Yumia handles structure, composition, design, and output.</p>
 
-> **A programming language for visual documents.**  
-> Describe what you want to communicate. Yumia handles structure, composition, design, and output.
-
-[![CI](https://github.com/biagio-scaglia/Yumia-MD/actions/workflows/ci.yml/badge.svg)](https://github.com/biagio-scaglia/Yumia-MD/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/yumiamd.svg?color=blue)](https://www.npmjs.com/package/yumiamd)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+  <p>
+    <a href="https://github.com/biagio-scaglia/Yumia-MD/actions/workflows/ci.yml"><img src="https://github.com/biagio-scaglia/Yumia-MD/actions/workflows/ci.yml/badge.svg" alt="CI Status" /></a>
+    <a href="https://www.npmjs.com/package/yumiamd"><img src="https://img.shields.io/npm/v/yumiamd.svg?color=blue" alt="npm version" /></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
+  </p>
+</div>
 
 ---
 
-## ⚡ One Source. Every Visual Format.
+## One Source. Every Visual Format.
 
 Traditional slide tools force you to arrange raw geometry (`rectangle`, `textbox`, `shape`, `line`).  
 **Yumia compiles communicative intent (`hero`, `metric`, `compare`, `timeline`, `card`, `chart`) into structured visual artifacts.**
@@ -65,7 +69,7 @@ yumia dev presentation.yumia --open
 
 ---
 
-## 🧠 The Paradigm Shift
+## The Paradigm Shift
 
 | Feature               | Legacy Presentation Tools (PowerPoint, Keynote) | Markdown Slide Generators (Marp, Slidev) | Yumia (Design Compiler)                                     |
 | :-------------------- | :---------------------------------------------- | :--------------------------------------- | :---------------------------------------------------------- |
@@ -78,7 +82,7 @@ yumia dev presentation.yumia --open
 
 ---
 
-## 🔍 Design Intelligence: `yumia explain`
+## Design Intelligence: `yumia explain`
 
 Yumia is a **design-aware compiler**. Run `yumia explain` to audit visual rhythm, cognitive density, typography hierarchy, and composition balance before publishing:
 
@@ -121,7 +125,7 @@ Design Suggestions
 
 ---
 
-## 🛠️ DevTools for Documents: Interactive Visual Inspector
+## DevTools for Documents: Interactive Visual Inspector
 
 Presentations running in HTML mode (`yumia dev` or `--format html`) include an embedded **Design HUD**:
 
@@ -131,7 +135,7 @@ Presentations running in HTML mode (`yumia dev` or `--format html`) include an e
 
 ---
 
-## 📐 Semantic Primitives
+## Semantic Primitives
 
 Yumia provides purpose-built intent primitives that adapt across themes and aspect ratios:
 
@@ -152,7 +156,7 @@ Yumia provides purpose-built intent primitives that adapt across themes and aspe
 
 ---
 
-## 🤖 AI Ecosystem: Deterministic by Design
+## AI Ecosystem: Deterministic by Design
 
 Yumia was architected from day one as the ideal compilation target for Large Language Models (LLMs):
 
@@ -163,7 +167,7 @@ Yumia was architected from day one as the ideal compilation target for Large Lan
 
 ---
 
-## 🗺️ Architectural Roadmap
+## Architectural Roadmap
 
 - [x] **Phase 1 — Core Foundation**: Pure semantic AST, Native (`.yumia`) & Markdown (`.yumia.md`) parsers, deterministic 2D layout engine, multi-target renderers (PPTX, PDF, HTML).
 - [x] **Phase 2 — Design System & Composition Engine**: Intent primitives (`hero`, `callout`, `compare`, `timeline`, `metric`, `chart`), theme token scales, WCAG AAA contrast checker.
@@ -173,7 +177,7 @@ Yumia was architected from day one as the ideal compilation target for Large Lan
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Zero Install (via `npx`)
 
@@ -198,7 +202,7 @@ pnpm add -g yumiamd
 
 ---
 
-## 📄 Documentation
+## Documentation
 
 - [CLI & Tooling Reference](docs/cli.md) — Complete guide to `yumia check`, `explain`, `dev`, `build`, and options.
 - [Language Specification](docs/language.md) — Complete syntax reference for Native & Markdown modes.
@@ -209,7 +213,7 @@ pnpm add -g yumiamd
 
 ---
 
-## 👥 Contributing
+## Contributing
 
 Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for local workspace setup and guidelines.
 
@@ -223,6 +227,6 @@ pnpm test
 
 ---
 
-## 📜 License
+## License
 
 MIT © [Biagio Scaglia](https://github.com/biagio-scaglia)
