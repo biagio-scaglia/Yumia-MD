@@ -1,5 +1,6 @@
 import {
   BadgeElement,
+  CalloutElement,
   CardElement,
   ChartDataSeries,
   ChartElement,
@@ -11,6 +12,7 @@ import {
   GridElement,
   GroupElement,
   HeadingElement,
+  HeroElement,
   IconElement,
   ImageElement,
   LayoutDirectiveElement,
@@ -359,5 +361,40 @@ export function createSlot(name?: string, elements?: SlideElement[]): SlotElemen
     type: 'slot',
     ...(name ? { name } : {}),
     ...(elements ? { elements } : {}),
+  };
+}
+
+export function createHero(
+  title: string,
+  subtitle?: string | undefined,
+  elements?: SlideElement[] | undefined,
+  options?: {
+    tagline?: string | undefined;
+    align?: 'left' | 'center' | 'right' | undefined;
+    emphasis?: string | undefined;
+    density?: string | undefined;
+  }
+): HeroElement {
+  return {
+    type: 'hero',
+    title,
+    ...(subtitle ? { subtitle } : {}),
+    ...(elements ? { elements } : {}),
+    ...(options || {}),
+  };
+}
+
+export function createCallout(
+  text: string,
+  severity: CalloutElement['severity'] = 'info',
+  title?: string,
+  icon?: string
+): CalloutElement {
+  return {
+    type: 'callout',
+    text,
+    severity,
+    ...(title ? { title } : {}),
+    ...(icon ? { icon } : {}),
   };
 }

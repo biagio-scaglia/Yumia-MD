@@ -1,6 +1,7 @@
 import PDFDocument from 'pdfkit';
 import {
   BadgeElement,
+  CalloutElement,
   CardElement,
   ChartElement,
   CodeElement,
@@ -9,6 +10,7 @@ import {
   CompareElement,
   GridElement,
   HeadingElement,
+  HeroElement,
   IconElement,
   ListElement,
   MathElement,
@@ -151,6 +153,64 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
     presentation?: Presentation
   ): number {
     switch (element.type) {
+      case 'hero': {
+        const hero = element as HeroElement;
+        let curY = y;
+        if (hero.tagline) {
+          doc.font('Helvetica-Bold').fontSize(11).fillColor(theme.colors.primary);
+          doc.text(this.stripFormatting(hero.tagline).toUpperCase(), x, curY, { width });
+          curY += 20;
+        }
+        doc.font('Helvetica-Bold').fontSize(34).fillColor(theme.colors.text);
+        doc.text(this.stripFormatting(hero.title), x, curY, { width, lineGap: 6 });
+        curY += doc.heightOfString(this.stripFormatting(hero.title), { width }) + 8;
+        if (hero.subtitle) {
+          doc
+            .font('Helvetica')
+            .fontSize(16)
+            .fillColor(theme.colors.muted || '#888888');
+          doc.text(this.stripFormatting(hero.subtitle), x, curY, { width, lineGap: 4 });
+          curY += doc.heightOfString(this.stripFormatting(hero.subtitle), { width }) + 12;
+        }
+        if (hero.elements) {
+          for (const child of hero.elements) {
+            curY = this.renderElement(doc, child, x, curY, width, theme, presentation) + 10;
+          }
+        }
+        return curY;
+      }
+
+      case 'callout': {
+        const c = element as CalloutElement;
+        const sevColor =
+          c.severity === 'warning'
+            ? theme.colors.warning || '#f59e0b'
+            : c.severity === 'danger'
+              ? theme.colors.danger || '#ef4444'
+              : c.severity === 'success'
+                ? theme.colors.success || '#10b981'
+                : theme.colors.info || theme.colors.primary;
+
+        doc.font('Helvetica').fontSize(12);
+        const textH = doc.heightOfString(this.stripFormatting(c.text), { width: width - 30 });
+        const titleH = c.title ? 20 : 0;
+        const totalH = textH + titleH + 16;
+
+        doc.roundedRect(x, y, width, totalH, 6).fill(theme.colors.surface || '#151522');
+        doc.rect(x, y, 4, totalH).fill(sevColor);
+
+        let curY = y + 8;
+        if (c.title) {
+          doc.font('Helvetica-Bold').fontSize(12).fillColor(sevColor);
+          doc.text(this.stripFormatting(c.title), x + 16, curY, { width: width - 26 });
+          curY += 18;
+        }
+        doc.font('Helvetica').fontSize(12).fillColor(theme.colors.text);
+        doc.text(this.stripFormatting(c.text), x + 16, curY, { width: width - 26 });
+
+        return y + totalH + 8;
+      }
+
       case 'heading': {
         const h = element as HeadingElement;
         const fontSize = h.level === 1 ? 28 : h.level === 2 ? 22 : 18;

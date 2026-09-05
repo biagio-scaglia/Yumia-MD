@@ -291,11 +291,12 @@ Opening slide introducing the presentation deck.
     }
   }
 
-  if (command === 'lint') {
+  if (command === 'lint' || command === 'check') {
     if (!target) {
-      const msg = 'Error: Please specify a file to lint.';
+      const msg = 'Error: Please specify a file to check or lint.';
       return { exitCode: 1, output: isJson ? JSON.stringify({ error: msg }) : msg };
     }
+    const isOptimize = args.includes('--optimize');
     try {
       const source = readFileSync(target, 'utf-8');
       const compiler = new YumiaCompiler();
@@ -307,6 +308,7 @@ Opening slide introducing the presentation deck.
           output: JSON.stringify(
             {
               target,
+              optimize: isOptimize,
               ...report,
             },
             null,
@@ -315,10 +317,16 @@ Opening slide introducing the presentation deck.
         };
       }
 
+      const scoreStr = `Visual Quality Score: ${report.score}/100`;
+      const suggestionLines =
+        report.suggestions && report.suggestions.length > 0
+          ? `\nDesign Suggestions:\n${report.suggestions.map((s) => `  → ${s}`).join('\n')}`
+          : '';
+
       if (report.issueCount === 0) {
         return {
           exitCode: 0,
-          output: `✓ Yumia Lint: All ${report.totalSlides} slide(s) passed with 0 issues.`,
+          output: `✓ Yumia Lint / Design Audit: All ${report.totalSlides} slide(s) passed with 0 issues.\n${scoreStr}${suggestionLines}`,
         };
       } else {
         const issueLines: string[] = [];
@@ -337,7 +345,7 @@ Opening slide introducing the presentation deck.
 
         return {
           exitCode,
-          output: `Yumia Lint Report for '${target}':\n\n${issueLines.join('\n')}\n\n${summary}${isStrict && report.warnings.length > 0 ? ' (failed due to --strict)' : ''}`,
+          output: `Yumia Design Audit Report for '${target}':\n\n${issueLines.join('\n')}\n\n${summary}\n${scoreStr}${suggestionLines}${isStrict && report.warnings.length > 0 ? '\n(failed due to --strict)' : ''}`,
         };
       }
     } catch (err) {
@@ -347,7 +355,7 @@ Opening slide introducing the presentation deck.
       }
       return {
         exitCode: 1,
-        output: `✗ Linting failed: ${msg}`,
+        output: `✗ Design audit failed: ${msg}`,
       };
     }
   }

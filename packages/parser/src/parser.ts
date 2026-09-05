@@ -1,4 +1,5 @@
 import {
+  CalloutElement,
   ChartDataSeries,
   ChartElement,
   ColumnElement,
@@ -14,6 +15,7 @@ import {
   TimelineItem,
   TocItem,
   createBadge,
+  createCallout,
   createCard,
   createChart,
   createCode,
@@ -22,6 +24,7 @@ import {
   createCompare,
   createGrid,
   createHeading,
+  createHero,
   createIcon,
   createImage,
   createLayoutDirective,
@@ -597,6 +600,59 @@ export class DefaultYumiaParser implements YumiaParser {
             .map((l) => l.trim())
             .filter(Boolean)
             .join('\n');
+        } else if (directiveName === 'hero') {
+          const subMatch = directiveArg.match(/subtitle=['"](.*?)['"]/);
+          const tagMatch = directiveArg.match(/tagline=['"](.*?)['"]/);
+          const alignMatch = directiveArg.match(/align=['"](.*?)['"]/);
+          const emphMatch = directiveArg.match(/emphasis=['"](.*?)['"]/);
+          const densMatch = directiveArg.match(/density=['"](.*?)['"]/);
+          const title =
+            directiveArg
+              .replace(/(?:subtitle|tagline|align|emphasis|density)=['"].*?['"]/g, '')
+              .trim()
+              .replace(/^['"](.*)['"]$/, '$1') || 'Hero';
+          const { elements: heroElements } = this.parseLines(blockLines, blockBaseLine);
+          const el = createHero(
+            title,
+            subMatch ? subMatch[1] : undefined,
+            heroElements.length > 0 ? heroElements : undefined,
+            {
+              tagline: tagMatch ? tagMatch[1] : undefined,
+              align: alignMatch ? (alignMatch[1] as 'left' | 'center' | 'right') : undefined,
+              emphasis: emphMatch ? emphMatch[1] : undefined,
+              density: densMatch ? densMatch[1] : undefined,
+            }
+          );
+          el.loc = {
+            start: { line: directiveStartLine, column: 1 },
+            end: { line: baseLine + i - 1, column: 1 },
+          };
+          elements.push(el);
+        } else if (directiveName === 'callout') {
+          const titleMatch = directiveArg.match(/title=['"](.*?)['"]/);
+          const sevMatch = directiveArg.match(/(?:severity|variant)=['"](.*?)['"]/);
+          const iconMatch = directiveArg.match(/icon=['"](.*?)['"]/);
+          const calloutText =
+            blockLines.length > 0
+              ? blockLines
+                  .map((l) => l.trim())
+                  .join(' ')
+                  .trim()
+              : directiveArg
+                  .replace(/(?:title|severity|variant|icon)=['"].*?['"]/g, '')
+                  .trim()
+                  .replace(/^['"](.*)['"]$/, '$1') || 'Note';
+          const el = createCallout(
+            calloutText,
+            (sevMatch ? sevMatch[1] : 'info') as CalloutElement['severity'],
+            titleMatch ? titleMatch[1] : undefined,
+            iconMatch ? iconMatch[1] : undefined
+          );
+          el.loc = {
+            start: { line: directiveStartLine, column: 1 },
+            end: { line: baseLine + i - 1, column: 1 },
+          };
+          elements.push(el);
         } else if (directiveName === 'card') {
           let cardTitle: string | undefined;
           let cardVariant: string | undefined;

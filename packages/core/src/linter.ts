@@ -22,9 +22,11 @@ export interface LintReport {
   passed: boolean;
   totalSlides: number;
   issueCount: number;
+  score: number;
   errors: LintRuleResult[];
   warnings: LintRuleResult[];
   infos: LintRuleResult[];
+  suggestions: string[];
 }
 
 export interface LintOptions {
@@ -32,6 +34,7 @@ export interface LintOptions {
   strict?: boolean;
   includeOptionalNotesRule?: boolean;
   layoutEngine?: LayoutEngine;
+  themeColors?: { background?: string; text?: string; primary?: string };
 }
 
 export class YumiaLinter {
@@ -173,13 +176,41 @@ export class YumiaLinter {
     const warnings = issues.filter((i) => i.severity === 'warning');
     const infos = issues.filter((i) => i.severity === 'info');
 
+    const score = Math.max(
+      0,
+      Math.min(100, 100 - errors.length * 20 - warnings.length * 5 - infos.length * 1)
+    );
+
+    const suggestions: string[] = [];
+    if (warnings.some((w) => w.code === 'YUM001')) {
+      suggestions.push('Reduce text length or split overflowing slides using slide breaks.');
+    }
+    if (warnings.some((w) => w.code === 'YUM004')) {
+      suggestions.push(
+        'High density detected: consider converting dense bullet lists into cards or a multi-column layout.'
+      );
+    }
+    if (warnings.some((w) => w.code === 'YUM007')) {
+      suggestions.push('Add alt="description" to all images for full accessibility.');
+    }
+    if (warnings.some((w) => w.code === 'YUM010')) {
+      suggestions.push(
+        'Increase color contrast between text and background to meet WCAG AA (4.5:1).'
+      );
+    }
+    if (suggestions.length === 0 && score === 100) {
+      suggestions.push('Design layout and visual hierarchy are optimal.');
+    }
+
     return {
       passed: options.strict ? errors.length === 0 && warnings.length === 0 : errors.length === 0,
       totalSlides: presentation.slides.length,
       issueCount: issues.length,
+      score,
       errors,
       warnings,
       infos,
+      suggestions,
     };
   }
 

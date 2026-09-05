@@ -1,5 +1,6 @@
 import {
   BadgeElement,
+  CalloutElement,
   CardElement,
   ChartDataSeries,
   ColumnElement,
@@ -10,6 +11,7 @@ import {
   SlideElement,
   TimelineItem,
   createBadge,
+  createCallout,
   createCard,
   createChart,
   createCode,
@@ -18,6 +20,7 @@ import {
   createCompare,
   createGrid,
   createHeading,
+  createHero,
   createIcon,
   createImage,
   createList,
@@ -188,6 +191,79 @@ export class NativeYumiaParser {
     const baseIndent = tok.indent;
 
     switch (tok.command) {
+      case 'hero': {
+        const titleMatch = tok.args.match(/^(?:title=)?["']([^"']+)["']/);
+        const subMatch = tok.args.match(/\bsubtitle=["']([^"']+)["']/);
+        const tagMatch = tok.args.match(/\btagline=["']([^"']+)["']/);
+        const alignMatch = tok.args.match(/\balign=["']?([^"'\s]+)["']?/);
+        const emphMatch = tok.args.match(/\bemphasis=["']?([^"'\s]+)["']?/);
+        const densMatch = tok.args.match(/\bdensity=["']?([^"'\s]+)["']?/);
+
+        const title = titleMatch ? titleMatch[1]! : this.stripQuotes(tok.args) || 'Hero';
+        const children: SlideElement[] = [];
+        let nextIdx = idx + 1;
+
+        while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
+          const childRes = this.parseElement(tokens, nextIdx);
+          if (childRes) {
+            children.push(childRes.element);
+            nextIdx = childRes.nextIdx;
+          } else {
+            nextIdx++;
+          }
+        }
+
+        const heroEl = createHero(
+          title,
+          subMatch ? subMatch[1] : undefined,
+          children.length > 0 ? children : undefined,
+          {
+            tagline: tagMatch ? tagMatch[1] : undefined,
+            align: alignMatch ? (alignMatch[1] as 'left' | 'center' | 'right') : undefined,
+            emphasis: emphMatch ? emphMatch[1] : undefined,
+            density: densMatch ? densMatch[1] : undefined,
+          }
+        );
+        heroEl.loc = {
+          start: { line: tok.lineNum, column: 1 },
+          end: { line: tok.lineNum, column: tok.text.length },
+        };
+        return { element: heroEl, nextIdx };
+      }
+
+      case 'callout': {
+        const titleMatch = tok.args.match(/title=["']([^"']+)["']/);
+        const sevMatch = tok.args.match(/\b(?:severity|variant)=["']?([^"'\s]+)["']?/);
+        const iconMatch = tok.args.match(/\bicon=["']?([^"'\s]+)["']?/);
+        let text = this.stripQuotes(
+          tok.args
+            .replace(/title=["'][^"']+["']/, '')
+            .replace(/(?:severity|variant|icon)=["']?[^"'\s]+["']?/g, '')
+        );
+
+        let nextIdx = idx + 1;
+        if (!text) {
+          const cLines: string[] = [];
+          while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
+            cLines.push(tokens[nextIdx]!.text);
+            nextIdx++;
+          }
+          text = cLines.join(' ');
+        }
+
+        const calloutEl = createCallout(
+          text || 'Note',
+          (sevMatch ? sevMatch[1] : 'info') as CalloutElement['severity'],
+          titleMatch ? titleMatch[1] : undefined,
+          iconMatch ? iconMatch[1] : undefined
+        );
+        calloutEl.loc = {
+          start: { line: tok.lineNum, column: 1 },
+          end: { line: tok.lineNum, column: tok.text.length },
+        };
+        return { element: calloutEl, nextIdx };
+      }
+
       case 'heading':
       case 'h1':
       case 'h2':
@@ -195,7 +271,12 @@ export class NativeYumiaParser {
         const level =
           tok.command === 'h1' ? 1 : tok.command === 'h2' ? 2 : tok.command === 'h3' ? 3 : 1;
         const text = this.stripQuotes(tok.args);
-        return { element: createHeading(text, level), nextIdx: idx + 1 };
+        const el = createHeading(text, level);
+        el.loc = {
+          start: { line: tok.lineNum, column: 1 },
+          end: { line: tok.lineNum, column: tok.text.length },
+        };
+        return { element: el, nextIdx: idx + 1 };
       }
 
       case 'paragraph':

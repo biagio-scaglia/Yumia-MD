@@ -1,11 +1,13 @@
 import pptxgen from 'pptxgenjs';
 import {
   BadgeElement,
+  CalloutElement,
   CardElement,
   ChartElement,
   CodeElement,
   CompareElement,
   HeadingElement,
+  HeroElement,
   IconElement,
   ImageElement,
   ListElement,
@@ -234,6 +236,12 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         break;
       case 'table':
         this.renderTable(pptxSlide, element, rect, theme);
+        break;
+      case 'hero':
+        this.renderHero(pptxSlide, pptx, node, scaleX, scaleY, theme, presentation);
+        break;
+      case 'callout':
+        this.renderCallout(pptxSlide, pptx, element as CalloutElement, rect, theme);
         break;
       case 'image':
         this.renderImage(pptxSlide, element, rect);
@@ -837,6 +845,126 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       align: 'center',
       valign: 'middle',
     });
+  }
+
+  private renderCallout(
+    pptxSlide: PptxSlide,
+    pptx: PptxInstance,
+    callout: CalloutElement,
+    rect: { x: number; y: number; w: number; h: number },
+    theme: YumiaTheme
+  ): void {
+    const sevColor = this.cleanHexColor(
+      callout.severity === 'warning'
+        ? theme.colors.warning || '#f59e0b'
+        : callout.severity === 'danger'
+          ? theme.colors.danger || '#ef4444'
+          : callout.severity === 'success'
+            ? theme.colors.success || '#10b981'
+            : theme.colors.info || theme.colors.primary
+    );
+
+    pptxSlide.addShape(pptx.ShapeType.roundRect, {
+      x: rect.x,
+      y: rect.y,
+      w: rect.w,
+      h: rect.h,
+      fill: { color: this.cleanHexColor(theme.colors.surface) },
+      line: { color: sevColor, width: 2 },
+      rectRadius: 0.08,
+    });
+
+    const titleH = callout.title ? 0.35 : 0;
+    if (callout.title) {
+      pptxSlide.addText(callout.title, {
+        x: rect.x + 0.15,
+        y: rect.y + 0.08,
+        w: rect.w - 0.3,
+        h: 0.3,
+        fontSize: 13,
+        bold: true,
+        color: sevColor,
+        fontFace: cleanFontFace(theme.typography.headingFont),
+      });
+    }
+
+    pptxSlide.addText(callout.text, {
+      x: rect.x + 0.15,
+      y: rect.y + titleH + 0.08,
+      w: rect.w - 0.3,
+      h: rect.h - titleH - 0.16,
+      fontSize: 12,
+      color: this.cleanHexColor(theme.colors.text),
+      fontFace: cleanFontFace(theme.typography.bodyFont),
+      valign: 'top',
+    });
+  }
+
+  private renderHero(
+    pptxSlide: PptxSlide,
+    pptx: PptxInstance,
+    node: LayoutNode,
+    scaleX: number,
+    scaleY: number,
+    theme: YumiaTheme,
+    presentation?: Presentation
+  ): void {
+    const hero = node.element as HeroElement;
+    const rect = {
+      x: node.bounds.x * scaleX,
+      y: node.bounds.y * scaleY,
+      w: node.bounds.width * scaleX,
+      h: node.bounds.height * scaleY,
+    };
+
+    let curY = rect.y;
+    if (hero.tagline) {
+      pptxSlide.addText(hero.tagline.toUpperCase(), {
+        x: rect.x,
+        y: curY,
+        w: rect.w,
+        h: 0.35,
+        fontSize: 11,
+        bold: true,
+        color: this.cleanHexColor(theme.colors.primary),
+        fontFace: cleanFontFace(theme.typography.headingFont),
+        align: (hero.align as 'left' | 'center' | 'right') || 'center',
+      });
+      curY += 0.4;
+    }
+
+    pptxSlide.addText(hero.title, {
+      x: rect.x,
+      y: curY,
+      w: rect.w,
+      h: 0.9,
+      fontSize: 32,
+      bold: true,
+      color: this.cleanHexColor(theme.colors.text),
+      fontFace: cleanFontFace(theme.typography.headingFont),
+      align: (hero.align as 'left' | 'center' | 'right') || 'center',
+    });
+    curY += 0.95;
+
+    if (hero.subtitle) {
+      pptxSlide.addText(hero.subtitle, {
+        x: rect.x,
+        y: curY,
+        w: rect.w,
+        h: 0.6,
+        fontSize: 16,
+        color: this.cleanHexColor(theme.colors.muted || theme.colors.text),
+        fontFace: cleanFontFace(theme.typography.bodyFont),
+        align: (hero.align as 'left' | 'center' | 'right') || 'center',
+      });
+      curY += 0.65;
+    }
+
+    if (node.children) {
+      for (const childNode of node.children) {
+        this.renderNode(pptxSlide, pptx, childNode, scaleX, scaleY, theme, presentation);
+      }
+    }
   }
 
   private renderChart(

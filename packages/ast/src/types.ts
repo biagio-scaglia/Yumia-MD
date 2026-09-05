@@ -76,8 +76,30 @@ export interface SlideBackground {
 export type TextAlignment = 'left' | 'center' | 'right' | 'justify';
 
 export interface BaseElement {
-  loc?: SourceLocation;
-  step?: number;
+  id?: string | undefined;
+  loc?: SourceLocation | undefined;
+  step?: number | undefined;
+  semanticRole?: string | undefined;
+  emphasis?: 'primary' | 'secondary' | 'accent' | 'muted' | 'high' | 'low' | string | undefined;
+  density?: 'compact' | 'comfortable' | 'spacious' | string | undefined;
+  hierarchy?: 'dominant' | 'standard' | 'subtle' | string | undefined;
+}
+
+export interface HeroElement extends BaseElement {
+  type: 'hero';
+  title: string;
+  subtitle?: string | undefined;
+  tagline?: string | undefined;
+  elements?: SlideElement[] | undefined;
+  align?: 'left' | 'center' | 'right' | string | undefined;
+}
+
+export interface CalloutElement extends BaseElement {
+  type: 'callout';
+  text: string;
+  title?: string | undefined;
+  severity?: 'info' | 'warning' | 'danger' | 'success' | 'note' | string | undefined;
+  icon?: string | undefined;
 }
 
 export interface HeadingElement extends BaseElement {
@@ -317,6 +339,8 @@ export interface ResolvedStyle {
 }
 
 export type SlideElement =
+  | HeroElement
+  | CalloutElement
   | HeadingElement
   | ParagraphElement
   | ListElement

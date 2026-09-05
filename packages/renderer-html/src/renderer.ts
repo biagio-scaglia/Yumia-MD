@@ -1,5 +1,6 @@
 import {
   BadgeElement,
+  CalloutElement,
   CardElement,
   ChartElement,
   CodeElement,
@@ -8,6 +9,7 @@ import {
   CompareElement,
   GridElement,
   HeadingElement,
+  HeroElement,
   IconElement,
   ImageElement,
   ListElement,
@@ -1281,15 +1283,35 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       height: 160% !important;
     }
 
-    .speaker-notes-box {
-      flex: 1;
-      background: #11111a;
-      border-radius: 8px;
-      padding: 16px;
-      font-size: 16px;
-      line-height: 1.7;
-      color: #e2e8f0;
-      overflow-y: auto;
+    /* Visual Inspector Overlay */
+    body.yumia-inspect-active * {
+      cursor: crosshair !important;
+    }
+    .yumia-inspect-highlight {
+      outline: 2px dashed var(--yumia-accent) !important;
+      outline-offset: 3px !important;
+      box-shadow: 0 0 15px var(--yumia-accent) !important;
+    }
+    .yumia-inspector-popup {
+      position: fixed;
+      bottom: 60px;
+      right: 20px;
+      z-index: 9999;
+      background: rgba(10, 15, 30, 0.95);
+      backdrop-filter: blur(16px);
+      border: 1.5px solid var(--yumia-primary);
+      border-radius: 10px;
+      padding: 12px 18px;
+      color: #fff;
+      font-size: 13px;
+      font-family: var(--yumia-font-code);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 240, 255, 0.25);
+      display: none;
+      max-width: 380px;
+      line-height: 1.5;
+    }
+    .yumia-inspector-popup.open {
+      display: block;
     }
   </style>
 </head>
@@ -1305,10 +1327,12 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       <button class="yumia-btn" id="btn-next" title="Next Slide (→)">▶</button>
       <button class="yumia-btn" id="btn-overview" title="Slide Overview (ESC / O)">▦</button>
       <button class="yumia-btn" id="btn-speaker" title="Speaker View (S)">🎤</button>
+      <button class="yumia-btn" id="btn-inspect" title="Visual Inspector (I / Alt+Click)">🔍</button>
       <button class="yumia-btn" id="btn-print" title="Stampa / Salva PDF (Ctrl+P)">🖨️</button>
       <button class="yumia-btn" id="btn-notes" title="Toggle Notes (N)">📝</button>
       <button class="yumia-btn" id="btn-fs" title="Fullscreen (F)">⛶</button>
     </div>
+    <div id="inspector-popup" class="yumia-inspector-popup"></div>
 
     <div id="notes-drawer" class="yumia-notes-drawer">
       <div class="yumia-notes-header">
@@ -1615,6 +1639,14 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
         prev: function() { goToSlide(currentIdx - 1); },
         toggleNotes: function() { notesDrawer?.classList.toggle('open'); },
         toggleOverview: function() { toggleOverview(); },
+        toggleInspect: function() {
+          const isActive = document.body.classList.toggle('yumia-inspect-active');
+          const popup = document.getElementById('inspector-popup');
+          if (!isActive && popup) {
+            popup.classList.remove('open');
+            document.querySelectorAll('.yumia-inspect-highlight').forEach((el) => el.classList.remove('yumia-inspect-highlight'));
+          }
+        },
         openSpeaker: openSpeakerWindow,
         print: function() { window.print(); },
         toggleFs: function() {
@@ -1629,6 +1661,7 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       document.getElementById('btn-next')?.addEventListener('click', window.deckController.next);
       document.getElementById('btn-prev')?.addEventListener('click', window.deckController.prev);
       document.getElementById('btn-notes')?.addEventListener('click', window.deckController.toggleNotes);
+      document.getElementById('btn-inspect')?.addEventListener('click', window.deckController.toggleInspect);
       document.getElementById('btn-close-notes')?.addEventListener('click', () => {
         notesDrawer?.classList.remove('open');
       });
@@ -1637,6 +1670,30 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       document.getElementById('btn-speaker')?.addEventListener('click', window.deckController.openSpeaker);
       document.getElementById('btn-print')?.addEventListener('click', window.deckController.print);
       document.getElementById('btn-fs')?.addEventListener('click', window.deckController.toggleFs);
+
+      // Interactive Element Inspector Hover & Click
+      document.addEventListener('mouseover', function(e) {
+        if (!document.body.classList.contains('yumia-inspect-active')) return;
+        const target = e.target.closest('[data-yumia-role], .yumia-card, .yumia-metric, .yumia-hero, .yumia-callout, .yumia-grid, .yumia-stack, h1, h2, h3, p, img, pre');
+        if (!target || target.closest('#deck-controls') || target.closest('#inspector-popup')) return;
+
+        document.querySelectorAll('.yumia-inspect-highlight').forEach((el) => el.classList.remove('yumia-inspect-highlight'));
+        target.classList.add('yumia-inspect-highlight');
+
+        const popup = document.getElementById('inspector-popup');
+        if (popup) {
+          const role = target.getAttribute('data-yumia-role') || target.tagName.toLowerCase();
+          const variant = target.getAttribute('data-variant') || target.getAttribute('data-severity') || 'default';
+          const loc = target.getAttribute('data-yumia-loc') || 'slide ' + (currentIdx + 1);
+          popup.innerHTML = \`
+            <div style="color:var(--yumia-primary); font-weight:800; font-size:14px; margin-bottom:4px;">🔍 \${role.toUpperCase()}</div>
+            <div><strong>Variant:</strong> <span style="color:var(--yumia-accent);">\${variant}</span></div>
+            <div><strong>Location:</strong> \${loc}</div>
+            <div style="margin-top:6px; font-size:11px; color:var(--yumia-muted);">Press 'I' to exit inspector</div>
+          \`;
+          popup.classList.add('open');
+        }
+      });
 
       window.addEventListener('keydown', function(e) {
         if (overviewModal && overviewModal.classList.contains('open')) {
@@ -1672,6 +1729,8 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
           window.deckController.print();
         } else if (e.key.toLowerCase() === 'n') {
           window.deckController.toggleNotes();
+        } else if (e.key.toLowerCase() === 'i') {
+          window.deckController.toggleInspect();
         } else if (e.key === 'Escape' || e.key.toLowerCase() === 'o') {
           window.deckController.toggleOverview();
         }
@@ -1754,6 +1813,51 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     presentation?: Presentation
   ): string {
     switch (element.type) {
+      case 'hero': {
+        const hero = element as HeroElement;
+        const align = hero.align || 'center';
+        const tagHtml = hero.tagline
+          ? `<div class="yumia-hero-tagline" style="display:inline-flex; align-items:center; padding:4px 14px; border-radius:999px; background:rgba(255,255,255,0.08); border:1px solid var(--yumia-primary); color:var(--yumia-primary); font-size:0.85rem; font-weight:700; margin-bottom:1rem; letter-spacing:0.06em; text-transform:uppercase;">${this.formatInline(hero.tagline)}</div>`
+          : '';
+        const titleHtml = `<h1 class="yumia-hero-title" style="font-size:clamp(2.4rem, 4.5vw, 4rem); font-weight:800; line-height:1.1; color:var(--yumia-text); margin-bottom:0.8rem;">${this.formatInline(hero.title)}</h1>`;
+        const subHtml = hero.subtitle
+          ? `<p class="yumia-hero-subtitle" style="font-size:clamp(1.1rem, 1.8vw, 1.5rem); color:var(--yumia-muted); max-width:800px; margin-bottom:1.5rem; line-height:1.5;">${this.formatInline(hero.subtitle)}</p>`
+          : '';
+        const innerHtml = hero.elements
+          ? hero.elements.map((child) => this.renderElement(child, theme, presentation)).join('\n')
+          : '';
+
+        return `
+        <div class="yumia-hero" data-align="${align}" data-yumia-role="hero" style="display:flex; flex-direction:column; align-items:${align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'}; text-align:${align}; justify-content:center; flex:1; width:100%; margin:auto 0;">
+          ${tagHtml}
+          ${titleHtml}
+          ${subHtml}
+          ${innerHtml ? `<div style="width:100%; margin-top:1rem;">${innerHtml}</div>` : ''}
+        </div>`;
+      }
+
+      case 'callout': {
+        const c = element as CalloutElement;
+        const sev = c.severity || 'info';
+        const colorVar =
+          sev === 'warning'
+            ? 'var(--yumia-warning)'
+            : sev === 'danger'
+              ? 'var(--yumia-danger)'
+              : sev === 'success'
+                ? 'var(--yumia-success)'
+                : 'var(--yumia-info)';
+        const titleHtml = c.title
+          ? `<div style="font-weight:700; font-size:1.05rem; color:${colorVar}; margin-bottom:4px;">${this.formatInline(c.title)}</div>`
+          : '';
+
+        return `
+        <div class="yumia-callout" data-severity="${sev}" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid ${colorVar}; border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%;">
+          ${titleHtml}
+          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">${this.formatInline(c.text)}</div>
+        </div>`;
+      }
+
       case 'heading': {
         const h = element as HeadingElement;
         const tag = `h${Math.min(4, Math.max(1, h.level))}`;
