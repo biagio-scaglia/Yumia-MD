@@ -138,22 +138,31 @@ Yumia supports two complementary syntax surfaces that compile into the exact sam
 
 An indentation-based, clean DSL engineered for humans and AI models:
 
-| Primitive  | Syntax Example                                | Purpose                                      |
-| :--------- | :-------------------------------------------- | :------------------------------------------- |
-| `document` | `document "Title"`                            | Top-level metadata, theme, ratio, transition |
-| `slide`    | `slide "Slide Title"`                         | Defines a new slide boundary                 |
-| `heading`  | `heading "Title"` or `h1 "Title"`             | Slide headings (levels 1–4)                  |
-| `text`     | `text "Body copy"` or `p "Text"`              | Paragraph body text                          |
-| `grid`     | `grid columns=3 gap=20`                       | Multi-column grid container                  |
-| `stack`    | `stack direction="horizontal"`                | Linear flex stack layout                     |
-| `card`     | `card title="..." variant="primary"`          | Styled theme card container                  |
-| `metric`   | `metric "99.9%" label="Uptime" diff="+0.4%"`  | KPI stat callout card                        |
-| `icon`     | `icon "lucide:rocket" size=32`                | Multi-provider icon element                  |
-| `badge`    | `badge "v1.0" variant="success"`              | Status pill badge                            |
-| `code`     | `code lang="ts" highlight="2,4-6"`            | Syntax highlighted code with line focus      |
-| `section`  | `section "Part 1" subtitle="..." number="01"` | Distinct visual section slide                |
-| `toc`      | `toc "Table of Contents"`                     | Automatic presentation agenda                |
-| `notes`    | `notes \n Speaker notes text`                 | Speaker presenter notes                      |
+| Primitive  | Syntax Example                                       | Purpose                                      |
+| :--------- | :--------------------------------------------------- | :------------------------------------------- |
+| `document` | `document "Title"`                                   | Top-level metadata, theme, ratio, transition |
+| `slide`    | `slide "Slide Title"`                                | Defines a new slide boundary                 |
+| `hero`     | `hero title="..." subtitle="..." emphasis="primary"` | High-impact focal banner with design intent  |
+| `callout`  | `callout severity="warning" title="..."`             | Status notice / advisory callout box         |
+| `heading`  | `heading "Title"` or `h1 "Title"`                    | Slide headings (levels 1–4)                  |
+| `text`     | `text "Body copy"` or `p "Text"`                     | Paragraph body text                          |
+| `image`    | `image "url" fit="cover" radius="16px"`              | Rich media with fit, aspect ratio & caption  |
+| `chart`    | `chart type="bar" labels="Q1,Q2" series="..."`       | High-res SVG & native PPTX chart             |
+| `compare`  | `compare leftTitle="..." rightTitle="..."`           | Side-by-side comparison split container      |
+| `timeline` | `timeline layout="horizontal"`                       | Milestone roadmap with date nodes            |
+| `mermaid`  | `mermaid \n graph TD \n A-->B`                       | Architecture flowcharts & sequence diagrams  |
+| `math`     | `math "E = mc^2"`                                    | Mathematical formulas rendered via KaTeX     |
+| `table`    | `table \n headers "A","B" \n row "1","2"`            | Structured tabular data                      |
+| `grid`     | `grid columns=3 gap=20`                              | Multi-column grid container                  |
+| `stack`    | `stack direction="horizontal"`                       | Linear flex stack layout                     |
+| `card`     | `card title="..." variant="primary"`                 | Styled theme card container                  |
+| `metric`   | `metric "99.9%" label="Uptime" diff="+0.4%"`         | KPI stat callout card                        |
+| `icon`     | `icon "lucide:rocket" size=32`                       | Multi-provider icon element                  |
+| `badge`    | `badge "v1.0" variant="success"`                     | Status pill badge                            |
+| `code`     | `code lang="ts" highlight="2,4-6"`                   | Syntax highlighted code with line focus      |
+| `section`  | `section "Part 1" subtitle="..." number="01"`        | Distinct visual section slide                |
+| `toc`      | `toc "Table of Contents"`                            | Automatic presentation agenda                |
+| `notes`    | `notes \n Speaker notes text`                        | Speaker presenter notes                      |
 
 ### 2. Markdown Yumia (`.yumia.md`)
 
@@ -242,8 +251,9 @@ Usage:
 Commands:
   dev <file>         Start live-reload dev server with instant HTML preview
   build <file>       Compile to PowerPoint (.pptx), PDF (.pdf), or HTML (.html)
+  check <file>       Audit presentation design quality, contrast, and layout score
+  lint <file>        Analyze presentation for layout overflows and accessibility
   validate <file>    Validate syntax, directives, and metadata without compiling
-  lint <file>        Analyze presentation for layout overflows and contrast
   inspect <file>     Inspect the AST and geometric layout tree
   init [name]        Scaffold a new presentation project
   schema             Output JSON schema for AI agents and IDE autocomplete
@@ -252,6 +262,7 @@ Commands:
 Options:
   --format, -f <fmt> Target format: pptx (default) | pdf | html
   --theme, -t <name> Base theme: default | cyberpunk | minimal | corporate | terminal | academic
+  --optimize         Display visual quality score and layout optimization suggestions
   --primary, -p      Override primary accent color (hex)
   --bg, --background Override background color (hex)
   --port <number>    Dev server port (default: 3000)
@@ -259,6 +270,30 @@ Options:
   --strict           Treat lint warnings as errors (exit code 1)
   --json             Output results in machine-readable JSON
 ```
+
+### Design Linter & Optimizer (`yumia check`)
+
+Run static visual analysis and design optimization checks directly from CLI / CI:
+
+```bash
+$ yumia check presentation.yumia --optimize
+
+✓ Yumia Lint / Design Audit: All 5 slide(s) passed with 0 issues.
+Visual Quality Score: 100/100
+Design Suggestions:
+  → Design layout and visual hierarchy are optimal.
+```
+
+- **Visual Quality Score (0–100)**: Quantitative measure of document aesthetic balance.
+- **WCAG AA/AAA Color Contrast**: Automatically verifies foreground vs. background legibility.
+- **Density & Safe-Area Budget**: Prevents slide text collisions and viewport clipping.
+
+### Interactive Visual Inspector (`I` / `Alt+Click`)
+
+When running in browser preview mode (`yumia dev`), press **`I`**, click **`🔍`** in the controls bar, or **`Alt + Click`** on any element:
+
+- Highlights the hovered component with glowing outline.
+- Displays a floating glassmorphic tooltip with **Component Type**, **Variant / Severity**, **Theme Tokens**, and **Source File Line Location**.
 
 ---
 

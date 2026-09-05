@@ -124,9 +124,85 @@ icon "fa:github"
 icon "tabler:activity"
 ```
 
----
+### Hero Banners (Design Intent)
 
-## 5. Layout Containers
+```yumia
+hero title="Design as Source Code" subtitle="Deterministic & AI-Native Visual Engine" tagline="v2.0" align="center" emphasis="primary" density="spacious"
+  badge "Compiler" variant="accent"
+```
+
+### Callouts & Alerts
+
+```yumia
+callout severity="warning" title="Security Advisory"
+  Enforce mutual TLS on all ingress sidecar proxies.
+
+callout severity="success" title="Deployment Verified"
+  All cluster nodes reporting healthy status.
+```
+
+### Images & Rich Media
+
+```yumia
+image "https://images.unsplash.com/photo-1518770660439-4636190af475" alt="Hardware Node" fit="cover" height="240px" radius="16px" caption="Primary Cluster Rack"
+```
+
+### Data Charts (Native SVG / PPTX Charts)
+
+```yumia
+chart type="bar" title="Quarterly Growth"
+  labels Q1, Q2, Q3, Q4
+  series "Revenue: 12, 28, 54, 98"
+  series "Net Margin: 4, 10, 22, 45"
+```
+
+### Compare (Before & After)
+
+```yumia
+compare leftTitle="Manual Canvas (Canva)" rightTitle="Design Compiler (Yumia)"
+  left
+    card
+      text "Manual drag-and-drop, pixel misalignment, no Git versioning."
+  right
+    card variant="primary"
+      text "Semantic intent, automated composition, reproducible builds."
+```
+
+### Timelines & Roadmaps
+
+```yumia
+timeline layout="horizontal"
+  item date="Q1 2025" title="Core AST" desc="Decoupled semantic tree"
+  item date="Q3 2025" title="Multi-Target" desc="HTML, PDF, PPTX"
+  item date="Q1 2026" title="Design Compiler" desc="Visual intent & optimizer"
+```
+
+### Architecture Diagrams (Mermaid)
+
+```yumia
+mermaid
+  graph LR
+    A[Yumia Source] --> B[Design Compiler]
+    B --> C[HTML5 Deck]
+    B --> D[Vector PDF]
+    B --> E[Editable PPTX]
+```
+
+### Mathematical Equations (KaTeX)
+
+```yumia
+math "E = mc^2"
+```
+
+### Data Tables
+
+```yumia
+table
+  headers "Feature", "Canva", "Yumia"
+  row "Source Controlled", "No", "Yes (Git)"
+  row "Multi-Target Compile", "No", "Yes (HTML/PDF/PPTX)"
+  row "Design Linter", "No", "Yes (yumia check)"
+```
 
 ### Grid Layout
 

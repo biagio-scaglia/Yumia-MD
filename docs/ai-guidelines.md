@@ -6,14 +6,14 @@ Yumia was specifically engineered to be the most deterministic, unambiguous decl
 
 ## 1. Why Yumia Outperforms Markdown & HTML for AI
 
-1. **Unambiguous Boundaries**:
-   Nested HTML blocks inside Markdown frequently cause LLMs to fail closing tags (`</div>`), creating corrupted ASTs. Yumia uses strict, clean indentation and keyword primitives (`grid`, `stack`, `card`, `metric`).
+1. **Design Intent over Technical CSS**:
+   Rather than asking an LLM to hallucinate fragile CSS flexbox/grid styles (`display: flex; justify-content: center;`), the model outputs semantic design intent (`hero`, `callout`, `grid columns=3`, `metric`, `compare`).
 
-2. **Deterministic Token Names**:
-   Rather than asking an LLM to invent CSS styling rules (`display: flex; justify-content: center;`), the model outputs semantic intent (`stack direction="horizontal"` or `grid columns=3`).
+2. **Unambiguous Syntax & Structure**:
+   Yumia provides strict, clean grammar in both Native (`.yumia`) and Markdown (`.yumia.md`) modes without fragile closing tag issues.
 
-3. **Built-in Validation & JSON Schema**:
-   Run `yumia schema` to extract the complete machine-readable specification to embed into LLM system prompts.
+3. **Built-in Quality Audit & JSON Schema**:
+   Run `yumia schema` to extract the complete machine-readable specification to embed into LLM system prompts, and use `yumia check --optimize` to evaluate the generated output.
 
 ---
 
@@ -35,11 +35,17 @@ Follow these syntax rules strictly:
      heading "<Heading>"
      text "<Body text>"
 
-3. Use visual layout primitives:
+3. Use high-level visual design primitives:
+   - hero title="<Title>" subtitle="<Subtitle>" badge="<Badge>" align="<center|left>"
+   - callout variant="<info|warning|success|danger|accent>" title="<Title>"
    - grid columns=<2|3|4> gap=<number>
    - stack direction="<horizontal|vertical>" gap=<number>
    - card title="<Title>" variant="<primary|success|warning|danger|accent>"
    - metric "<Value>" label="<Label>" diff="<Change>" variant="<primary|success|warning|danger|accent>"
+   - image src="<URL>" fit="<cover|contain>" radius="<md|lg|full>" shadow="<md|glow>"
+   - chart type="<bar|line|pie|doughnut>" title="<Title>" labels="<A,B,C>" data="<1,2,3>"
+   - compare left="<TitleA>" right="<TitleB>"
+   - timeline layout="<horizontal|vertical>"
    - icon "<provider>:<name>" size=<number> color="<hex>"
    - code lang="<language>" highlight="<lines>"
    - badge "<Text>" variant="<variant>"
@@ -48,7 +54,7 @@ Follow these syntax rules strictly:
    - toc "<Title>"
    - notes
 
-4. Never output raw HTML or complex CSS tags. Output pure Yumia indentation-based syntax.
+4. Output pure Yumia indentation-based syntax. Never invent low-level CSS or unclosed tags.
 ```
 
 ---
@@ -56,13 +62,16 @@ Follow these syntax rules strictly:
 ## 3. Example AI Generated Document
 
 ```yumia
-document "Next-Gen Data Pipeline"
+document "Next-Gen Data Platform"
   theme "corporate"
   aspectRatio "16:9"
 
+slide "Executive Summary"
+  hero title="Autonomous Cloud Data Platform" subtitle="Sub-millisecond processing at exabyte scale" badge="Enterprise Edition" align="center"
+
 slide "Core Ingestion Engine"
-  heading "Scalable Event Stream Processing"
-  badge "Architecture v2" variant="primary"
+  callout variant="info" title="Zero-Loss Architecture"
+    text "Continuous streaming replication with automated multi-region failover."
 
   grid columns=3 gap=20
     card title="Kafka Cluster" variant="primary"

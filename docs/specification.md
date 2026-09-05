@@ -1,17 +1,20 @@
-# YumiaMD Formal Language & Compiler Specification
+# Yumia Formal Language & Compiler Specification
 
-> **Specification Version**: 1.0.0-rc  
-> **Compiler Target**: YumiaMD Core Monorepo (`yumiamd`)
+> **Specification Version**: 1.1.0  
+> **Compiler Target**: Yumia Monorepo (`yumiamd`)
 
 ---
 
 ## 1. Syntax & Lexical Grammar
 
-A YumiaMD document is a UTF-8 encoded text document with the `.yumia.md` or `.md` extension.
+Yumia documents are UTF-8 encoded text files using either:
 
-### 1.1 Frontmatter
+1. **Native Yumia (`.yumia`)**: Clean, indentation-based declarative grammar.
+2. **Markdown Yumia (`.yumia.md`)**: Extended Markdown with triple-colon `:::` directives.
 
-Frontmatter must be positioned at the top of the file enclosed by triple dashes `---`:
+### 1.1 Frontmatter / Document Declaration
+
+**Markdown (`.yumia.md`)**:
 
 ```yaml
 ---
@@ -31,32 +34,48 @@ colors:
 ---
 ```
 
+**Native Yumia (`.yumia`)**:
+
+```yumia
+document "Title"
+  theme "corporate"
+  aspectRatio "16:9"
+  author "Author Name"
+  transition "fade"
+```
+
 ### 1.2 Slide Separation
 
-Slides are delimited by top-level horizontal rules: `---` on an isolated line.
+- **Markdown**: Slides are delimited by isolated `---` lines.
+- **Native**: Slides are declared with `slide "<Title>"` blocks.
 
 ---
 
-## 2. Block Directives Specification
+## 2. Block Directives & Visual Intent Specification
 
-All directives use the semantic block notation `:::name [attributes] ... :::` or inline single-line syntax.
+All directives express high-level design intent rather than low-level CSS properties.
 
 ### 2.1 Directives Grammar Matrix
 
-| Directive       | Syntax                                                                         | Attributes                                                           | Renderers Supported                                     |
-| :-------------- | :----------------------------------------------------------------------------- | :------------------------------------------------------------------- | :------------------------------------------------------ |
-| `:::columns`    | `:::columns ratios="A:B" \n :::column \n ... \n ::: \n :::`                    | `ratios` (e.g. `"50:50"`, `"30:70"`)                                 | PPTX, PDF, HTML                                         |
-| `:::card`       | `:::card [Title] [variant="..."] \n ... \n :::`                                | `variant` (`primary`, `success`, `warning`, `danger`, `info`)        | PPTX, PDF, HTML                                         |
-| `:::metric`     | `:::metric value="..." label="..." [change="..."] [variant="..."]`             | `value`, `label`, `change`, `variant`                                | PPTX, PDF, HTML                                         |
-| `:::chart`      | `:::chart type="..." title="..." labels="..." data="..."`                      | `type` (`bar`, `line`, `pie`, `doughnut`), `title`, `labels`, `data` | PPTX (Native), PDF (Vector), HTML (SVG)                 |
-| `:::mermaid`    | `:::mermaid \n graph ... \n :::`                                               | Diagram source text                                                  | PPTX (Box), PDF (Box), HTML (Client SVG)                |
-| `:::timeline`   | `:::timeline [layout="horizontal \n vertical"] \n - [Date] Title: Desc \n :::` | `layout`                                                             | PPTX (Vector), PDF (Vector), HTML (CSS)                 |
-| `:::compare`    | `:::compare left="..." right="..." \n ... \n :::vs \n ... \n :::`              | `left`, `right`                                                      | PPTX (Split Box), PDF (Vector), HTML (Grid)             |
-| `:::badge`      | `:::badge text="..." [variant="..."] :::`                                      | `text`, `variant`                                                    | PPTX (Pill), PDF (Pill), HTML (Pill)                    |
-| `:::math`       | `:::math \n <LaTeX / AsciiMath> \n :::` or `$$ ... $$`                         | Display equation formula                                             | PPTX (Cambria Math), PDF (Vector Box), HTML (Container) |
-| `:::transition` | `:::transition [push\|fade\|wipe\|zoom] [duration="..."]`                      | `type`, `duration`, `direction`                                      | PPTX (Native Slide Effect), HTML (CSS3 Keyframe)        |
-| `:::step`       | `:::step \n ... \n :::`                                                        | Content to progressively reveal                                      | PPTX (Click), PDF (Static), HTML (Key-Triggered)        |
-| `:::notes`      | `:::notes \n ... \n :::`                                                       | Speaker note text                                                    | PPTX (Notes Frame), PDF (Summary), HTML (Speaker View)  |
+| Directive       | Syntax (`.yumia.md` / `.yumia`)                                            | Supported Attributes                                                                  | Renderers Supported                                    |
+| :-------------- | :------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ | :----------------------------------------------------- |
+| `:::hero`       | `:::hero title="..." [subtitle="..."] [badge="..."] [align="..."]`         | `title`, `subtitle`, `badge`, `emphasis` (`high\|medium\|subtle`), `align`, `density` | PPTX, PDF, HTML                                        |
+| `:::callout`    | `:::callout [variant="..."] [title="..."] [icon="..."] \n ... \n :::`      | `variant` (`info\|warning\|success\|danger\|accent`), `title`, `icon`, `collapsible`  | PPTX, PDF, HTML                                        |
+| `:::image`      | `:::image src="..." [alt="..."] [fit="..."] [radius="..."] [shadow="..."]` | `src`, `alt`, `caption`, `fit`, `radius`, `shadow`, `aspectRatio`, `zoomable`         | PPTX (Shape/Bitmap), PDF (Vector/Bitmap), HTML (Image) |
+| `:::columns`    | `:::columns ratios="A:B" \n :::column \n ... \n ::: \n :::`                | `ratios` (e.g. `"50:50"`, `"30:70"`), `gap`                                           | PPTX, PDF, HTML                                        |
+| `:::grid`       | `:::grid columns=N gap=N \n ... \n :::`                                    | `columns` (1..6), `gap`, `density`                                                    | PPTX, PDF, HTML                                        |
+| `:::card`       | `:::card [Title] [variant="..."] \n ... \n :::`                            | `variant` (`primary\|success\|warning\|danger\|accent`), `glow`, `padding`            | PPTX, PDF, HTML                                        |
+| `:::metric`     | `:::metric value="..." label="..." [change="..."] [variant="..."]`         | `value`, `label`, `change`/`diff`, `variant`, `trend` (`up\|down`)                    | PPTX, PDF, HTML                                        |
+| `:::chart`      | `:::chart type="..." title="..." labels="..." data="..."`                  | `type` (`bar\|line\|pie\|doughnut`), `title`, `labels`, `data`, `height`              | PPTX (Native OpenXML Chart), PDF (Vector), HTML (SVG)  |
+| `:::timeline`   | `:::timeline [layout="..."] \n - [Date] Title: Desc \n :::`                | `layout` (`horizontal\|vertical`), `variant`                                          | PPTX (Vector), PDF (Vector), HTML (Flex/Grid)          |
+| `:::compare`    | `:::compare left="..." right="..." \n ... \n :::vs \n ... \n :::`          | `left`, `right`, `leftVariant`, `rightVariant`                                        | PPTX (Split Box), PDF (Vector), HTML (Grid)            |
+| `:::mermaid`    | `:::mermaid \n graph ... \n :::`                                           | Diagram source text                                                                   | PPTX (Box), PDF (Box), HTML (Client SVG)               |
+| `:::math`       | `:::math \n <LaTeX / AsciiMath> \n :::` or `$$ ... $$`                     | Display equation formula                                                              | PPTX (Cambria Math), PDF (Vector Box), HTML (KaTeX)    |
+| `:::badge`      | `:::badge text="..." [variant="..."] :::`                                  | `text`, `variant`                                                                     | PPTX (Pill), PDF (Pill), HTML (Pill)                   |
+| `:::quote`      | `:::quote author="..." [title="..."] \n ... \n :::`                        | `author`, `title`, `avatar`                                                           | PPTX, PDF, HTML                                        |
+| `:::transition` | `:::transition [push\|fade\|wipe\|zoom\|split] [duration="..."]`           | `type`, `duration`, `direction`                                                       | PPTX (Native Slide Effect), HTML (CSS3 Animation)      |
+| `:::step`       | `:::step \n ... \n :::`                                                    | Content to progressively reveal                                                       | PPTX (Click Animation), PDF (Static), HTML (Keyframe)  |
+| `:::notes`      | `:::notes \n ... \n :::`                                                   | Speaker note text                                                                     | PPTX (Notes Frame), PDF (Summary), HTML (Speaker View) |
 
 ---
 
@@ -98,11 +117,4 @@ The layout engine executes at fixed canonical resolution **1920 x 1080 px** (or 
 - Standalone self-contained single-page application.
 - Dual-window Speaker View synchronizing clock, elapsed timer, slide notes, and next-slide preview via `BroadcastChannel`.
 - Hardware-accelerated CSS3 transition animations (`fadeIn`, `pushIn`, `wipeIn`, `zoomIn`).
-- Glassmorphic `.yumia-math-container` with mathematical typography.
-- Keyboard hotkeys:
-  - `ArrowRight` / `Space`: Next slide / fragment step
-  - `ArrowLeft` / `Backspace`: Previous slide
-  - `S`: Speaker View
-  - `ESC` / `O`: Overview grid modal
-  - `F`: Fullscreen mode
-  - `N`: Notes drawer
+- Interactive Visual Inspector (`I` key / `Alt+Click`) displaying design tokens and bounding boxes.

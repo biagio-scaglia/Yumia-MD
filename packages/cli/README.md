@@ -1,7 +1,7 @@
 # YumiaMD (`yumiamd`)
 
-> **A Markdown-based presentation language & compiler designed for humans and AI.**  
-> Author slide decks in clean Markdown and compile directly to **100% native, editable PowerPoint (.pptx)** presentations, vector PDFs, and interactive HTML5 slides.
+> **The Design Compiler for Presentations & Visual Documents.**  
+> Author decks with high-level design intent and compile directly to **100% native, editable PowerPoint (.pptx)** presentations, crisp vector PDFs, and interactive HTML5 slides.
 
 [![npm version](https://img.shields.io/npm/v/yumiamd.svg?color=blue)](https://www.npmjs.com/package/yumiamd)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/biagio-scaglia/Yumia-MD/blob/main/LICENSE)
@@ -10,14 +10,17 @@
 
 ## ⚡ Quick Start (Zero Install)
 
-You can run YumiaMD immediately without installing anything via `npx`:
+You can run Yumia immediately without installing anything via `npx`:
 
 ```bash
-# Initialize a starter presentation
-npx yumiamd init my-deck
+# Initialize a starter presentation with custom theme
+npx yumiamd init my-deck --theme corporate
 
-# Launch instant dev server with live-reload
+# Launch instant dev server with live-reload and Visual Inspector
 npx yumiamd dev presentation.yumia.md --open
+
+# Run automated design audit & visual quality score
+npx yumiamd check presentation.yumia.md --optimize
 
 # Compile presentation directly to an editable PowerPoint (.pptx)
 npx yumiamd build presentation.yumia.md --out presentation.pptx
@@ -47,7 +50,7 @@ pnpm add yumiamd
 
 ---
 
-## 🚀 CLI Commands & AI Tooling
+## 🚀 CLI Commands & Design Tooling
 
 Once installed globally or locally, the `yumia` / `yumiamd` commands are available in your terminal:
 
@@ -55,8 +58,11 @@ Once installed globally or locally, the `yumia` / `yumiamd` commands are availab
 # Initialize a new presentation template (supports --theme and custom color overrides)
 yumia init my-presentation --theme cyberpunk --primary "#FF2E88"
 
-# Start instant live-reload dev server with HTML preview (zero config!)
+# Start instant live-reload dev server with HTML preview & Visual Inspector (zero config!)
 yumia dev presentation.yumia.md --open
+
+# Run design audit, check WCAG contrast, density & compute Visual Quality Score (0-100)
+yumia check presentation.yumia.md --optimize
 
 # Compile to native editable PowerPoint (.pptx)
 yumia build presentation.yumia.md --out dist/presentation.pptx
@@ -93,115 +99,77 @@ yumia schema
 ```markdown
 ---
 title: System Architecture & Capabilities
-theme: default
+theme: corporate
 aspectRatio: '16:9'
-author: Biagio Scaglia
+author: Engineering Team
 ---
 
-# High-Performance Presentation Engine
+<!-- Slide 1: Hero Cover -->
 
-Deterministic compilation from Markdown directly to native PowerPoint slides.
-
-:::badge text="v0.1.15" variant="primary" :::
-:::badge text="Multi-Target" variant="success" :::
-
-:::notes
-Opening slide introducing the core architectural vision.
+:::hero title="Next-Generation Cloud Architecture" subtitle="High-throughput distributed compute platform" badge="v2.4 Enterprise" align="center"
 :::
 
 ---
 
-# Architecture & Capabilities
+<!-- Slide 2: Primitives & Visual Intent -->
 
-:::columns ratios="50:50"
+# Core Infrastructure Breakdown
 
-:::column
-:::card Core Engine
+:::callout variant="info" title="Zero Downtime Rollout"
+All worker nodes are upgraded progressively with active health probing.
+:::
 
-- 100% Deterministic placement
-- Zero runtime dependencies
-- TypeScript-first architecture
+:::grid columns=3 gap=20
+:::card "Edge Routing" variant="primary"
+
+- Global Anycast DNS
+- Sub-5ms SSL Termination
+  :::
+
+:::card "Stateful Compute" variant="success"
+
+- Autonomous Actor Runtime
+- Distributed Raft Consensus
+  :::
+
+:::card "Vector Store" variant="accent"
+
+- Multi-index HNSW Search
+- 10M query/sec throughput
   :::
   :::
 
-:::column
-:::card Native PowerPoint Export
+---
 
-- Headings, cards, shapes & notes
-- Fully editable OpenXML objects
-- Compatible with PowerPoint & Google Slides
-  :::
-  :::
+<!-- Slide 3: Key Performance Metrics -->
 
+# Operational Performance
+
+:::grid columns=3 gap=20
+:::metric value="99.999%" label="Service SLA" change="+0.009%" variant="success" trend="up"
+:::
+:::metric value="1.2ms" label="p99 Latency" change="-35%" variant="primary" trend="down"
+:::
+:::metric value="14.2M" label="Active Invocations" change="+120%" variant="accent" trend="up"
+:::
 :::
 
 ---
 
-# Native Charts & Data Visuals
+<!-- Slide 4: Data Visualization -->
 
-:::chart type="bar" title="Execution Speed" labels="Parser, Layout, PDF, PPTX" data="1200, 850, 430, 680"
+# Global Throughput & Adoption
 
----
-
-# Roadmap Timeline
-
-:::timeline layout="horizontal"
-
-- [Phase 1] AST & Compiler Core
-- [Phase 2] Multi-Format Renderers
-- [Phase 3] Rich Directives & Charts
-- [Phase 4] Cloud Deployments
-  :::
-
-:::step
-
-- 🚀 Seamless deployment via `yumia deploy`
-  :::
+:::chart type="bar" title="Monthly API Invocations (Millions)" labels="Jan,Feb,Mar,Apr,May,Jun" data="4.2,6.8,9.1,11.5,13.2,14.2"
+:::
 ```
 
 ---
 
-## 💻 JavaScript / TypeScript API
+## 🔍 Visual Inspector & Speaker View
 
-You can also use `yumiamd` programmatically inside your Node.js or TypeScript backend, CLI tools, and AI pipelines:
+When previewing in HTML5 (`yumia dev` or `--format html`):
 
-```typescript
-import { compile, parse, YumiaCompiler } from 'yumiamd';
-import fs from 'node:fs';
-
-const markdown = fs.readFileSync('presentation.yumia.md', 'utf-8');
-
-// 1. Validate syntax and collect diagnostics
-const compiler = new YumiaCompiler();
-const validation = compiler.validate(markdown);
-console.log(`Valid: ${validation.valid}, Slides: ${validation.slideCount}`);
-
-// 2. Compile directly to PPTX buffer
-const { buffer, errors } = await compile(markdown, { format: 'pptx' });
-
-if (errors.length === 0) {
-  fs.writeFileSync('output.pptx', buffer);
-  console.log('✅ Presentation generated successfully!');
-}
-
-// 3. Export JSON schema for LLM generation
-const schema = compiler.getSchema();
-```
-
----
-
-## ✨ Key Features
-
-- 🎯 **Native Object Principle**: Slides compiled to PowerPoint are **NOT** rasterized screenshot images. Headings, bullet points, cards, tables, charts, badges, and speaker notes are generated as **100% native vector PowerPoint shapes, tables & textboxes** that you can click, re-format, and edit in Microsoft PowerPoint or Google Slides.
-- 📊 **Native Charts & Diagrams**: Full support for `:::chart` (bar, line, pie, doughnut) and `:::mermaid` diagrams across HTML, PDF, and PowerPoint.
-- ⏳ **Timelines, Compare & Steps**: Rich layout directives including `:::timeline`, `:::compare`, and click-to-reveal `:::step` animations.
-- 🚀 **One-Command Cloud Deploy**: Instantly deploy decks to GitHub Pages, Vercel, or static web servers with `yumia deploy`.
-- 📐 **Deterministic Layout Engine**: Exact coordinate calculations for stack, columns, cards, and automatic overflow detection.
-- 🎨 **Semantic Design Tokens**: Built-in themes with typography scales, color palettes, and contrast-safe themes.
-- 🤖 **AI-Friendly Format**: Clean Markdown syntax designed for LLM prompts and agentic workflows, complete with `yumia schema` and `--json` CLI diagnostics.
-
----
-
-## 📄 License
-
-MIT © [Biagio Scaglia](https://github.com/biagio-scaglia)
+- **Visual Inspector**: Press `I` or `Alt+Click` on any element to view computed design tokens, variants, bounding boxes, and source lines.
+- **Dual-Window Speaker View**: Press `S` to open an synchronized second screen with speaker notes, elapsed timer, and next-slide preview.
+- **Overview Mode**: Press `O` or `Esc` to view slide grid thumbnails.
