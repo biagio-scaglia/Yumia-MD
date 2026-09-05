@@ -5,7 +5,10 @@ node_modules/
 
 # Build Outputs
 dist/
+**/dist/
+**/dist-*/
 build/
+**/build/
 *.tsbuildinfo
 
 # Test & Coverage

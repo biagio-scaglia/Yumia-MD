@@ -1,0 +1,12 @@
+node_modules
+dist
+**/dist/**
+**/dist-*/**
+build
+**/build/**
+coverage
+**/coverage/**
+*.tsbuildinfo
+pnpm-lock.yaml
+.turbo
+.cache
