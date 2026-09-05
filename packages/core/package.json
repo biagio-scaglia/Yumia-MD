@@ -1,6 +1,6 @@
 {
   "name": "@yumiamd/core",
-  "version": "0.1.22",
+  "version": "0.1.23",
   "private": true,
   "description": "Core orchestration and compiler pipeline for YumiaMD presentations",
   "type": "module",
