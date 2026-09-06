@@ -10,3 +10,5 @@ coverage
 pnpm-lock.yaml
 .turbo
 .cache
+*.yumia
+*.yumia.md
