@@ -187,6 +187,23 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         this.renderNode(pptxSlide, pptx, node, scaleX, scaleY, theme, presentation);
       }
 
+      if (presentation.metadata.watermark) {
+        const watermarkText =
+          typeof presentation.metadata.watermark === 'string'
+            ? presentation.metadata.watermark
+            : 'CONFIDENTIAL';
+        pptxSlide.addText(watermarkText.toUpperCase(), {
+          x: 0.5,
+          y: slideHeightInches - 0.4,
+          w: slideWidthInches - 1.0,
+          h: 0.25,
+          fontSize: 9,
+          bold: true,
+          color: this.cleanHexColor(theme.colors.muted || '#888888'),
+          fontFace: cleanFontFace(theme.typography.headingFont),
+        });
+      }
+
       if (slide.notes) {
         pptxSlide.addNotes(slide.notes);
       }
@@ -1190,6 +1207,13 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       align: 'center',
       valign: 'middle',
     });
+
+    // Render left & right child elements
+    if (node.children) {
+      for (const childNode of node.children) {
+        this.renderNode(pptxSlide, pptx, childNode, scaleX, scaleY, theme);
+      }
+    }
   }
 
   private renderSection(

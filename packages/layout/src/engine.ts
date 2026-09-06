@@ -1,9 +1,13 @@
 import {
+  CalloutElement,
   CardElement,
   CodeElement,
   ColumnElement,
   ColumnsElement,
+  CompareElement,
+  GridElement,
   HeadingElement,
+  HeroElement,
   ImageElement,
   ListElement,
   MetricElement,
@@ -12,6 +16,7 @@ import {
   QuoteElement,
   Slide,
   SlideElement,
+  StackElement,
   TableElement,
 } from '@yumiamd/ast';
 import {
@@ -42,7 +47,7 @@ export class DefaultLayoutEngine implements LayoutEngine {
     options: LayoutOptions = {}
   ): SlideLayoutResult {
     const padding = options.padding ?? 64;
-    const gap = options.gap ?? 32;
+    const gap = options.gap ?? 28;
     const availableWidth = Math.max(100, viewport.width - padding * 2);
     const availableHeight = Math.max(100, viewport.height - padding * 2);
 
@@ -122,6 +127,9 @@ export class DefaultLayoutEngine implements LayoutEngine {
     gap: number
   ): LayoutNode {
     switch (element.type) {
+      case 'hero': {
+        return this.layoutHero(element as HeroElement, x, y, width, gap);
+      }
       case 'heading': {
         const height = this.estimateHeadingHeight(element, width);
         return { element, bounds: { x, y, width, height } };
@@ -154,8 +162,29 @@ export class DefaultLayoutEngine implements LayoutEngine {
         const height = this.estimateMetricHeight(element);
         return { element, bounds: { x, y, width, height } };
       }
+      case 'callout': {
+        const c = element as CalloutElement;
+        const lines = Math.ceil(c.text.length / Math.max(15, Math.floor(width / 14))) || 1;
+        const height = Math.max(80, lines * 28 + (c.title ? 45 : 0) + 30);
+        return { element, bounds: { x, y, width, height } };
+      }
+      case 'badge': {
+        return { element, bounds: { x, y, width, height: 45 } };
+      }
       case 'math': {
         const height = 90;
+        return { element, bounds: { x, y, width, height } };
+      }
+      case 'chart': {
+        const height = 280;
+        return { element, bounds: { x, y, width, height } };
+      }
+      case 'diagram': {
+        const height = 320;
+        return { element, bounds: { x, y, width, height } };
+      }
+      case 'timeline': {
+        const height = 160;
         return { element, bounds: { x, y, width, height } };
       }
       case 'section': {
@@ -163,7 +192,7 @@ export class DefaultLayoutEngine implements LayoutEngine {
         return { element, bounds: { x, y, width, height } };
       }
       case 'toc': {
-        const height = 320;
+        const height = 340;
         return { element, bounds: { x, y, width, height } };
       }
       case 'card': {
@@ -172,10 +201,148 @@ export class DefaultLayoutEngine implements LayoutEngine {
       case 'columns': {
         return this.layoutColumns(element, x, y, width, gap);
       }
+      case 'grid': {
+        return this.layoutGrid(element as GridElement, x, y, width, gap);
+      }
+      case 'compare': {
+        return this.layoutCompare(element as CompareElement, x, y, width, gap);
+      }
+      case 'stack': {
+        return this.layoutStack(element as StackElement, x, y, width, gap);
+      }
       default: {
         const height = 60;
         return { element, bounds: { x, y, width, height } };
       }
+    }
+  }
+
+  private layoutHero(
+    element: HeroElement,
+    x: number,
+    y: number,
+    width: number,
+    gap: number
+  ): LayoutNode {
+    let curY = y;
+    if (element.tagline) curY += 35;
+    curY += 85;
+    if (element.subtitle) curY += 65;
+    const children: LayoutNode[] = [];
+    if (element.elements) {
+      for (const child of element.elements) {
+        const node = this.layoutSingleElement(child, x, curY, width, gap);
+        children.push(node);
+        curY += node.bounds.height + gap;
+      }
+    }
+    return { element, bounds: { x, y, width, height: curY - y }, children };
+  }
+
+  private layoutGrid(
+    element: GridElement,
+    x: number,
+    y: number,
+    width: number,
+    gap: number
+  ): LayoutNode {
+    const colCount =
+      typeof element.columns === 'number'
+        ? element.columns
+        : parseInt(String(element.columns), 10) || 2;
+    const totalGap = gap * (colCount - 1);
+    const colWidth = Math.max(10, (width - totalGap) / colCount);
+
+    const children: LayoutNode[] = [];
+    const colYs = Array(colCount).fill(y);
+
+    for (let i = 0; i < element.elements.length; i++) {
+      const colIdx = i % colCount;
+      const colX = x + colIdx * (colWidth + gap);
+      const childEl = element.elements[i]!;
+      const childNode = this.layoutSingleElement(childEl, colX, colYs[colIdx]!, colWidth, gap);
+      children.push(childNode);
+      colYs[colIdx] += childNode.bounds.height + gap;
+    }
+
+    const maxGridHeight = Math.max(...colYs.map((cy) => cy - y), 100);
+    return {
+      element,
+      bounds: { x, y, width, height: maxGridHeight },
+      children,
+    };
+  }
+
+  private layoutCompare(
+    element: CompareElement,
+    x: number,
+    y: number,
+    width: number,
+    gap: number
+  ): LayoutNode {
+    const colW = (width - gap) / 2;
+    const titleH = 45;
+    const pad = 24;
+
+    const leftStartY = y + pad + (element.leftTitle ? titleH : 0);
+    const { nodes: leftChildren, totalHeight: leftInnerH } = this.layoutElementList(
+      element.left,
+      x + pad,
+      leftStartY,
+      colW - pad * 2,
+      gap / 2
+    );
+
+    const rightX = x + colW + gap;
+    const rightStartY = y + pad + (element.rightTitle ? titleH : 0);
+    const { nodes: rightChildren, totalHeight: rightInnerH } = this.layoutElementList(
+      element.right,
+      rightX + pad,
+      rightStartY,
+      colW - pad * 2,
+      gap / 2
+    );
+
+    const totalHeight =
+      Math.max(leftInnerH, rightInnerH, 120) +
+      (element.leftTitle || element.rightTitle ? titleH : 0) +
+      pad * 2;
+    return {
+      element,
+      bounds: { x, y, width, height: totalHeight },
+      children: [...leftChildren, ...rightChildren],
+    };
+  }
+
+  private layoutStack(
+    element: StackElement,
+    x: number,
+    y: number,
+    width: number,
+    gap: number
+  ): LayoutNode {
+    if (element.direction === 'horizontal') {
+      const count = element.elements.length;
+      const itemW = (width - gap * (count - 1)) / Math.max(1, count);
+      let curX = x;
+      const children: LayoutNode[] = [];
+      let maxH = 0;
+      for (const child of element.elements) {
+        const node = this.layoutSingleElement(child, curX, y, itemW, gap);
+        children.push(node);
+        maxH = Math.max(maxH, node.bounds.height);
+        curX += itemW + gap;
+      }
+      return { element, bounds: { x, y, width, height: maxH }, children };
+    } else {
+      const { nodes: children, totalHeight } = this.layoutElementList(
+        element.elements,
+        x,
+        y,
+        width,
+        gap
+      );
+      return { element, bounds: { x, y, width, height: totalHeight }, children };
     }
   }
 
