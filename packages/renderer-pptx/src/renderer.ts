@@ -425,6 +425,8 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       align: paragraph.align || 'left',
       valign: 'top',
       margin: 0,
+      // Keep glyphs inside the layout box; wrapping is fine, overflow into neighbors is not.
+      shrinkText: rect.h < 0.32,
     });
   }
 
@@ -1023,8 +1025,10 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
 
     const align = (hero.align as 'left' | 'center' | 'right') || 'center';
     const compact = rect.h < 2.4;
-    let curY = rect.y + (compact ? 0.12 : 0.3);
-    if (hero.badge) {
+    const maxY = rect.y + rect.h - 0.04;
+    let curY = rect.y + (compact ? 0.08 : 0.24);
+
+    if (hero.badge && curY < maxY) {
       const badgeW = Math.min(3.2, Math.max(1.4, hero.badge.length * 0.11 + 0.6));
       const badgeX =
         align === 'left'
@@ -1032,11 +1036,12 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
           : align === 'right'
             ? rect.x + rect.w - badgeW
             : rect.x + (rect.w - badgeW) / 2;
+      const badgeH = Math.min(compact ? 0.26 : 0.32, maxY - curY);
       pptxSlide.addShape(pptx.ShapeType.roundRect, {
         x: badgeX,
         y: curY,
         w: badgeW,
-        h: compact ? 0.26 : 0.32,
+        h: badgeH,
         fill: { color: this.cleanHexColor(theme.colors.surface) },
         line: { color: this.cleanHexColor(theme.colors.primary), width: 1.5 },
         rectRadius: 0.16,
@@ -1045,7 +1050,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         x: badgeX,
         y: curY,
         w: badgeW,
-        h: compact ? 0.26 : 0.32,
+        h: badgeH,
         fontSize: compact ? 9 : 10,
         bold: true,
         color: this.cleanHexColor(theme.colors.primary),
@@ -1054,12 +1059,13 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         valign: 'middle',
       });
       curY += compact ? 0.36 : 0.48;
-    } else if (hero.tagline) {
+    } else if (hero.tagline && curY < maxY) {
+      const tagH = Math.min(0.32, maxY - curY);
       pptxSlide.addText(hero.tagline.toUpperCase(), {
         x: rect.x,
         y: curY,
         w: rect.w,
-        h: 0.32,
+        h: tagH,
         fontSize: compact ? 10 : 11,
         bold: true,
         color: this.cleanHexColor(theme.colors.primary),
@@ -1070,34 +1076,44 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     }
 
     const titleLines = Math.max(1, Math.ceil(hero.title.length / (compact ? 48 : 38)));
-    const titleH = Math.max(compact ? 0.42 : 0.7, titleLines * (compact ? 0.36 : 0.55) + 0.08);
+    const titleBudget = Math.max(0.24, maxY - curY - (hero.subtitle ? 0.3 : 0.02));
+    const titleH = Math.min(
+      Math.max(compact ? 0.42 : 0.7, titleLines * (compact ? 0.36 : 0.55) + 0.08),
+      titleBudget
+    );
     const displaySize = themeSizeToPptxPoints(theme.typography.sizes?.display, 56);
     const titleFontSize = compact
       ? titleLines > 1
-        ? Math.min(22, displaySize - 14)
-        : Math.min(26, displaySize - 10)
+        ? Math.min(20, displaySize - 16)
+        : Math.min(24, displaySize - 12)
       : titleLines > 2
         ? displaySize - 10
         : titleLines > 1
           ? displaySize - 6
           : displaySize;
 
-    pptxSlide.addText(hero.title, {
-      x: rect.x,
-      y: curY,
-      w: rect.w,
-      h: titleH,
-      fontSize: titleFontSize,
-      bold: true,
-      color: this.cleanHexColor(theme.colors.text),
-      fontFace: cleanFontFace(theme.typography.headingFont),
-      align,
-    });
+    if (titleH >= 0.24) {
+      pptxSlide.addText(hero.title, {
+        x: rect.x,
+        y: curY,
+        w: rect.w,
+        h: titleH,
+        fontSize: titleFontSize,
+        bold: true,
+        color: this.cleanHexColor(theme.colors.text),
+        fontFace: cleanFontFace(theme.typography.headingFont),
+        align,
+        valign: 'top',
+      });
+    }
     curY += titleH + (compact ? 0.04 : 0.08);
 
-    if (hero.subtitle) {
+    if (hero.subtitle && curY < maxY - 0.14) {
       const subLines = Math.max(1, Math.ceil(hero.subtitle.length / (compact ? 64 : 56)));
-      const subH = Math.max(compact ? 0.28 : 0.38, subLines * 0.28 + 0.06);
+      const subH = Math.min(
+        Math.max(compact ? 0.28 : 0.38, subLines * 0.28 + 0.06),
+        maxY - curY
+      );
       const bodySize = themeSizeToPptxPoints(theme.typography.sizes?.body, 18);
       const subFontSize = compact ? bodySize - 1 : subLines > 2 ? bodySize - 1 : bodySize + 1;
       pptxSlide.addText(hero.subtitle, {
@@ -1109,22 +1125,23 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         color: this.cleanHexColor(theme.colors.muted || theme.colors.text),
         fontFace: cleanFontFace(theme.typography.bodyFont),
         align,
+        valign: 'top',
       });
       curY += subH + (compact ? 0.06 : 0.12);
     }
 
-    if (hero.tagline && hero.badge) {
+    // Keep badge+tagline secondary line inside hero bounds only.
+    if (hero.tagline && hero.badge && curY + 0.28 <= maxY) {
       pptxSlide.addText(hero.tagline, {
         x: rect.x,
         y: curY,
         w: rect.w,
-        h: 0.3,
+        h: 0.28,
         fontSize: 12,
         color: this.cleanHexColor(theme.colors.muted || theme.colors.text),
         fontFace: cleanFontFace(theme.typography.bodyFont),
         align,
       });
-      curY += 0.35;
     }
 
     if (node.children) {

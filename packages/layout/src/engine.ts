@@ -185,7 +185,7 @@ export class DefaultLayoutEngine implements LayoutEngine {
         return { element, bounds: { x, y, width, height } };
       }
       case 'badge': {
-        return { element, bounds: { x, y, width, height: 45 } };
+        return { element, bounds: { x, y, width, height: 52 } };
       }
       case 'math': {
         const height = 90;
@@ -267,25 +267,25 @@ export class DefaultLayoutEngine implements LayoutEngine {
   ): LayoutNode {
     let curY = y;
     if (element.badge || element.tagline) {
-      curY += compact ? 40 : 52;
+      curY += compact ? 44 : 56;
     }
-    const charsPerLineTitle = Math.max(12, Math.floor(width / (compact ? 32 : 28)));
+    const charsPerLineTitle = Math.max(10, Math.floor(width / (compact ? 36 : 30)));
     const titleLines = Math.max(1, Math.ceil(element.title.length / charsPerLineTitle));
     const titleHeight = compact
-      ? Math.max(56, titleLines * 44 + 12)
-      : Math.max(100, titleLines * 72 + 24);
+      ? Math.max(72, titleLines * 52 + 16)
+      : Math.max(110, titleLines * 76 + 28);
     curY += titleHeight;
 
     if (element.subtitle) {
-      const charsPerLineSub = Math.max(20, Math.floor(width / (compact ? 20 : 18)));
+      const charsPerLineSub = Math.max(18, Math.floor(width / (compact ? 22 : 18)));
       const subLines = Math.max(1, Math.ceil(element.subtitle.length / charsPerLineSub));
       const subHeight = compact
-        ? Math.max(36, subLines * 28 + 10)
-        : Math.max(56, subLines * 36 + 16);
+        ? Math.max(44, subLines * 34 + 12)
+        : Math.max(64, subLines * 40 + 18);
       curY += subHeight;
     }
 
-    curY += compact ? 10 : 16;
+    curY += compact ? 14 : 20;
 
     const children: LayoutNode[] = [];
     if (element.elements) {
@@ -344,8 +344,8 @@ export class DefaultLayoutEngine implements LayoutEngine {
     gap: number
   ): LayoutNode {
     const colW = (width - gap) / 2;
-    const titleH = 45;
-    const pad = 24;
+    const titleH = 56;
+    const pad = 28;
 
     const leftStartY = y + pad + (element.leftTitle ? titleH : 0);
     const { nodes: leftChildren, totalHeight: leftInnerH } = this.layoutElementList(
@@ -416,9 +416,9 @@ export class DefaultLayoutEngine implements LayoutEngine {
     width: number,
     gap: number
   ): LayoutNode {
-    const cardPadding = 32;
+    const cardPadding = 36;
     const innerWidth = Math.max(10, width - cardPadding * 2);
-    const titleHeight = element.title ? 60 : 0;
+    const titleHeight = element.title ? 72 : 0;
     const innerStartY = y + cardPadding + titleHeight;
 
     const { nodes: children, totalHeight: innerHeight } = this.layoutElementList(
@@ -429,8 +429,8 @@ export class DefaultLayoutEngine implements LayoutEngine {
       gap
     );
 
-    const cardHeight = titleHeight + innerHeight + cardPadding * 2 + 12;
-    const bounds: Rect = { x, y, width, height: Math.max(120, cardHeight) };
+    const cardHeight = titleHeight + innerHeight + cardPadding * 2 + 20;
+    const bounds: Rect = { x, y, width, height: Math.max(140, cardHeight) };
 
     return {
       element,
@@ -507,29 +507,32 @@ export class DefaultLayoutEngine implements LayoutEngine {
   }
 
   private estimateHeadingHeight(heading: HeadingElement, width: number = 1600): number {
+    // Calibrated to PPTX/PDF paint sizes (theme h1≈46 CSS → ~32pt with leading).
     const fontSize = heading.level === 1 ? 46 : heading.level === 2 ? 36 : 28;
-    const charWidth = fontSize * 0.55;
-    const charsPerLine = Math.max(15, Math.floor(width / charWidth));
+    const charWidth = fontSize * 0.62;
+    const charsPerLine = Math.max(12, Math.floor(width / charWidth));
     const lines = Math.ceil(heading.text.length / charsPerLine) || 1;
-    const lineHeight = fontSize * 1.25;
-    return Math.max(heading.level === 1 ? 90 : 70, Math.round(lines * lineHeight + 20));
+    const lineHeight = fontSize * 1.4;
+    const minH = heading.level === 1 ? 110 : heading.level === 2 ? 88 : 72;
+    return Math.max(minH, Math.round(lines * lineHeight + 28));
   }
 
   private estimateParagraphHeight(paragraph: ParagraphElement, width: number): number {
-    const charsPerLine = Math.max(20, Math.floor(width / 14));
+    // Conservative wrap: PPTX body ~13pt needs ~0.35"+ per line after scale.
+    const charsPerLine = Math.max(16, Math.floor(width / 17));
     const lines = Math.ceil(paragraph.text.length / charsPerLine) || 1;
-    return Math.max(40, lines * 36);
+    return Math.max(52, lines * 48 + 10);
   }
 
   private estimateListHeight(list: ListElement, width: number = 800): number {
-    const charsPerLine = Math.max(15, Math.floor(width / 13));
+    const charsPerLine = Math.max(14, Math.floor(width / 16));
     let totalHeight = 0;
     for (const item of list.items) {
       const cleanLen = item.text.replace(/\*\*/g, '').replace(/\*/g, '').length;
       const lines = Math.ceil(cleanLen / charsPerLine) || 1;
-      totalHeight += lines * 34 + 18;
+      totalHeight += lines * 46 + 20;
     }
-    return Math.max(40, totalHeight);
+    return Math.max(52, totalHeight);
   }
 
   private estimateCodeHeight(code: CodeElement): number {

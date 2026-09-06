@@ -156,6 +156,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         const originalAddPage = doc.addPage.bind(doc);
         doc.addPage = ((...args: Parameters<typeof doc.addPage>) => {
           if (!this.allowAutoPage) {
+            // Swallow overflow page breaks; content is clipped to the slide canvas.
             return doc;
           }
           createdPages += 1;

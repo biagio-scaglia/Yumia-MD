@@ -110,7 +110,7 @@ describe('Reliability: diagrams, layout, icons', () => {
     expect(grid.element.type).toBe('grid');
     expect(grid.bounds.y).toBeGreaterThanOrEqual(hero.bounds.y + hero.bounds.height);
     // Compact hero sharing the slide must not consume a full-bleed title band.
-    expect(hero.bounds.height).toBeLessThan(280);
+    expect(hero.bounds.height).toBeLessThan(360);
   });
 
   it('orthogonal diagram edges use elbow waypoints', () => {
@@ -129,6 +129,36 @@ describe('Reliability: diagrams, layout, icons', () => {
     expect(ptsTB.every((p, i, arr) => i === 0 || p.x === arr[i - 1]!.x || p.y === arr[i - 1]!.y)).toBe(
       true
     );
+  });
+
+  it('keeps stacked compare paragraphs from colliding after wrap estimates', () => {
+    const source = `document "CompareGap"
+  aspectRatio "16:9"
+  slide "Problema"
+    heading "Perche creare slide tecniche e complesso e inefficiente"
+    compare left="Left" right="Right"
+      left
+        text "• Gli LLM faticano a generare layout geometrici stabili"
+        text "• Nessun test automatico di qualita visiva"
+      right
+        text "• Frammentazione tra Markdown, HTML e PPTX"
+        text "• Zero riutilizzabilita tra documentazione e slide"
+`;
+    const presentation = parseYumia(source);
+    const engine = new DefaultLayoutEngine();
+    const slideLayout = engine.computeSlide(presentation.slides[0]!);
+    const compare = slideLayout.nodes.find((n) => n.element.type === 'compare');
+    expect(compare?.children?.length).toBeGreaterThanOrEqual(4);
+    const paras = (compare?.children || []).filter((c) => c.element.type === 'paragraph');
+    for (let i = 1; i < paras.length; i++) {
+      // Same-column siblings share x; only compare consecutive pairs with similar x.
+      const prev = paras[i - 1]!;
+      const cur = paras[i]!;
+      if (Math.abs(prev.bounds.x - cur.bounds.x) < 2) {
+        expect(cur.bounds.y).toBeGreaterThanOrEqual(prev.bounds.y + prev.bounds.height);
+        expect(prev.bounds.height).toBeGreaterThanOrEqual(52);
+      }
+    }
   });
 
   it('PDF paints nested columns/cards without dropping children', async () => {

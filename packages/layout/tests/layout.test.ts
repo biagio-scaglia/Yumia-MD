@@ -71,8 +71,8 @@ describe('@yumiamd/layout', () => {
     expect(cardNode?.children).toHaveLength(2);
 
     const innerHeading = cardNode?.children?.[0];
-    expect(innerHeading?.bounds.x).toBe(cardNode!.bounds.x + 32); // 32px card padding
-    // 32px padding + 60px title clearance = 92px
-    expect(innerHeading?.bounds.y).toBe(cardNode!.bounds.y + 32 + 60);
+    expect(innerHeading?.bounds.x).toBe(cardNode!.bounds.x + 36); // card padding
+    // padding + title clearance
+    expect(innerHeading?.bounds.y).toBe(cardNode!.bounds.y + 36 + 72);
   });
 });
