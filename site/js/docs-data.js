@@ -343,6 +343,12 @@ slide "Cluster Node Topology"
               <td>PPTX, PDF, HTML</td>
             </tr>
             <tr>
+              <td><code>diagram</code></td>
+              <td>Sugiyama-layered vector architecture, DAGs, and flowcharts</td>
+              <td><code>type</code> (<code>flow</code>), <code>direction</code> (<code>LR</code>, <code>TB</code>), <code>title</code></td>
+              <td>PPTX, PDF, HTML, SVG</td>
+            </tr>
+            <tr>
               <td><code>card</code></td>
               <td>Container for grouped concepts and structured points</td>
               <td><code>title</code>, <code>variant</code>, <code>glow</code>, <code>padding</code></td>
@@ -375,6 +381,132 @@ All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the
     `,
   },
   {
+    id: 'diagrams-graphs',
+    title: 'Vector Flowcharts & Diagrams',
+    category: 'Language & Syntax',
+    icon: 'fa-solid fa-diagram-project',
+    lead: 'The next evolution of text-to-diagram engines. Compiles hierarchical DAGs directly into native vector SVG, editable PowerPoint shapes, and PDF.',
+    content: `
+      <h2>The Mermaid & PlantText Evolution</h2>
+      <p>For years, developers relied on tools like <strong>Mermaid.js</strong> and <strong>PlantText / PlantUML</strong> to describe diagrams in text. But when integrating diagrams into decks, whitepapers, or executive presentations, these legacy tools fall short: they produce rasterized PNGs or rigid HTML embeds that break responsive layouts and cannot be edited in PowerPoint or Illustrator.</p>
+      
+      <p><strong>Yumia redefines text-to-diagram compilation:</strong> A pure declarative syntax powered by the <strong>Sugiyama Layered Graph Framework</strong>, providing automatic cross-axis centering, smooth Bézier curves, bidirectional node aliasing, and <em>100% native vector multi-target rendering</em>.</p>
+
+      <div class="docs-table-wrapper">
+        <table class="docs-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Mermaid.js</th>
+              <th>PlantText / PlantUML</th>
+              <th>Yumia Vector Diagrams</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>PowerPoint Export</strong></td>
+              <td>Raster Screenshot (PNG)</td>
+              <td>Raster Screenshot (PNG)</td>
+              <td><strong>Native OpenXML Vector Shapes</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Layout Engine</strong></td>
+              <td>Dagre JS (Client-only)</td>
+              <td>Graphviz Server C/Java</td>
+              <td><strong>Built-in Sugiyama DAG Compiler</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Theme Intelligence</strong></td>
+              <td>Hardcoded CSS Themes</td>
+              <td>Custom Skinparams</td>
+              <td><strong>Theme-Adaptive Design Tokens</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Interactive HTML5</strong></td>
+              <td>Web Only</td>
+              <td>Static Images</td>
+              <td><strong>Responsive SVG + Glassmorphism</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Vector PDF Export</strong></td>
+              <td>Browser Print</td>
+              <td>GhostScript / Batik</td>
+              <td><strong>Vector Bezier Tracing via PDFKit</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Diagram Syntax & Semantics</h2>
+      <p>Declare your topology naturally with bracketed nodes, edge protocols, and semantic modifiers:</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang-tag">YUMIA DSL</span><button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button></div>
+        <pre><code>slide "System Topology & Neural Dispatch"
+  heading "Vector-Compiled Distributed Ingestion Mesh"
+  
+  diagram type="flow" direction="LR" title="Multi-Tier Neural Processing Pipeline"
+    [Edge Sensors] -> [Ingestion Broker] -[TLS 1.3]-> [Neural Dispatcher]
+    [Neural Dispatcher] -[gRPC Streaming]-> [Quantum Tensor Cores] -> [(Vector Knowledge Base)]
+    [Quantum Tensor Cores] -[Hot Cache]-> [(Redis Semantic Cache)]
+    node qtc label="Quantum Tensor Cores" variant="accent"
+    node vkb label="Vector Knowledge Base" shape="database" variant="primary"
+    node cache label="Redis Semantic Cache" shape="database" variant="success"</code></pre>
+      </div>
+
+      <h2>Node Shape Tokens</h2>
+      <p>Yumia recognizes concise inline shape tokens inspired by modern diagramming grammars:</p>
+      <ul>
+        <li><code>[(Database Node)]</code> or <code>shape="database"</code> — Cylinder storage node</li>
+        <li><code>((Circle Milestone))</code> or <code>shape="circle"</code> — Rounded milestone / event node</li>
+        <li><code>{Decision Logic}</code> or <code>shape="diamond"</code> — Conditional branch diamond</li>
+        <li><code>[Standard Box]</code> or <code>shape="round"</code> — Card node with design token borders</li>
+      </ul>
+
+      <h2>Bidirectional Node Aliasing</h2>
+      <p>Reference nodes by explicit IDs (e.g. <code>sensors[Edge Sensors]</code>) or label text (<code>[Edge Sensors]</code>). Yumia automatically links edges and preserves custom node modifiers (<code>variant="accent"</code>) across the entire graph.</p>
+    `,
+  },
+  {
+    id: 'components-macros',
+    title: 'Components, Macros & Data-Binding',
+    category: 'Language & Syntax',
+    icon: 'fa-solid fa-cube',
+    lead: 'Build reusable visual macros and bind slide decks dynamically to JSON, CSV, or live arrays.',
+    content: `
+      <h2>Visual Macros & Reusable Components</h2>
+      <p>Stop repeating repetitive cards and layout boilerplate. Define reusable visual components at the top of your document and instantiate them cleanly with parameters:</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang-tag">YUMIA DSL</span><button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button></div>
+        <pre><code># Declare a reusable KPI Macro
+component ResearchPill title, description, metricVal, status
+  card title="{{title}}" variant="{{status}}"
+    metric "{{metricVal}}" label="Measured Benchmark" variant="{{status}}"
+    text "{{description}}"
+
+slide "Benchmark Results"
+  grid columns=2 gap=20
+    ResearchPill "Inference Latency", "Sub-millisecond p99 reduction under load.", "1.42ms", "success"
+    ResearchPill "Throughput Capacity", "Peak distributed operations sustained.", "450k op/s", "accent"</code></pre>
+      </div>
+
+      <h2>Data-Binding & Iterative Slides (<code>each</code>)</h2>
+      <p>Generate hundreds of consistent, customized client decks, financial summaries, or team reports from external data feeds using the <code>each</code> directive:</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang-tag">YUMIA DATA BINDING</span><button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button></div>
+        <pre><code>slide "Cluster Performance: {{region}}" each="regions"
+  heading "Telemetry for Data Center: {{region}}"
+  
+  grid columns=3 gap=20
+    metric "{{uptime}}" label="SLA Uptime" variant="success"
+    metric "{{latency}}" label="P99 Response" variant="primary"
+    metric "{{nodes}}" label="Active Worker Nodes" variant="accent"</code></pre>
+      </div>
+    `,
+  },
+  {
     id: 'themes-styling',
     title: 'Themes & Design Tokens',
     category: 'Language & Syntax',
@@ -399,7 +531,7 @@ All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the
         </div>
         <div class="feature-card">
           <h3><code>academic</code></h3>
-          <p>High-contrast serif typography and generous line spacing for scientific papers, theses, and research summaries.</p>
+          <p>Cream/ivory canvas, crimson headers, and high-contrast serif typography for scientific papers, theses, and research summaries.</p>
         </div>
       </div>
 
@@ -408,7 +540,7 @@ All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the
         <div class="code-header"><span class="code-lang-tag">YUMIA</span></div>
         <pre><code># Change theme by setting a single directive:
 document "Security Report"
-  theme "terminal"  # Change to "corporate" or "cyberpunk" instantly</code></pre>
+  theme "academic"  # Change to "corporate", "cyberpunk", or "terminal" instantly</code></pre>
       </div>
     `,
   },
@@ -448,7 +580,7 @@ document "Security Report"
             </tr>
             <tr>
               <td><code>build</code></td>
-              <td><code>yumia build &lt;file&gt; [--format pptx|pdf|html]</code></td>
+              <td><code>yumia build &lt;file&gt; [--format pptx|pdf|html|all]</code></td>
               <td>Compiles presentation to native editable PPTX, vector PDF, or HTML5</td>
             </tr>
             <tr>
@@ -506,7 +638,7 @@ document "Security Report"
       <ul>
         <li><strong>WCAG 2.1 Contrast (YUM010):</strong> Verifies text against background colors to ensure AA (4.5:1) and AAA (7.0:1) accessibility.</li>
         <li><strong>Information Density (YUM004):</strong> Flags slides exceeding cognitive limits (&gt;7 list items or &gt;120 words per slide).</li>
-        <li><strong>Safe Area Compliance:</strong> Enforces 90px margin buffers preventing edge clipping on displays and print.</li>
+        <li><strong>Safe Area Compliance:</strong> Enforces margin buffers preventing edge clipping on displays and print.</li>
         <li><strong>Composition Rhythm:</strong> Detects repetitive slide layouts (e.g. 3 consecutive card grids) and suggests visual breaks.</li>
       </ul>
 
@@ -551,17 +683,18 @@ document "Security Report"
     lead: 'Answers to common questions about Yumia, its architecture, and comparison with other tools.',
     content: `
       <h2>What is Yumia?</h2>
-      <p><strong>Yumia</strong> is a declarative programming language and design compiler designed by <strong>Biagio Scaglia</strong> for creating structured presentations and visual documents. It translates high-level communicative intent (<code>hero</code>, <code>metric</code>, <code>compare</code>, <code>timeline</code>, <code>card</code>, <code>chart</code>) into native editable PowerPoint (.pptx), vector PDF, and interactive HTML5 slides.</p>
+      <p><strong>Yumia</strong> is a declarative programming language and design compiler designed by <strong>Biagio Scaglia</strong> for creating structured presentations and visual documents. It translates high-level communicative intent (<code>hero</code>, <code>metric</code>, <code>compare</code>, <code>timeline</code>, <code>card</code>, <code>chart</code>, <code>diagram</code>) into native editable PowerPoint (.pptx), vector PDF, and interactive HTML5 slides.</p>
 
       <h2>Who created Yumia?</h2>
       <p>Yumia was created and architected by <strong>Biagio Scaglia</strong> as an open-source visual document compiler and ecosystem.</p>
 
-      <h2>How does Yumia differ from PowerPoint, Canva, Marp, or Slidev?</h2>
-      <p>Traditional tools force you into two extremes:</p>
+      <h2>How does Yumia differ from PowerPoint, Canva, Mermaid, Marp, or Slidev?</h2>
+      <p>Traditional tools force you into compromises:</p>
       <ul>
         <li><strong>PowerPoint / Canva:</strong> GUI tools where geometry is positioned manually with pixel coordinates. Difficult to automate, version with Git, or generate programmatically.</li>
+        <li><strong>Mermaid / PlantUML:</strong> Great for diagramming, but export flat raster PNGs or rigid HTML embeds without native PowerPoint vector shape generation.</li>
         <li><strong>Marp / Slidev:</strong> Markdown slide engines that export flat rasterized screenshot images when generating PowerPoint files.</li>
-        <li><strong>Yumia:</strong> A true <em>Design Compiler</em>. It uses pure semantic ASTs and compiles into <strong>100% native OpenXML vector shapes, editable text frames, and Microsoft charts</strong>.</li>
+        <li><strong>Yumia:</strong> A true <em>Design Compiler</em>. It uses pure semantic ASTs and compiles into <strong>100% native OpenXML vector shapes, editable text frames, Microsoft charts, and Sugiyama-layered architecture flowcharts</strong>.</li>
       </ul>
 
       <h2>What CLI commands are available?</h2>
@@ -587,6 +720,22 @@ slide "Revenue & Growth"
     metric "9.2x" label="LTV / CAC" diff="+1.8x" variant="accent" trend="up"
 
   chart type="bar" title="Quarterly ARR ($M)" labels="Q1,Q2,Q3,Q4" data="12.4,15.8,19.2,24.8"`,
+
+  academic: `document "Quantum Neural Architecture & Distributed Systems"
+  theme "academic"
+  author "Biagio Scaglia"
+  aspectRatio "16:9"
+
+slide "System Topology & Architecture"
+  heading "Vector-Compiled Neural Processing Pipeline"
+  
+  diagram type="flow" direction="LR" title="Distributed Ingestion, Inference & Vector Storage"
+    [Edge Sensors] -> [Ingestion Broker] -[TLS 1.3]-> [Neural Dispatcher]
+    [Neural Dispatcher] -[gRPC Streaming]-> [Quantum Tensor Cores] -> [(Vector Knowledge Base)]
+    [Quantum Tensor Cores] -[Hot Cache]-> [(Redis Semantic Cache)]
+    node qtc label="Quantum Tensor Cores" variant="accent"
+    node vkb label="Vector Knowledge Base" shape="database" variant="primary"
+    node cache label="Redis Semantic Cache" shape="database" variant="success"`,
 
   cyberpunk: `document "Next-Gen Cyber Protocol"
   theme "cyberpunk"

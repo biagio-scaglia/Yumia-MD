@@ -184,6 +184,7 @@ class YumiaDocsApp {
             <label style="font-size: 0.8rem; color: var(--yumia-text-muted);">Template:</label>
             <select id="playgroundTemplateSelect" class="playground-select">
               <option value="corporate">Corporate (Financial Growth)</option>
+              <option value="academic">Academic (Vector Flow Architecture)</option>
               <option value="cyberpunk">Cyberpunk (Tech Deck)</option>
               <option value="terminal">Terminal (System Audit)</option>
             </select>
@@ -399,54 +400,80 @@ class YumiaDocsApp {
     const hasHero = source.includes('hero');
     const hasMetric = source.includes('metric');
     const hasGrid = source.includes('grid');
+    const hasDiagram = source.includes('diagram');
     const isCyberpunk = source.includes('cyberpunk');
     const isTerminal = source.includes('terminal');
+    const isAcademic = source.includes('academic');
 
-    const primaryColor = isCyberpunk ? '#00F0FF' : isTerminal ? '#10B981' : '#FF2E88';
-    const bgColor = isTerminal ? '#050508' : '#0B0B12';
+    const primaryColor = isCyberpunk
+      ? '#00F0FF'
+      : isTerminal
+        ? '#10B981'
+        : isAcademic
+          ? '#881337'
+          : '#FF2E88';
+    const bgColor = isTerminal ? '#050508' : isAcademic ? '#FDFBF7' : '#0B0B12';
+    const textColor = isAcademic ? '#1E293B' : '#FFFFFF';
+    const mutedColor = isAcademic ? '#64748B' : '#94A3B8';
 
     frame.style.background = bgColor;
     frame.style.borderColor = primaryColor;
 
     let innerHtml = '';
 
-    if (hasHero) {
+    if (hasDiagram) {
       innerHtml += `
-        <div style="text-align: center; margin-top: 1rem;">
+        <div style="margin-bottom: 0.4rem;">
+          <h2 style="font-size: 1.05rem; color: ${primaryColor}; font-weight: 800; font-family: ${isAcademic ? 'Georgia, serif' : 'Inter, sans-serif'};">System Topology & Architecture</h2>
+          <p style="font-size: 0.7rem; color: ${mutedColor};">Vector-Compiled Neural Processing Pipeline</p>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 0.6rem; background: ${isAcademic ? '#FFFFFF' : 'rgba(255,255,255,0.04)'}; border: 1px solid ${isAcademic ? '#E2E8F0' : 'rgba(255,255,255,0.1)'}; border-radius: 8px; margin: 0.6rem 0;">
+          <div style="padding: 0.4rem 0.6rem; background: ${isAcademic ? '#FFF1F2' : 'rgba(136,19,55,0.2)'}; border: 1.5px solid ${primaryColor}; border-radius: 6px; font-size: 0.65rem; font-weight: 700; color: ${textColor}; text-align: center;">Edge Sensors</div>
+          <span style="color: ${primaryColor}; font-size: 0.7rem;">➔</span>
+          <div style="padding: 0.4rem 0.6rem; background: ${isAcademic ? '#F0FDF4' : 'rgba(16,185,129,0.2)'}; border: 1.5px solid #10B981; border-radius: 6px; font-size: 0.65rem; font-weight: 700; color: ${textColor}; text-align: center;">Ingestion Broker</div>
+          <span style="color: #10B981; font-size: 0.7rem;">➔</span>
+          <div style="padding: 0.4rem 0.6rem; background: ${isAcademic ? '#EFF6FF' : 'rgba(59,130,246,0.2)'}; border: 1.5px solid #3B82F6; border-radius: 6px; font-size: 0.65rem; font-weight: 700; color: ${textColor}; text-align: center;">Quantum Cores</div>
+          <span style="color: #3B82F6; font-size: 0.7rem;">➔</span>
+          <div style="padding: 0.4rem 0.6rem; background: ${isAcademic ? '#FAF5FF' : 'rgba(168,85,247,0.2)'}; border: 1.5px solid #A855F7; border-radius: 6px; font-size: 0.65rem; font-weight: 700; color: ${textColor}; text-align: center;">[(Vector DB)]</div>
+        </div>
+      `;
+    } else if (hasHero) {
+      innerHtml += `
+        <div style="text-align: center; margin-top: 0.8rem;">
           <span style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; background: rgba(255,46,136,0.15); color: ${primaryColor}; border: 1px solid ${primaryColor}; padding: 0.2rem 0.5rem; border-radius: 9999px;">Q4 Release</span>
-          <h2 style="font-size: 1.3rem; margin: 0.5rem 0 0.2rem 0; color: #FFFFFF; font-weight: 800;">Hyper-Growth Execution</h2>
-          <p style="font-size: 0.75rem; color: #94A3B8;">ARR beats quarterly projection by 42%</p>
+          <h2 style="font-size: 1.25rem; margin: 0.5rem 0 0.2rem 0; color: ${textColor}; font-weight: 800;">Hyper-Growth Execution</h2>
+          <p style="font-size: 0.75rem; color: ${mutedColor};">ARR beats quarterly projection by 42%</p>
         </div>
       `;
     } else {
       innerHtml += `
         <div style="margin-bottom: 0.5rem;">
-          <h2 style="font-size: 1.1rem; color: #FFFFFF; font-weight: 700;">System Overview</h2>
+          <h2 style="font-size: 1.1rem; color: ${textColor}; font-weight: 700;">System Overview</h2>
         </div>
       `;
     }
 
-    if (hasMetric || hasGrid) {
+    if (hasMetric || (hasGrid && !hasDiagram)) {
       innerHtml += `
         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin: 0.75rem 0;">
-          <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 0.6rem; text-align: center;">
+          <div style="background: ${isAcademic ? '#FFFFFF' : 'rgba(255,255,255,0.04)'}; border: 1px solid ${isAcademic ? '#E2E8F0' : 'rgba(255,255,255,0.1)'}; border-radius: 6px; padding: 0.6rem; text-align: center;">
             <div style="font-size: 1.1rem; font-weight: 800; color: ${primaryColor};">$24.8M</div>
-            <div style="font-size: 0.65rem; color: #94A3B8;">ARR Run-Rate</div>
+            <div style="font-size: 0.65rem; color: ${mutedColor};">ARR Run-Rate</div>
           </div>
-          <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 0.6rem; text-align: center;">
+          <div style="background: ${isAcademic ? '#FFFFFF' : 'rgba(255,255,255,0.04)'}; border: 1px solid ${isAcademic ? '#E2E8F0' : 'rgba(255,255,255,0.1)'}; border-radius: 6px; padding: 0.6rem; text-align: center;">
             <div style="font-size: 1.1rem; font-weight: 800; color: #10B981;">118%</div>
-            <div style="font-size: 0.65rem; color: #94A3B8;">Net Retention</div>
+            <div style="font-size: 0.65rem; color: ${mutedColor};">Net Retention</div>
           </div>
-          <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 0.6rem; text-align: center;">
+          <div style="background: ${isAcademic ? '#FFFFFF' : 'rgba(255,255,255,0.04)'}; border: 1px solid ${isAcademic ? '#E2E8F0' : 'rgba(255,255,255,0.1)'}; border-radius: 6px; padding: 0.6rem; text-align: center;">
             <div style="font-size: 1.1rem; font-weight: 800; color: #00F0FF;">9.2x</div>
-            <div style="font-size: 0.65rem; color: #94A3B8;">LTV / CAC</div>
+            <div style="font-size: 0.65rem; color: ${mutedColor};">LTV / CAC</div>
           </div>
         </div>
       `;
     }
 
     innerHtml += `
-      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.3rem; font-size: 0.6rem; color: #64748B;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid ${isAcademic ? '#E2E8F0' : 'rgba(255,255,255,0.06)'}; padding-top: 0.3rem; font-size: 0.6rem; color: ${mutedColor};">
         <span>Yumia Native Compiler</span>
         <span>1920 × 1080 (16:9)</span>
       </div>

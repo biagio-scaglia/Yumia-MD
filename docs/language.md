@@ -188,6 +188,57 @@ mermaid
     B --> E[Editable PPTX]
 ```
 
+### Vector Architecture & Flowcharts (`diagram`)
+
+Native declarative flowcharts and topology graphs compiled via the **Sugiyama Layered Graph Framework** directly into native vector SVG, editable PowerPoint shapes, and PDF:
+
+```yumia
+diagram type="flow" direction="LR" title="Distributed Neural Pipeline"
+  [Edge Sensors] -> [Ingestion Broker] -[TLS 1.3]-> [Neural Dispatcher]
+  [Neural Dispatcher] -[gRPC Streaming]-> [Quantum Tensor Cores] -> [(Vector Knowledge Base)]
+  [Quantum Tensor Cores] -[Hot Cache]-> [(Redis Semantic Cache)]
+  node qtc label="Quantum Tensor Cores" variant="accent"
+  node vkb label="Vector Knowledge Base" shape="database" variant="primary"
+  node cache label="Redis Semantic Cache" shape="database" variant="success"
+```
+
+Supported inline shapes:
+
+- `[(Database Node)]` (`shape="database"`)
+- `((Circle Milestone))` (`shape="circle"`)
+- `{Decision Logic}` (`shape="diamond"`)
+- `[Standard Node]` (`shape="round"`)
+
+### Reusable Visual Components & Macros (`component`)
+
+Declare modular layout macros at the top of your document and instantiate them with clean parameters:
+
+```yumia
+component ResearchPill title, description, metricVal, status
+  card title="{{title}}" variant="{{status}}"
+    metric "{{metricVal}}" label="Measured Benchmark" variant="{{status}}"
+    text "{{description}}"
+
+slide "Empirical Results"
+  grid columns=2 gap=20
+    ResearchPill "Inference Latency", "p99 reduction under heavy concurrent load.", "1.42ms", "success"
+    ResearchPill "Throughput Capacity", "Peak distributed operations sustained.", "450k op/s", "accent"
+```
+
+### Data-Binding & Iterative Decks (`each`)
+
+Bind slide decks dynamically to JSON arrays, lists, or CSV feeds:
+
+```yumia
+slide "Cluster Performance: {{region}}" each="regions"
+  heading "Telemetry for {{region}}"
+
+  grid columns=3 gap=20
+    metric "{{uptime}}" label="SLA Uptime" variant="success"
+    metric "{{latency}}" label="P99 Response" variant="primary"
+    metric "{{nodes}}" label="Active Nodes" variant="accent"
+```
+
 ### Mathematical Equations (KaTeX)
 
 ```yumia
