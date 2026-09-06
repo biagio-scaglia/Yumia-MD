@@ -46,9 +46,19 @@ export function computeDiagramLayout(
 
   if (nodeIds.length === 0) return empty;
 
+  // Ignore orphan alias nodes (no incident edges) so variant directives can't spawn ghosts.
+  const connected = new Set<string>();
+  diagram.edges.forEach((e) => {
+    connected.add(e.from);
+    connected.add(e.to);
+  });
+  const activeIds =
+    connected.size > 0 ? nodeIds.filter((id) => connected.has(id)) : nodeIds;
+  if (activeIds.length === 0) return empty;
+
   const inDegree: Record<string, number> = {};
   const adj: Record<string, string[]> = {};
-  nodeIds.forEach((id) => {
+  activeIds.forEach((id) => {
     inDegree[id] = 0;
     adj[id] = [];
   });
@@ -63,10 +73,10 @@ export function computeDiagramLayout(
 
   const ranks: Record<string, number> = {};
   const queue: string[] = [];
-  const visitBudget = Math.max(4, nodeIds.length * 2);
+  const visitBudget = Math.max(4, activeIds.length * 2);
   const visits: Record<string, number> = {};
 
-  nodeIds.forEach((id) => {
+  activeIds.forEach((id) => {
     if (inDegree[id] === 0) {
       ranks[id] = 0;
       queue.push(id);
@@ -75,12 +85,12 @@ export function computeDiagramLayout(
 
   // Fully cyclic graph: seed the first node
   if (queue.length === 0) {
-    ranks[nodeIds[0]!] = 0;
-    queue.push(nodeIds[0]!);
+    ranks[activeIds[0]!] = 0;
+    queue.push(activeIds[0]!);
   }
 
   let steps = 0;
-  const maxSteps = nodeIds.length * nodeIds.length + 8;
+  const maxSteps = activeIds.length * activeIds.length + 8;
   while (queue.length > 0 && steps < maxSteps) {
     steps++;
     const u = queue.shift()!;
@@ -89,7 +99,7 @@ export function computeDiagramLayout(
 
     const r = ranks[u] ?? 0;
     for (const v of adj[u] || []) {
-      const nextR = Math.min(nodeIds.length - 1, r + 1);
+      const nextR = Math.min(activeIds.length - 1, r + 1);
       if (ranks[v] === undefined || ranks[v]! < nextR) {
         ranks[v] = nextR;
         if ((visits[v] || 0) <= visitBudget) {
@@ -100,14 +110,14 @@ export function computeDiagramLayout(
   }
 
   // Assign remaining nodes (unreachable / broken cycles) to stable ranks
-  nodeIds.forEach((id, idx) => {
+  activeIds.forEach((id, idx) => {
     if (ranks[id] === undefined) {
-      ranks[id] = Math.min(idx, nodeIds.length - 1);
+      ranks[id] = Math.min(idx, activeIds.length - 1);
     }
   });
 
   const rankGroups: Record<number, string[]> = {};
-  nodeIds.forEach((id) => {
+  activeIds.forEach((id) => {
     const r = ranks[id] ?? 0;
     if (!rankGroups[r]) rankGroups[r] = [];
     rankGroups[r]!.push(id);
@@ -123,18 +133,25 @@ export function computeDiagramLayout(
   });
 
   const titleOffset = diagram.title ? (options.titleHeight ?? 28) : 0;
-  const gapX = isLR ? 28 : 20;
-  const gapY = isLR ? 18 : 28;
+  const gapX = isLR ? 36 : 24;
+  const gapY = isLR ? 22 : 32;
 
-  // Prefer readable labels: widen nodes when few ranks, raise height with lane count.
+  // Prefer readable labels: use most of the available width across ranks.
   const nodeWidth = isLR
-    ? Math.max(72, Math.min(140, (availableWidth - 40 - gapX * (numRanks - 1)) / numRanks))
-    : Math.max(80, Math.min(150, (availableWidth - 40 - gapX * (maxLane - 1)) / Math.max(1, maxLane)));
+    ? Math.max(
+        100,
+        Math.min(260, (availableWidth - 48 - gapX * (numRanks - 1)) / numRanks)
+      )
+    : Math.max(
+        100,
+        Math.min(220, (availableWidth - 48 - gapX * (maxLane - 1)) / Math.max(1, maxLane))
+      );
 
-  const longestLabel = Math.max(1, ...diagram.nodes.map((n) => (n.label || n.id).length));
-  const charsPerLine = Math.max(8, Math.floor((nodeWidth - 12) / 6.2));
+  const activeNodes = diagram.nodes.filter((n) => activeIds.includes(n.id));
+  const longestLabel = Math.max(1, ...activeNodes.map((n) => (n.label || n.id).length));
+  const charsPerLine = Math.max(8, Math.floor((nodeWidth - 16) / 6.5));
   const labelLines = Math.max(1, Math.ceil(longestLabel / charsPerLine));
-  const nodeHeight = Math.max(36, Math.min(72, 18 + labelLines * 14));
+  const nodeHeight = Math.max(40, Math.min(84, 20 + labelLines * 16));
 
   const contentH = isLR
     ? maxLane * (nodeHeight + gapY) - gapY

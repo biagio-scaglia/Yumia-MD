@@ -870,14 +870,15 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       });
     } else {
       pptxSlide.addText(code.code, {
-        x: rect.x + 0.2,
-        y: rect.y + 0.32,
-        w: rect.w - 0.4,
-        h: rect.h - 0.4,
-        fontSize: 11.5,
+        x: rect.x + 0.22,
+        y: rect.y + 0.36,
+        w: Math.max(0.2, rect.w - 0.44),
+        h: Math.max(0.2, rect.h - 0.48),
+        fontSize: rect.h < 2.2 ? 10 : 11.5,
         fontFace: 'Consolas',
         color: textColor,
         valign: 'top',
+        margin: 0,
       });
     }
   }
@@ -980,12 +981,12 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       rectRadius: 0.08,
     });
 
-    const titleH = callout.title ? 0.35 : 0;
+    const titleH = callout.title ? 0.38 : 0;
     if (callout.title) {
       pptxSlide.addText(callout.title, {
-        x: rect.x + 0.15,
-        y: rect.y + 0.08,
-        w: rect.w - 0.3,
+        x: rect.x + 0.2,
+        y: rect.y + 0.16,
+        w: rect.w - 0.4,
         h: 0.3,
         fontSize: 13,
         bold: true,
@@ -995,10 +996,10 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     }
 
     pptxSlide.addText(callout.text, {
-      x: rect.x + 0.15,
-      y: rect.y + titleH + 0.08,
-      w: rect.w - 0.3,
-      h: rect.h - titleH - 0.16,
+      x: rect.x + 0.2,
+      y: rect.y + titleH + 0.14,
+      w: rect.w - 0.4,
+      h: Math.max(0.2, rect.h - titleH - 0.28),
       fontSize: 12,
       color: this.cleanHexColor(theme.colors.text),
       fontFace: cleanFontFace(theme.typography.bodyFont),
@@ -1412,7 +1413,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     const { element, bounds } = node;
     const compare = element as CompareElement;
     const rect = this.toInches(bounds, scaleX, scaleY);
-    const colW = (rect.w - 0.4) / 2;
+    const colW = (rect.w - 0.5) / 2;
 
     // Left container
     pptxSlide.addShape(pptx.ShapeType.roundRect, {
@@ -1439,7 +1440,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     }
 
     // Right container
-    const rightX = rect.x + colW + 0.4;
+    const rightX = rect.x + colW + 0.5;
     pptxSlide.addShape(pptx.ShapeType.roundRect, {
       x: rightX,
       y: rect.y,
@@ -1463,27 +1464,31 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       });
     }
 
-    // Center VS Badge
-    const vsX = rect.x + colW + 0.05;
-    pptxSlide.addShape(pptx.ShapeType.roundRect, {
+    // Center VS Badge — keep wide enough so "VS" stays on one line
+    const vsW = 0.42;
+    const vsH = 0.42;
+    const vsX = rect.x + colW + (0.5 - vsW) / 2;
+    const vsY = rect.y + rect.h / 2 - vsH / 2;
+    pptxSlide.addShape(pptx.ShapeType.ellipse, {
       x: vsX,
-      y: rect.y + rect.h / 2 - 0.18,
-      w: 0.3,
-      h: 0.3,
-      fill: { color: this.cleanHexColor(theme.colors.border || '#334155') },
-      rectRadius: 0.15,
+      y: vsY,
+      w: vsW,
+      h: vsH,
+      fill: { color: this.cleanHexColor(theme.colors.surface || theme.colors.background) },
+      line: { color: this.cleanHexColor(theme.colors.primary), width: 1.5 },
     });
     pptxSlide.addText('VS', {
       x: vsX,
-      y: rect.y + rect.h / 2 - 0.18,
-      w: 0.3,
-      h: 0.3,
-      fontSize: 10,
+      y: vsY,
+      w: vsW,
+      h: vsH,
+      fontSize: 11,
       bold: true,
-      color: this.cleanHexColor(theme.colors.muted || '#94a3b8'),
+      color: this.cleanHexColor(theme.colors.text),
       fontFace: cleanFontFace(theme.typography.headingFont),
       align: 'center',
       valign: 'middle',
+      margin: 0,
     });
 
     // Render left & right child elements
@@ -1998,17 +2003,18 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         });
       }
 
-      pptxSlide.addText(fitDiagramLabel(n.label, Math.max(8, Math.floor(nodeW * 12))), {
-        x: p.x + 0.06,
+      pptxSlide.addText(fitDiagramLabel(n.label, Math.max(10, Math.floor((nodeW * 72) / 6.8))), {
+        x: p.x + 0.08,
         y: p.y + 0.06,
-        w: Math.max(0.1, nodeW - 0.12),
+        w: Math.max(0.1, nodeW - 0.16),
         h: Math.max(0.1, nodeH - 0.12),
         align: 'center',
         valign: 'middle',
-        fontSize: n.label.length > 18 ? 10 : 11,
+        fontSize: nodeW < 1.1 ? 10 : n.label.length > 22 ? 11 : 12,
         bold: true,
         color: this.cleanHexColor(theme.colors.text || 'ffffff'),
         fontFace: cleanFontFace(theme.typography.headingFont),
+        margin: 0,
       });
     });
   }

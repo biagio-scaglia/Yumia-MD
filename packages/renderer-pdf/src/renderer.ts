@@ -390,13 +390,13 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
     const midX = x + colW + gap / 2;
     const midY = y + height / 2;
-    doc.circle(midX, midY, 14).fill(theme.colors.surface || '#151522');
-    doc.circle(midX, midY, 14).lineWidth(1.2).strokeColor(theme.colors.primary).stroke();
+    doc.circle(midX, midY, 16).fill(theme.colors.surface || '#151522');
+    doc.circle(midX, midY, 16).lineWidth(1.4).strokeColor(theme.colors.primary).stroke();
     doc
       .font(this.getPdfFont(theme, 'bold'))
-      .fontSize(9)
+      .fontSize(10)
       .fillColor(theme.colors.text)
-      .text('VS', midX - 12, midY - 4, { width: 24, align: 'center' });
+      .text('VS', midX - 14, midY - 5, { width: 28, align: 'center' });
 
     if (compare.leftTitle) {
       doc

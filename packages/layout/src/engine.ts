@@ -159,7 +159,7 @@ export class DefaultLayoutEngine implements LayoutEngine {
         return { element, bounds: { x, y, width, height } };
       }
       case 'code': {
-        const height = this.estimateCodeHeight(element);
+        const height = this.estimateCodeHeight(element, width);
         return { element, bounds: { x, y, width, height } };
       }
       case 'quote': {
@@ -181,7 +181,7 @@ export class DefaultLayoutEngine implements LayoutEngine {
       case 'callout': {
         const c = element as CalloutElement;
         const lines = Math.ceil(c.text.length / Math.max(15, Math.floor(width / 14))) || 1;
-        const height = Math.max(80, lines * 28 + (c.title ? 45 : 0) + 30);
+        const height = Math.max(100, lines * 30 + (c.title ? 52 : 0) + 40);
         return { element, bounds: { x, y, width, height } };
       }
       case 'badge': {
@@ -343,7 +343,9 @@ export class DefaultLayoutEngine implements LayoutEngine {
     width: number,
     gap: number
   ): LayoutNode {
-    const colW = (width - gap) / 2;
+    // Keep a dedicated gutter for the VS badge between columns.
+    const vsGap = Math.max(gap, 56);
+    const colW = (width - vsGap) / 2;
     const titleH = 56;
     const pad = 28;
 
@@ -356,7 +358,7 @@ export class DefaultLayoutEngine implements LayoutEngine {
       gap / 2
     );
 
-    const rightX = x + colW + gap;
+    const rightX = x + colW + vsGap;
     const rightStartY = y + pad + (element.rightTitle ? titleH : 0);
     const { nodes: rightChildren, totalHeight: rightInnerH } = this.layoutElementList(
       element.right,
@@ -535,9 +537,16 @@ export class DefaultLayoutEngine implements LayoutEngine {
     return Math.max(52, totalHeight);
   }
 
-  private estimateCodeHeight(code: CodeElement): number {
-    const lines = code.code.split('\n').length || 1;
-    return lines * 28 + 48;
+  private estimateCodeHeight(code: CodeElement, width: number = 800): number {
+    const lines = code.code.split('\n');
+    // Consolas ~0.6em wide; leave room for terminal padding.
+    const charsPerLine = Math.max(18, Math.floor((width - 48) / 9.5));
+    let visualLines = 0;
+    for (const line of lines) {
+      visualLines += Math.max(1, Math.ceil((line.length || 1) / charsPerLine));
+    }
+    // Chrome for mac dots row + padding around the text block.
+    return Math.max(120, visualLines * 34 + 84);
   }
 
   private estimateQuoteHeight(quote: QuoteElement, width: number): number {

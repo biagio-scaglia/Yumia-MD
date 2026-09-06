@@ -743,7 +743,10 @@ export class NativeYumiaParser {
             }
           } else if (dLine.startsWith('node ')) {
             const nParts = dLine.slice(5).trim();
-            const nIdMatch = nParts.match(/^(\S+)/);
+            // Match full bracket labels: [Sorgente Yumia], not just "[Sorgente"
+            const nIdMatch = nParts.match(
+              /^(\[[^\]]+\]|\([^)]+\)|\{[^}]+\}|[a-zA-Z0-9_-]+(?:\[\([^)]+\)\]|\(\([^)]+\)\)|\[[^\]]+\]|\{[^}]+\})?)/
+            );
             const nLabelMatch = nParts.match(/\blabel=["']([^"']+)["']/);
             const nShapeMatch = nParts.match(/\bshape=["']?([^"'\s]+)["']?/);
             const nVarMatch = nParts.match(/\bvariant=["']?([^"'\s]+)["']?/);
@@ -757,6 +760,7 @@ export class NativeYumiaParser {
                 explicitLabel
               );
               nodeMap.set(nId.toLowerCase(), node);
+              nodeMap.set(node.id, node);
             }
           }
           nextIdx++;
