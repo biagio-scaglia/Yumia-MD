@@ -1,0 +1,16 @@
+# Normalize text files to LF so Prettier (endOfLine: lf) and Linux CI agree.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.pptx binary
+*.potx binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
