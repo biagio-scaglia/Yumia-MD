@@ -4,6 +4,9 @@ import {
   CardElement,
   ChartDataSeries,
   ChartElement,
+  ClassDiagramElement,
+  ClassItem,
+  ClassRelationship,
   CodeElement,
   ColumnElement,
   ColumnsElement,
@@ -29,6 +32,10 @@ import {
   PresentationMetadata,
   QuoteElement,
   SectionElement,
+  SequenceElement,
+  SequenceMessage,
+  SequenceNote,
+  SequenceParticipant,
   Slide,
   SlideElement,
   SlotElement,
@@ -416,3 +423,31 @@ export function createDiagram(
     ...(options || {}),
   };
 }
+
+export function createSequence(
+  participants: SequenceParticipant[] = [],
+  messages: SequenceMessage[] = [],
+  options: { title?: string | undefined; notes?: SequenceNote[] | undefined } = {}
+): SequenceElement {
+  return {
+    type: 'sequence',
+    participants,
+    messages,
+    ...(options.title ? { title: options.title } : {}),
+    ...(options.notes ? { notes: options.notes } : {}),
+  };
+}
+
+export function createClassDiagram(
+  classes: ClassItem[] = [],
+  relationships: ClassRelationship[] = [],
+  options: { title?: string | undefined } = {}
+): ClassDiagramElement {
+  return {
+    type: 'class-diagram',
+    classes,
+    relationships,
+    ...(options.title ? { title: options.title } : {}),
+  };
+}
+

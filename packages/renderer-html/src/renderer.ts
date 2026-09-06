@@ -3,6 +3,7 @@ import {
   CalloutElement,
   CardElement,
   ChartElement,
+  ClassDiagramElement,
   CodeElement,
   ColumnElement,
   ColumnsElement,
@@ -21,6 +22,7 @@ import {
   Presentation,
   QuoteElement,
   SectionElement,
+  SequenceElement,
   Slide,
   SlideElement,
   StackElement,
@@ -2200,6 +2202,12 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       case 'diagram': {
         return this.renderDiagram(element as DiagramElement, theme);
       }
+      case 'sequence': {
+        return this.renderSequence(element as SequenceElement, theme);
+      }
+      case 'class-diagram': {
+        return this.renderClassDiagram(element as ClassDiagramElement, theme);
+      }
       default:
         return '';
     }
@@ -2413,6 +2421,217 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     `;
   }
 
+  private renderSequence(s: SequenceElement, theme: YumiaTheme): string {
+    const participants = s.participants || [];
+    const messages = s.messages || [];
+    if (participants.length === 0) return '';
+
+    const partCount = participants.length;
+    const msgCount = Math.max(1, messages.length);
+    const width = 800;
+    const partWidth = Math.min(140, (width - 60) / partCount);
+    const gapX = (width - 60 - partWidth * partCount) / Math.max(1, partCount - 1);
+    const startY = 30;
+    const stepY = 50;
+    const height = startY + 50 + msgCount * stepY + 30;
+
+    const positions: Record<string, number> = {};
+    participants.forEach((p, idx) => {
+      positions[p.id] = 30 + idx * (partWidth + gapX) + partWidth / 2;
+    });
+
+    const primaryColor = theme.colors.primary || '#00F0FF';
+    const accentColor = theme.colors.accent || '#FF2E88';
+    const surfaceFill = theme.colors.surface || 'rgba(15, 23, 42, 0.9)';
+    const textFill = theme.colors.text || '#ffffff';
+    const borderColor = theme.colors.border || 'rgba(255, 255, 255, 0.18)';
+    const markerId = `seq-arr-${Math.random().toString(36).slice(2, 8)}`;
+
+    let lifelinesSvg = '';
+    let partHeadersSvg = '';
+
+    participants.forEach((p) => {
+      const cx = positions[p.id]!;
+      const isActor = p.type === 'actor';
+      const isDb = p.type === 'database';
+
+      lifelinesSvg += `<line x1="${cx}" y1="${startY + 36}" x2="${cx}" y2="${height - 20}" stroke="${primaryColor}" stroke-width="1.8" stroke-dasharray="6,6" opacity="0.45" />`;
+
+      const boxX = cx - partWidth / 2;
+      let shapeHtml = '';
+      if (isActor) {
+        shapeHtml = `
+          <circle cx="${cx}" cy="${startY + 10}" r="7" fill="${surfaceFill}" stroke="${accentColor}" stroke-width="2" />
+          <path d="M ${cx} ${startY + 17} L ${cx} ${startY + 28} M ${cx - 7} ${startY + 21} L ${cx + 7} ${startY + 21} M ${cx} ${startY + 28} L ${cx - 6} ${startY + 38} M ${cx} ${startY + 28} L ${cx + 6} ${startY + 38}" stroke="${accentColor}" stroke-width="1.6" fill="none" />
+        `;
+      } else if (isDb) {
+        shapeHtml = `
+          <rect x="${boxX}" y="${startY}" width="${partWidth}" height="36" rx="8" fill="${surfaceFill}" stroke="${primaryColor}" stroke-width="1.8" />
+          <path d="M ${boxX} ${startY + 8} C ${cx} ${startY + 14}, ${cx} ${startY + 14}, ${boxX + partWidth} ${startY + 8}" fill="none" stroke="${primaryColor}" stroke-width="1.4"/>
+        `;
+      } else {
+        shapeHtml = `
+          <rect x="${boxX}" y="${startY}" width="${partWidth}" height="36" rx="8" fill="${surfaceFill}" stroke="${primaryColor}" stroke-width="1.8" />
+        `;
+      }
+
+      partHeadersSvg += `
+        <g class="yumia-seq-participant">
+          ${shapeHtml}
+          ${!isActor ? `<text x="${cx}" y="${startY + 22}" text-anchor="middle" fill="${textFill}" font-size="11" font-weight="700" font-family="sans-serif">${this.escapeHtml(p.name)}</text>` : `<text x="${cx}" y="${startY + 50}" text-anchor="middle" fill="${textFill}" font-size="10.5" font-weight="700" font-family="sans-serif">${this.escapeHtml(p.name)}</text>`}
+        </g>
+      `;
+    });
+
+    let messagesSvg = '';
+    messages.forEach((msg, idx) => {
+      const x1 = positions[msg.from] || 30;
+      const x2 = positions[msg.to] || width - 30;
+      const y = startY + 54 + idx * stepY;
+      const isReturn = msg.style === 'dashed' || msg.arrowType === 'return';
+      const dashAttr = isReturn ? 'stroke-dasharray="6,4"' : '';
+      const color = isReturn ? accentColor : primaryColor;
+
+      messagesSvg += `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="${color}" stroke-width="2" ${dashAttr} marker-end="url(#${markerId})" />`;
+
+      const midX = (x1 + x2) / 2;
+      const labelText = this.escapeHtml(msg.label);
+      const pillW = Math.max(52, labelText.length * 6.8 + 16);
+      messagesSvg += `
+        <g transform="translate(${midX}, ${y - 12})">
+          <rect x="-${pillW / 2}" y="-9" width="${pillW}" height="18" rx="5" fill="${surfaceFill}" stroke="${borderColor}" stroke-width="1" />
+          <text x="0" y="4" text-anchor="middle" fill="${textFill}" font-size="10" font-weight="600" font-family="sans-serif">${labelText}</text>
+        </g>
+      `;
+    });
+
+    let notesSvg = '';
+    if (s.notes) {
+      s.notes.forEach((note, nIdx) => {
+        const cx = positions[note.participant] || 50;
+        const noteY = startY + 54 + nIdx * stepY + 8;
+        const noteW = 120;
+        const noteH = 32;
+        const noteX = note.position === 'right' ? cx + 12 : note.position === 'left' ? cx - noteW - 12 : cx - noteW / 2;
+        notesSvg += `
+          <g class="yumia-seq-note">
+            <rect x="${noteX}" y="${noteY}" width="${noteW}" height="${noteH}" rx="6" fill="${theme.colors.elevatedSurface || '#1e293b'}" stroke="${accentColor}" stroke-width="1.2" stroke-dasharray="3,3" />
+            <text x="${noteX + noteW / 2}" y="${noteY + 19}" text-anchor="middle" fill="${theme.colors.accent || '#38bdf8'}" font-size="9" font-weight="500" font-family="sans-serif">${this.escapeHtml(note.text)}</text>
+          </g>
+        `;
+      });
+    }
+
+    const titleHtml = s.title
+      ? `<div style="font-weight:700; font-size:1.05rem; color:var(--yumia-primary); margin-bottom:0.4rem; text-align:center;">${this.escapeHtml(s.title)}</div>`
+      : '';
+
+    return `
+      <div class="yumia-sequence-container" style="width:100%; display:flex; flex-direction:column; align-items:center; margin:0.4rem 0;">
+        ${titleHtml}
+        <svg viewBox="0 0 ${width} ${height}" style="width:100%; max-height:460px;" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <marker id="${markerId}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="${primaryColor}" />
+            </marker>
+          </defs>
+          ${lifelinesSvg}
+          ${messagesSvg}
+          ${notesSvg}
+          ${partHeadersSvg}
+        </svg>
+      </div>
+    `;
+  }
+
+  private renderClassDiagram(cd: ClassDiagramElement, _theme: YumiaTheme): string {
+    const classes = cd.classes || [];
+    if (classes.length === 0) return '';
+
+    const titleHtml = cd.title
+      ? `<div style="font-weight:700; font-size:1.05rem; color:var(--yumia-primary); margin-bottom:0.6rem; text-align:center;">${this.escapeHtml(cd.title)}</div>`
+      : '';
+
+    const cols = Math.min(3, Math.max(1, classes.length));
+
+    const classesHtml = classes
+      .map((c) => {
+        const modifier = c.isInterface
+          ? '<div style="font-size:10px; color:var(--yumia-secondary); font-style:italic; text-align:center;">&lt;&lt;interface&gt;&gt;</div>'
+          : c.isAbstract
+            ? '<div style="font-size:10px; color:var(--yumia-secondary); font-style:italic; text-align:center;">&lt;&lt;abstract&gt;&gt;</div>'
+            : '';
+
+        const attributes = c.members.filter((m) => !m.isMethod);
+        const methods = c.members.filter((m) => m.isMethod);
+
+        const attrHtml =
+          attributes.length > 0
+            ? `<div style="padding:6px 10px; font-family:var(--yumia-font-code); font-size:10.5px; color:var(--yumia-text); line-height:1.5; border-top:1px solid var(--yumia-border);">
+            ${attributes.map((a) => `<div><span style="color:var(--yumia-primary); font-weight:700; margin-right:4px;">${a.visibility || '+'}</span>${this.escapeHtml(a.name)}${a.type ? `: <span style="color:var(--yumia-accent);">${this.escapeHtml(a.type)}</span>` : ''}</div>`).join('')}
+          </div>`
+            : '';
+
+        const methodHtml =
+          methods.length > 0
+            ? `<div style="padding:6px 10px; font-family:var(--yumia-font-code); font-size:10.5px; color:var(--yumia-text); line-height:1.5; border-top:1px solid var(--yumia-border);">
+            ${methods.map((m) => `<div><span style="color:var(--yumia-secondary); font-weight:700; margin-right:4px;">${m.visibility || '+'}</span>${this.escapeHtml(m.name)}(${this.escapeHtml(m.params || '')})${m.type ? `: <span style="color:var(--yumia-accent);">${this.escapeHtml(m.type)}</span>` : ''}</div>`).join('')}
+          </div>`
+            : '';
+
+        return `
+        <div class="yumia-class-card" style="background:var(--yumia-surface); border:1.8px solid var(--yumia-border); border-radius:10px; overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,0.2); display:flex; flex-direction:column;">
+          <div style="background:rgba(255,255,255,0.03); padding:8px 12px; text-align:center; border-bottom:1.5px solid var(--yumia-primary);">
+            ${modifier}
+            <div style="font-weight:700; font-size:13.5px; color:var(--yumia-primary); letter-spacing:0.02em;">${this.escapeHtml(c.name)}</div>
+          </div>
+          ${attrHtml}
+          ${methodHtml}
+        </div>
+      `;
+      })
+      .join('\n');
+
+    let relsHtml = '';
+    if (cd.relationships && cd.relationships.length > 0) {
+      relsHtml = `
+        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-top:10px; padding:6px 14px; background:rgba(255,255,255,0.02); border-radius:8px;">
+          ${cd.relationships
+            .map((r) => {
+              const relSymbol =
+                r.relationshipType === 'inheritance'
+                  ? '──▷'
+                  : r.relationshipType === 'composition'
+                    ? '◆──'
+                    : r.relationshipType === 'aggregation'
+                      ? '◇──'
+                      : '──▶';
+              const labelStr = r.label ? `: ${this.escapeHtml(r.label)}` : '';
+              return `<div style="font-size:11px; font-weight:600; color:var(--yumia-muted); display:flex; align-items:center; gap:6px;">
+              <span style="color:var(--yumia-text); font-weight:700;">${this.escapeHtml(r.from)}</span>
+              ${r.fromMultiplicity ? `<span style="font-size:9.5px; color:var(--yumia-accent);">${this.escapeHtml(r.fromMultiplicity)}</span>` : ''}
+              <span style="color:var(--yumia-primary); font-family:monospace; font-size:12px;">${relSymbol}</span>
+              ${r.toMultiplicity ? `<span style="font-size:9.5px; color:var(--yumia-accent);">${this.escapeHtml(r.toMultiplicity)}</span>` : ''}
+              <span style="color:var(--yumia-text); font-weight:700;">${this.escapeHtml(r.to)}</span>
+              <span style="color:var(--yumia-secondary); font-style:italic;">${labelStr}</span>
+            </div>`;
+            })
+            .join('')}
+        </div>
+      `;
+    }
+
+    return `
+      <div class="yumia-class-diagram" style="width:100%; display:flex; flex-direction:column; margin:0.4rem 0;">
+        ${titleHtml}
+        <div style="display:grid; grid-template-columns:repeat(${cols}, minmax(0, 1fr)); gap:16px; width:100%; align-items:start;">
+          ${classesHtml}
+        </div>
+        ${relsHtml}
+      </div>
+    `;
+  }
+
   private renderBadge(b: BadgeElement): string {
     const variant = b.variant || 'default';
     return `<span class="yumia-badge variant-${variant}">${this.escapeHtml(b.text)}</span>`;
@@ -2478,6 +2697,173 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       theme.colors.success || '#10B981',
       theme.colors.warning || '#F59E0B',
     ];
+
+    if (c.chartType === 'radar') {
+      const values = series[0]?.values || [];
+      const maxVal = Math.max(...values, 1);
+      const N = Math.max(3, labels.length || values.length);
+      const width = 520;
+      const height = 280;
+      const cx = width / 2;
+      const cy = height / 2;
+      const radius = 95;
+
+      let ringsHtml = '';
+      [0.25, 0.5, 0.75, 1.0].forEach((ratio) => {
+        const pts: string[] = [];
+        for (let i = 0; i < N; i++) {
+          const angle = (i * 2 * Math.PI) / N - Math.PI / 2;
+          const rx = cx + ratio * radius * Math.cos(angle);
+          const ry = cy + ratio * radius * Math.sin(angle);
+          pts.push(`${rx},${ry}`);
+        }
+        ringsHtml += `<polygon points="${pts.join(' ')}" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.2" />`;
+      });
+
+      let spokesHtml = '';
+      let labelsHtml = '';
+      for (let i = 0; i < N; i++) {
+        const angle = (i * 2 * Math.PI) / N - Math.PI / 2;
+        const xEnd = cx + radius * Math.cos(angle);
+        const yEnd = cy + radius * Math.sin(angle);
+        spokesHtml += `<line x1="${cx}" y1="${cy}" x2="${xEnd}" y2="${yEnd}" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="2,3" />`;
+
+        const lbl = labels[i] || `Axis ${i + 1}`;
+        const lx = cx + (radius + 20) * Math.cos(angle);
+        const ly = cy + (radius + 20) * Math.sin(angle);
+        labelsHtml += `<text x="${lx}" y="${ly + 4}" text-anchor="middle" fill="${theme.colors.muted || '#94a3b8'}" font-size="10.5" font-weight="600" font-family="sans-serif">${this.escapeHtml(lbl)}</text>`;
+      }
+
+      let dataPolysHtml = '';
+      series.forEach((s, sIdx) => {
+        const sColor = s.color || colors[sIdx % colors.length]!;
+        const dataPts: string[] = [];
+        s.values.forEach((v, i) => {
+          const angle = (i * 2 * Math.PI) / N - Math.PI / 2;
+          const r = (Math.max(0, v) / maxVal) * radius;
+          const px = cx + r * Math.cos(angle);
+          const py = cy + r * Math.sin(angle);
+          dataPts.push(`${px},${py}`);
+        });
+        const ptsStr = dataPts.join(' ');
+        const dots = dataPts
+          .map(
+            (p) =>
+              `<circle cx="${p.split(',')[0]}" cy="${p.split(',')[1]}" r="4" fill="${sColor}" stroke="var(--yumia-surface)" stroke-width="2"/>`
+          )
+          .join('');
+        dataPolysHtml += `
+          <polygon points="${ptsStr}" fill="${sColor}" fill-opacity="0.28" stroke="${sColor}" stroke-width="2.5" stroke-linejoin="round" />
+          ${dots}
+        `;
+      });
+
+      return `
+      <div class="yumia-chart-container">
+        ${titleHtml}
+        <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:100%; max-height:290px;">
+          ${ringsHtml}
+          ${spokesHtml}
+          ${dataPolysHtml}
+          ${labelsHtml}
+        </svg>
+      </div>`;
+    }
+
+    if (c.chartType === 'area') {
+      const allValues = series.flatMap((s) => s.values);
+      const maxVal = Math.max(...allValues, 1);
+      const width = 640;
+      const height = 240;
+      const padding = 45;
+      const plotW = width - padding * 2;
+      const plotH = height - padding * 2;
+      const gradId = `area-grad-${Math.random().toString(36).slice(2, 8)}`;
+
+      const gridLines = [0.25, 0.5, 0.75, 1.0]
+        .map((ratio) => {
+          const y = height - padding - ratio * plotH;
+          const valLabel = Math.round(ratio * maxVal);
+          return `
+          <line x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
+          <text x="${padding - 8}" y="${y + 4}" text-anchor="end" fill="${theme.colors.muted || '#64748b'}" font-size="10" font-family="sans-serif">${valLabel}</text>`;
+        })
+        .join('');
+
+      let areasHtml = '';
+      series.forEach((s, sIdx) => {
+        const sColor = s.color || colors[sIdx % colors.length]!;
+        const pts = s.values.map((v, i) => {
+          const x = padding + (i / Math.max(s.values.length - 1, 1)) * plotW;
+          const y = height - padding - (v / maxVal) * plotH;
+          return `${x},${y}`;
+        });
+        const pointsStr = pts.join(' ');
+        const xLast = padding + plotW;
+        const polyClosed = `${pointsStr} ${xLast},${height - padding} ${padding},${height - padding}`;
+        const circles = pts
+          .map(
+            (pt) =>
+              `<circle cx="${pt.split(',')[0]}" cy="${pt.split(',')[1]}" r="4.5" fill="${sColor}" stroke="var(--yumia-surface)" stroke-width="2" />`
+          )
+          .join('');
+        areasHtml += `
+        <polygon points="${polyClosed}" fill="url(#${gradId})" opacity="0.4" />
+        <polyline fill="none" stroke="${sColor}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="${pointsStr}" />
+        ${circles}`;
+      });
+
+      const labelTexts = labels
+        .map((l, i) => {
+          const x = padding + (i / Math.max(labels.length - 1, 1)) * plotW;
+          return `<text x="${x}" y="${height - 12}" text-anchor="middle" fill="${theme.colors.muted || '#94a3b8'}" font-size="11" font-weight="600" font-family="sans-serif">${this.escapeHtml(l)}</text>`;
+        })
+        .join('');
+
+      return `
+      <div class="yumia-chart-container">
+        ${titleHtml}
+        <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:100%; max-height:280px;">
+          <defs>
+            <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="${colors[0]}" stop-opacity="0.65" />
+              <stop offset="100%" stop-color="${colors[0]}" stop-opacity="0.05" />
+            </linearGradient>
+          </defs>
+          ${gridLines}
+          <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" />
+          ${areasHtml}
+          ${labelTexts}
+        </svg>
+      </div>`;
+    }
+
+    if (c.chartType === 'gauge') {
+      const val = series[0]?.values[0] || 0;
+      const maxVal = 100;
+      const pct = Math.min(100, Math.max(0, (val / maxVal) * 100));
+      const width = 360;
+      const height = 210;
+      const cx = 180;
+      const cy = 145;
+      const radius = 85;
+      const circ = Math.PI * radius;
+      const progressOffset = circ * (1 - pct / 100);
+      const mainColor = colors[0]!;
+
+      return `
+      <div class="yumia-chart-container">
+        ${titleHtml}
+        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%;">
+          <svg viewBox="0 0 ${width} ${height}" style="width:260px; height:170px;">
+            <path d="M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="18" stroke-linecap="round" />
+            <path d="M ${cx - radius} ${cy} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}" fill="none" stroke="${mainColor}" stroke-width="18" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${progressOffset}" style="filter:drop-shadow(0 0 8px ${mainColor});" />
+            <text x="${cx}" y="${cy - 10}" text-anchor="middle" fill="${theme.colors.text || '#ffffff'}" font-size="32" font-weight="800" font-family="sans-serif">${val}%</text>
+            <text x="${cx}" y="${cy + 22}" text-anchor="middle" fill="${theme.colors.muted || '#94a3b8'}" font-size="12" font-weight="600" font-family="sans-serif">${this.escapeHtml(labels[0] || 'Target Completion')}</text>
+          </svg>
+        </div>
+      </div>`;
+    }
 
     if (c.chartType === 'line') {
       const allValues = series.flatMap((s) => s.values);

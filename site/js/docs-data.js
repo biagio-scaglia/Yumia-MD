@@ -339,7 +339,19 @@ slide "Cluster Node Topology"
             <tr>
               <td><code>chart</code></td>
               <td>Native data visualization compiled to real OpenXML charts</td>
-              <td><code>type</code> (<code>bar</code>, <code>line</code>, <code>pie</code>, <code>doughnut</code>), <code>labels</code>, <code>data</code></td>
+              <td><code>type</code> (<code>bar</code>, <code>line</code>, <code>pie</code>, <code>doughnut</code>, <code>radar</code>, <code>area</code>, <code>gauge</code>, <code>scatter</code>), <code>labels</code>, <code>series</code></td>
+              <td>PPTX, PDF, HTML</td>
+            </tr>
+            <tr>
+              <td><code>sequence</code></td>
+              <td>PlantUML-style sequence diagrams with lifelines, actors, message arrows, and notes</td>
+              <td><code>title</code>, participants, actors, databases, arrows (<code>-&gt;</code>, <code>--&gt;</code>, <code>-&gt;&gt;</code>)</td>
+              <td>PPTX, PDF, HTML</td>
+            </tr>
+            <tr>
+              <td><code>class</code></td>
+              <td>PlantUML-style class diagrams with interfaces, members, and relationships</td>
+              <td><code>title</code>, classes, interfaces, attributes, methods, relationships (<code>&lt;\|--</code>, <code>&lt;\|..</code>)</td>
               <td>PPTX, PDF, HTML</td>
             </tr>
             <tr>
@@ -465,6 +477,75 @@ All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the
 
       <h2>Bidirectional Node Aliasing</h2>
       <p>Reference nodes by explicit IDs (e.g. <code>sensors[Edge Sensors]</code>) or label text (<code>[Edge Sensors]</code>). Yumia automatically links edges and preserves custom node modifiers (<code>variant="accent"</code>) across the entire graph.</p>
+
+      <h2>PlantUML Sequence Diagrams (<code>sequence</code> / <code>:::sequence</code>)</h2>
+      <p>Model distributed communication, authentication protocols, and microservice handshakes with lifelines, actor figurines, dashed return arrows, and floating note callouts. Renders to crisp SVG in HTML, vector lines in PDF, and native OpenXML shapes in PowerPoint:</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang-tag">YUMIA DSL</span><button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button></div>
+        <pre><code>sequence title="OAuth 2.0 PKCE Handshake Protocol"
+  actor User as "Mobile User"
+  participant App as "Native Client"
+  participant Auth as "Identity Authority"
+  database DB as "Token Vault"
+
+  User -> App: Tap Login with SSO
+  App -> Auth: /oauth/authorize (code_challenge)
+  Auth -> User: Render Consent Screen
+  User -> Auth: Grant Permissions
+  Auth --> App: Authorization Code
+  App -> Auth: /oauth/token (code_verifier)
+  Auth -> DB: Verify Nonce & Issue Tokens
+  Auth --> App: Access Token + JWT Proof
+  note over Auth: Token expiration window: 3600s</code></pre>
+      </div>
+
+      <h2>PlantUML Class Diagrams (<code>class</code> / <code>:::class</code>)</h2>
+      <p>Model domain architectures, object-oriented contracts, and system hierarchies with interface/abstract stereotypes, member visibility (<code>+</code> public, <code>-</code> private, <code>#</code> protected, <code>~</code> package), and standard UML relationships:</p>
+
+      <div class="code-block">
+        <div class="code-header"><span class="code-lang-tag">YUMIA DSL</span><button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button></div>
+        <pre><code>class title="Distributed Processing Engine Architecture"
+  interface INeuralKernel {
+    + executeTensor(ctx: Context): TensorResult
+    + syncGradients(): void
+  }
+
+  class QuantumCore {
+    + executeTensor(ctx: Context): TensorResult
+    + stateVector: ComplexMatrix
+    - qubitCount: number
+  }
+
+  class DispatchEngine {
+    + schedule(batch: IngestionBatch): void
+    - kernel: INeuralKernel
+  }
+
+  INeuralKernel <|.. QuantumCore : implements
+  DispatchEngine --> INeuralKernel : orchestrates</code></pre>
+      </div>
+
+      <h2>Advanced Analytical Charts</h2>
+      <p>Yumia provides cutting-edge analytical visual primitives that scale cleanly across PDF, PPTX, and HTML:</p>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-spider"></i></div>
+          <h3>Radar Charts (<code>type="radar"</code>)</h3>
+          <p>Multi-axis concentric polygonal web comparing capability benchmarks across 3 or more dimensions.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-gauge-high"></i></div>
+          <h3>SLA Gauges (<code>type="gauge"</code>)</h3>
+          <p>180° circular speedometer progress meters showing uptime, SLA targets, and KPI fulfillment percentages.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-chart-area"></i></div>
+          <h3>Area Plots (<code>type="area"</code>)</h3>
+          <p>Filled gradient baseline curves showcasing continuous ingestion volume, bandwidth, and resource telemetry over time.</p>
+        </div>
+      </div>
     `,
   },
   {
@@ -532,6 +613,26 @@ slide "Benchmark Results"
         <div class="feature-card">
           <h3><code>academic</code></h3>
           <p>Cream/ivory canvas, crimson headers, and high-contrast serif typography for scientific papers, theses, and research summaries.</p>
+        </div>
+        <div class="feature-card">
+          <h3><code>neo-brutalist</code></h3>
+          <p>Vibrant high-contrast yellow (<code>#FFE600</code>), bold 3px black borders, stark geometric cards, and high-impact shadows.</p>
+        </div>
+        <div class="feature-card">
+          <h3><code>luxury</code></h3>
+          <p>Royal obsidian black (<code>#0B0C10</code>), brushed gold (<code>#D4AF37</code>), and champagne accents for prestige keynotes and luxury brands.</p>
+        </div>
+        <div class="feature-card">
+          <h3><code>monokai</code></h3>
+          <p>Legendary code editor dark olive (<code>#272822</code>), neon green (<code>#A6E22E</code>), hot pink (<code>#F92672</code>), and electric cyan.</p>
+        </div>
+        <div class="feature-card">
+          <h3><code>solarized-dark</code></h3>
+          <p>Classic Ethan Schoonover palette: deep teal (<code>#002B36</code>), cyan (<code>#2AA198</code>), and soft cream for perfect ergonomic reading.</p>
+        </div>
+        <div class="feature-card">
+          <h3><code>nebula</code></h3>
+          <p>Deep cosmos purple (<code>#0A0915</code>), radiant violet (<code>#8B5CF6</code>), and sky blue (<code>#38BDF8</code>) with stellar glow effects.</p>
         </div>
       </div>
 

@@ -1,6 +1,8 @@
 import {
   CalloutElement,
   CardElement,
+  ChartElement,
+  ClassDiagramElement,
   CodeElement,
   ColumnElement,
   ColumnsElement,
@@ -14,6 +16,7 @@ import {
   ParagraphElement,
   Presentation,
   QuoteElement,
+  SequenceElement,
   Slide,
   SlideElement,
   StackElement,
@@ -176,11 +179,28 @@ export class DefaultLayoutEngine implements LayoutEngine {
         return { element, bounds: { x, y, width, height } };
       }
       case 'chart': {
-        const height = 280;
+        const ch = element as ChartElement;
+        let height = 280;
+        if (ch.chartType === 'radar') height = 320;
+        else if (ch.chartType === 'gauge') height = 220;
+        else if (ch.chartType === 'area') height = 280;
+        if (ch.title) height += 30;
         return { element, bounds: { x, y, width, height } };
       }
       case 'diagram': {
         const height = 320;
+        return { element, bounds: { x, y, width, height } };
+      }
+      case 'sequence': {
+        const seq = element as SequenceElement;
+        const msgCount = Math.max(1, seq.messages.length);
+        const height = Math.max(240, Math.min(500, 90 + msgCount * 44 + (seq.title ? 35 : 0)));
+        return { element, bounds: { x, y, width, height } };
+      }
+      case 'class-diagram': {
+        const cd = element as ClassDiagramElement;
+        const maxMembers = Math.max(1, ...cd.classes.map((c) => c.members.length));
+        const height = Math.max(240, Math.min(480, 100 + maxMembers * 26 + (cd.title ? 35 : 0)));
         return { element, bounds: { x, y, width, height } };
       }
       case 'timeline': {

@@ -207,7 +207,16 @@ export interface ChartDataSeries {
 
 export interface ChartElement extends BaseElement {
   type: 'chart';
-  chartType: 'bar' | 'line' | 'pie' | 'doughnut' | string;
+  chartType:
+    | 'bar'
+    | 'line'
+    | 'pie'
+    | 'doughnut'
+    | 'area'
+    | 'radar'
+    | 'scatter'
+    | 'gauge'
+    | string;
   labels: string[];
   series: ChartDataSeries[];
   title?: string | undefined;
@@ -364,6 +373,76 @@ export interface DiagramElement extends BaseElement {
   title?: string | undefined;
 }
 
+export interface SequenceParticipant {
+  id: string;
+  name: string;
+  type?: 'actor' | 'participant' | 'database' | 'boundary' | 'control' | 'entity' | string | undefined;
+  variant?: string | undefined;
+}
+
+export interface SequenceMessage {
+  from: string;
+  to: string;
+  label: string;
+  style?: 'solid' | 'dashed' | 'dotted' | undefined;
+  arrowType?: 'sync' | 'async' | 'return' | 'lost' | undefined;
+  activation?: 'activate' | 'deactivate' | undefined;
+}
+
+export interface SequenceNote {
+  participant: string;
+  text: string;
+  position?: 'left' | 'right' | 'over' | undefined;
+}
+
+export interface SequenceElement extends BaseElement {
+  type: 'sequence';
+  title?: string | undefined;
+  participants: SequenceParticipant[];
+  messages: SequenceMessage[];
+  notes?: SequenceNote[] | undefined;
+}
+
+export interface ClassMember {
+  name: string;
+  type?: string | undefined;
+  visibility?: '+' | '-' | '#' | '~' | undefined;
+  isMethod?: boolean | undefined;
+  params?: string | undefined;
+}
+
+export interface ClassItem {
+  id: string;
+  name: string;
+  isAbstract?: boolean | undefined;
+  isInterface?: boolean | undefined;
+  members: ClassMember[];
+  variant?: string | undefined;
+}
+
+export interface ClassRelationship {
+  from: string;
+  to: string;
+  relationshipType?:
+    | 'inheritance'
+    | 'association'
+    | 'composition'
+    | 'aggregation'
+    | 'dependency'
+    | string
+    | undefined;
+  fromMultiplicity?: string | undefined;
+  toMultiplicity?: string | undefined;
+  label?: string | undefined;
+}
+
+export interface ClassDiagramElement extends BaseElement {
+  type: 'class-diagram';
+  title?: string | undefined;
+  classes: ClassItem[];
+  relationships: ClassRelationship[];
+}
+
 export interface ComponentDefinition {
   name: string;
   params: string[];
@@ -387,6 +466,8 @@ export type SlideElement =
   | ChartElement
   | MermaidElement
   | DiagramElement
+  | SequenceElement
+  | ClassDiagramElement
   | TimelineElement
   | CompareElement
   | BadgeElement

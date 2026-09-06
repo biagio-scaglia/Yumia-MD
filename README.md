@@ -139,36 +139,58 @@ Presentations running in HTML mode (`yumia dev` or `--format html`) include an e
 
 Yumia provides purpose-built intent primitives that adapt across themes and aspect ratios:
 
-| Primitive   | Intent & Description                                               | Supported Attributes                                                |
-| :---------- | :----------------------------------------------------------------- | :------------------------------------------------------------------ |
-| `hero`      | Prominent visual anchor statement for covers and section breaks    | `title`, `subtitle`, `badge`, `emphasis`, `align`, `density`        |
-| `callout`   | Highlighted context block with semantic tone                       | `variant` (`info`, `warning`, `success`, `danger`), `title`, `icon` |
-| `metric`    | Key performance indicator with value, delta, and directional trend | `value`, `label`, `diff`/`change`, `variant`, `trend` (`up`/`down`) |
-| `compare`   | Structured side-by-side comparison with automatic visual contrast  | `left`, `right`, `leftVariant`, `rightVariant`                      |
-| `timeline`  | Chronological event milestones                                     | `layout` (`horizontal`, `vertical`), `variant`                      |
-| `chart`     | Native data visualization                                          | `type` (`bar`, `line`, `pie`, `doughnut`), `labels`, `data`         |
-| `diagram`   | Sugiyama-layered vector architecture & flowcharts                  | `type` (`flow`), `direction` (`LR`, `TB`), `title`                  |
-| `component` | Reusable visual layout macros with dynamic parameters              | Parameter signatures (`title`, `status`, `metricVal`)               |
-| `card`      | Container for grouped ideas and structured details                 | `title`, `variant`, `glow`, `padding`                               |
-| `image`     | Responsive media element with smart aspect ratio and styling       | `src`, `alt`, `fit`, `radius`, `shadow`, `aspectRatio`, `zoomable`  |
-| `grid`      | Multi-column spatial layout engine                                 | `columns` (1..6), `gap`, `density`                                  |
-| `stack`     | Linear flex distribution                                           | `direction` (`horizontal`, `vertical`), `gap`                       |
-| `math`      | LaTeX scientific typography via KaTeX                              | Inline `$..$` and display `$$..$$`                                  |
+| Primitive   | Intent & Description                                               | Supported Attributes                                                                |
+| :---------- | :----------------------------------------------------------------- | :---------------------------------------------------------------------------------- |
+| `hero`      | Prominent visual anchor statement for covers and section breaks    | `title`, `subtitle`, `badge`, `emphasis`, `align`, `density`                        |
+| `callout`   | Highlighted context block with semantic tone                       | `variant` (`info`, `warning`, `success`, `danger`), `title`, `icon`                 |
+| `metric`    | Key performance indicator with value, delta, and directional trend | `value`, `label`, `diff`/`change`, `variant`, `trend` (`up`/`down`)                 |
+| `compare`   | Structured side-by-side comparison with automatic visual contrast  | `left`, `right`, `leftVariant`, `rightVariant`                                      |
+| `timeline`  | Chronological event milestones                                     | `layout` (`horizontal`, `vertical`), `variant`                                      |
+| `chart`     | Native data visualization (Bar, Line, Pie, Radar, Area, Gauge)     | `type` (`bar`, `line`, `pie`, `doughnut`, `radar`, `area`, `gauge`), `labels`      |
+| `sequence`  | PlantUML-style sequence diagrams (lifelines, actors, messages)     | `title`, actors, participants, message arrows (`->`, `-->`, `->>`), notes           |
+| `class`     | PlantUML-style class diagrams (interfaces, members, relationships) | `title`, classes, interfaces, members (`+`, `-`, `#`, `~`), relationships (`<\|--`) |
+| `diagram`   | Sugiyama-layered vector architecture & flowcharts                  | `type` (`flow`), `direction` (`LR`, `TB`), `title`                                  |
+| `component` | Reusable visual layout macros with dynamic parameters              | Parameter signatures (`title`, `status`, `metricVal`)                               |
+| `card`      | Container for grouped ideas and structured details                 | `title`, `variant`, `glow`, `padding`                                               |
+| `image`     | Responsive media element with smart aspect ratio and styling       | `src`, `alt`, `fit`, `radius`, `shadow`, `aspectRatio`, `zoomable`                  |
+| `grid`      | Multi-column spatial layout engine                                 | `columns` (1..6), `gap`, `density`                                                  |
+| `stack`     | Linear flex distribution                                           | `direction` (`horizontal`, `vertical`), `gap`                                       |
+| `math`      | LaTeX scientific typography via KaTeX                              | Inline `$..$` and display `$$..$$`                                                  |
 
 ---
 
-## Vector Diagrams & Topology Flowcharts
+## Vector Diagrams & PlantUML Support
 
-Forget fragile Mermaid / PlantText rendering compromises. Yumia compiles architecture flowcharts directly into native vector SVG, editable PowerPoint shapes, and PDF via the **Sugiyama Layered Graph Framework**:
+Forget fragile screenshot hacks or external server dependencies. Yumia compiles architecture flowcharts, PlantUML sequence diagrams, and class diagrams directly into native vector SVG, editable PowerPoint shapes, and PDF:
 
 ```yumia
-diagram type="flow" direction="LR" title="Neural Processing Mesh"
-  [Edge Sensors] -> [Ingestion Broker] -[TLS 1.3]-> [Neural Dispatcher]
-  [Neural Dispatcher] -[gRPC Streaming]-> [Quantum Tensor Cores] -> [(Vector Knowledge Base)]
-  [Quantum Tensor Cores] -[Hot Cache]-> [(Redis Semantic Cache)]
-  node qtc label="Quantum Tensor Cores" variant="accent"
-  node vkb label="Vector Knowledge Base" shape="database" variant="primary"
-  node cache label="Redis Semantic Cache" shape="database" variant="success"
+# PlantUML-Style Sequence Diagram
+sequence title="Distributed Token Exchange"
+  actor User as "Mobile Client"
+  participant Gateway as "API Gateway"
+  participant Auth as "Auth Provider"
+  database Vault as "Key Vault"
+  User -> Gateway: Request Token
+  Gateway -> Auth: Forward Handshake
+  Auth -> Vault: Fetch Signing Key
+  Vault --> Auth: Ephemeral Key
+  Auth --> Gateway: Signed JWT
+  Gateway --> User: 200 OK + Token
+  note over Auth: Token expiration: 3600s
+```
+
+```yumia
+# PlantUML-Style Class Diagram
+class title="Distributed Tensor Kernel Architecture"
+  interface IKernel {
+    + execute(tensor: Tensor): Result
+    + sync(): void
+  }
+  class QuantumCore {
+    + execute(tensor: Tensor): Result
+    - qubits: number
+  }
+  IKernel <|.. QuantumCore : implements
 ```
 
 ---

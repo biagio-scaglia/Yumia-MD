@@ -27,14 +27,14 @@ document "Title of Presentation"
   watermark "CONFIDENTIAL"
 ```
 
-| Command                 | Arguments                        | Description                                                                                |
-| :---------------------- | :------------------------------- | :----------------------------------------------------------------------------------------- |
-| `document` / `title`    | `"<title>"`                      | The document or presentation title.                                                        |
-| `theme`                 | `"<name>"`                       | Base visual theme: `default`, `cyberpunk`, `minimal`, `corporate`, `terminal`, `academic`. |
-| `author`                | `"<author>"`                     | Presentation author or organization.                                                       |
-| `aspectRatio` / `ratio` | `"16:9"` \| `"4:3"` \| `"16:10"` | Target aspect ratio for slides and PDF pages.                                              |
-| `transition`            | `"<type>"`                       | Default slide transition (`push`, `fade`, `wipe`, `zoom`, `split`).                        |
-| `watermark`             | `"<text>"`                       | Watermark text displayed in the slide footer.                                              |
+| Command                 | Arguments                        | Description                                                                                                                                                             |
+| :---------------------- | :------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `document` / `title`    | `"<title>"`                      | The document or presentation title.                                                                                                                                     |
+| `theme`                 | `"<name>"`                       | Base visual theme: `default`, `cyberpunk`, `minimal`, `corporate`, `terminal`, `academic`, `neo-brutalist`, `luxury`, `monokai`, `solarized-dark`, `nebula`.          |
+| `author`                | `"<author>"`                     | Presentation author or organization.                                                                                                                                    |
+| `aspectRatio` / `ratio` | `"16:9"` \| `"4:3"` \| `"16:10"` | Target aspect ratio for slides and PDF pages.                                                                                                                           |
+| `transition`            | `"<type>"`                       | Default slide transition (`push`, `fade`, `wipe`, `zoom`, `split`).                                                                                                     |
+| `watermark`             | `"<text>"`                       | Watermark text displayed in the slide footer.                                                                                                                           |
 
 ---
 
@@ -108,52 +108,87 @@ badge "Critical" variant="danger"
 badge "Accent" variant="accent"
 ```
 
-### Metrics & KPI Callouts
-
-```yumia
-metric "99.99%" label="Uptime" diff="+0.05%" variant="success"
-metric "0.4ms" label="Latency" diff="-12%" variant="primary"
-```
-
-### Multi-Provider Icons
-
-```yumia
-icon "lucide:rocket" size=32 color="#00F0FF"
-icon "material:shield" size=28
-icon "fa:github"
-icon "tabler:activity"
-```
-
-### Hero Banners (Design Intent)
-
-```yumia
-hero title="Design as Source Code" subtitle="Deterministic & AI-Native Visual Engine" tagline="v2.0" align="center" emphasis="primary" density="spacious"
-  badge "Compiler" variant="accent"
-```
-
 ### Callouts & Alerts
 
 ```yumia
-callout severity="warning" title="Security Advisory"
-  Enforce mutual TLS on all ingress sidecar proxies.
-
-callout severity="success" title="Deployment Verified"
-  All cluster nodes reporting healthy status.
+callout variant="success" title="Production Ready" icon="lucide:check-circle"
+  Distributed ingestion nodes passed stress tests with 0 buffer dropped.
 ```
 
-### Images & Rich Media
+### Hero Elements
 
 ```yumia
-image "https://images.unsplash.com/photo-1518770660439-4636190af475" alt="Hardware Node" fit="cover" height="240px" radius="16px" caption="Primary Cluster Rack"
+hero "Presentation Title" subtitle="Subtitle description" badge="v2.0" align="center" emphasis="high"
 ```
 
-### Data Charts (Native SVG / PPTX Charts)
+### Key Metrics & KPIs
 
 ```yumia
-chart type="bar" title="Quarterly Growth"
-  labels Q1, Q2, Q3, Q4
-  series "Revenue: 12, 28, 54, 98"
-  series "Net Margin: 4, 10, 22, 45"
+metric "99.98%" label="High Availability SLA" diff="+0.04%" variant="success" trend="up"
+```
+
+### Data Charts (Native SVG, Vector PDF & Editable PowerPoint Charts)
+
+Supported chart types: `bar`, `line`, `pie`, `doughnut`, `radar`, `area`, `gauge`, `scatter`.
+
+```yumia
+# Multi-Dimensional Radar Chart
+chart type="radar" title="System Capabilities" labels="Speed, Reliability, Security, Scalability, DX"
+  series "Benchmark: 95, 90, 98, 88, 92"
+  series "Baseline: 70, 75, 80, 65, 70"
+
+# Real-time SLA Gauge
+chart type="gauge" title="Service Availability" labels="Target 99.9%"
+  series "Availability: 99.95"
+
+# Gradient Bandwidth Area Chart
+chart type="area" title="Bandwidth Ingestion (GB/s)" labels="00:00, 04:00, 08:00, 12:00, 16:00, 20:00"
+  series Ingress: 14, 22, 58, 92, 74, 38
+  series Egress: 9, 14, 32, 64, 48, 26
+```
+
+### PlantUML / Plantext Sequence Diagrams (`sequence`)
+
+Native declarative sequence diagrams with lifelines, actor figurines, dashed return arrows, and note callouts:
+
+```yumia
+sequence title="OAuth 2.0 PKCE Handshake"
+  actor User as "Mobile User"
+  participant App as "Native Client"
+  participant Auth as "Identity Provider"
+  database DB as "Token Vault"
+  User -> App: Tap Login with SSO
+  App -> Auth: /oauth/authorize (code_challenge)
+  Auth -> User: Render Consent UI
+  User -> Auth: Grant Permission
+  Auth --> App: Authorization Code
+  App -> Auth: /oauth/token (code_verifier)
+  Auth -> DB: Verify & Save Session
+  Auth --> App: Access Token + JWT
+  note over Auth: Token expiration 3600s
+```
+
+### PlantUML Class Diagrams (`class`)
+
+Full object model diagrams with interface/abstract stereotypes, attribute and method member visibility (`+`, `-`, `#`, `~`), and standard UML relationships (`<|--` inheritance, `<|..` implementation, `*--` composition, `o--` aggregation):
+
+```yumia
+class title="Distributed Processing Engine Architecture"
+  interface INeuralKernel {
+    + executeTensor(ctx: Context): TensorResult
+    + syncGradients(): void
+  }
+  class QuantumCore {
+    + executeTensor(ctx: Context): TensorResult
+    + stateVector: ComplexMatrix
+    - qubitCount: number
+  }
+  class DispatchEngine {
+    + schedule(batch: IngestionBatch): void
+    - kernel: INeuralKernel
+  }
+  INeuralKernel <|.. QuantumCore : implements
+  DispatchEngine --> INeuralKernel : orchestrates
 ```
 
 ### Compare (Before & After)
@@ -175,17 +210,6 @@ timeline layout="horizontal"
   item date="Q1 2025" title="Core AST" desc="Decoupled semantic tree"
   item date="Q3 2025" title="Multi-Target" desc="HTML, PDF, PPTX"
   item date="Q1 2026" title="Design Compiler" desc="Visual intent & optimizer"
-```
-
-### Architecture Diagrams (Mermaid)
-
-```yumia
-mermaid
-  graph LR
-    A[Yumia Source] --> B[Design Compiler]
-    B --> C[HTML5 Deck]
-    B --> D[Vector PDF]
-    B --> E[Editable PPTX]
 ```
 
 ### Vector Architecture & Flowcharts (`diagram`)

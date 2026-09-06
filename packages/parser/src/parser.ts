@@ -17,10 +17,19 @@ import {
   TimelineElement,
   TimelineItem,
   TocItem,
+  ClassDiagramElement,
+  ClassItem,
+  ClassMember,
+  ClassRelationship,
+  SequenceElement,
+  SequenceMessage,
+  SequenceNote,
+  SequenceParticipant,
   createBadge,
   createCallout,
   createCard,
   createChart,
+  createClassDiagram,
   createCode,
   createColumn,
   createColumns,
@@ -40,6 +49,7 @@ import {
   createPresentation,
   createQuote,
   createSection,
+  createSequence,
   createSlide,
   createStack,
   createTable,
@@ -866,13 +876,43 @@ export class DefaultYumiaParser implements YumiaParser {
             end: { line: baseLine + i - 1, column: 1 },
           };
           elements.push(el);
-        } else if (directiveName === 'diagram') {
-          const el = this.parseDiagramDirective(directiveArg, blockLines);
+        } else if (directiveName === 'sequence') {
+          const el = this.parseSequenceDirective(directiveArg, blockLines);
           el.loc = {
             start: { line: directiveStartLine, column: 1 },
             end: { line: baseLine + i - 1, column: 1 },
           };
           elements.push(el);
+        } else if (directiveName === 'class' || directiveName === 'class-diagram') {
+          const el = this.parseClassDirective(directiveArg, blockLines);
+          el.loc = {
+            start: { line: directiveStartLine, column: 1 },
+            end: { line: baseLine + i - 1, column: 1 },
+          };
+          elements.push(el);
+        } else if (directiveName === 'diagram') {
+          if (/\btype=["']?sequence["']?/i.test(directiveArg)) {
+            const el = this.parseSequenceDirective(directiveArg, blockLines);
+            el.loc = {
+              start: { line: directiveStartLine, column: 1 },
+              end: { line: baseLine + i - 1, column: 1 },
+            };
+            elements.push(el);
+          } else if (/\btype=["']?class["']?/i.test(directiveArg)) {
+            const el = this.parseClassDirective(directiveArg, blockLines);
+            el.loc = {
+              start: { line: directiveStartLine, column: 1 },
+              end: { line: baseLine + i - 1, column: 1 },
+            };
+            elements.push(el);
+          } else {
+            const el = this.parseDiagramDirective(directiveArg, blockLines);
+            el.loc = {
+              start: { line: directiveStartLine, column: 1 },
+              end: { line: baseLine + i - 1, column: 1 },
+            };
+            elements.push(el);
+          }
         }
         continue;
       }
@@ -1154,12 +1194,17 @@ export class DefaultYumiaParser implements YumiaParser {
           .split(',')
           .map((s) => s.trim())
           .filter(Boolean);
-      } else if (trimmed.toLowerCase().startsWith('series:')) {
-        const seriesContent = trimmed.slice(7).trim();
-        const sMatch = seriesContent.match(/^(.*?)\s*\[(.*?)\]$/);
-        if (sMatch && sMatch[1] && sMatch[2]) {
-          const sName = sMatch[1].trim();
-          const sValues = sMatch[2].split(',').map((v) => parseFloat(v.trim()) || 0);
+      } else if (trimmed.toLowerCase().startsWith('series:') || trimmed.toLowerCase().startsWith('series ')) {
+        const seriesContent = trimmed.replace(/^series:?\s*/i, '');
+        const bracketMatch = seriesContent.match(/^(.*?)\s*\[(.*?)\]$/);
+        const colonMatch = seriesContent.match(/^(.*?)\s*:\s*(.+)$/);
+        if (bracketMatch && bracketMatch[1] && bracketMatch[2]) {
+          const sName = bracketMatch[1].trim();
+          const sValues = bracketMatch[2].split(',').map((v) => parseFloat(v.trim()) || 0);
+          series.push({ name: sName, values: sValues });
+        } else if (colonMatch && colonMatch[1] && colonMatch[2]) {
+          const sName = colonMatch[1].trim();
+          const sValues = colonMatch[2].split(',').map((v) => parseFloat(v.trim()) || 0);
           series.push({ name: sName, values: sValues });
         }
       } else if (trimmed.includes('|')) {
@@ -1379,6 +1424,256 @@ export class DefaultYumiaParser implements YumiaParser {
     const { elements: rightElements } = this.parseLines(rightLines, baseLine + leftLines.length);
 
     return createCompare(leftElements, rightElements, leftTitle, rightTitle);
+  }
+
+  private parseSequenceDirective(directiveArg: string, blockLines: string[]): SequenceElement {
+    const titleMatch = directiveArg.match(/\btitle=["']([^"']+)["']/);
+    const title = titleMatch ? titleMatch[1] : undefined;
+
+    const participants: SequenceParticipant[] = [];
+    const participantMap = new Map<string, SequenceParticipant>();
+    const messages: SequenceMessage[] = [];
+    const notes: SequenceNote[] = [];
+
+    const ensureParticipant = (
+      rawId: string,
+      type: SequenceParticipant['type'] = 'participant',
+      explicitName?: string
+    ): SequenceParticipant => {
+      const cleanId = rawId.trim().replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+      let p = participantMap.get(cleanId);
+      if (!p) {
+        p = {
+          id: cleanId,
+          name: explicitName || rawId.trim(),
+          type,
+        };
+        participantMap.set(cleanId, p);
+        participants.push(p);
+      } else if (explicitName && p.name === p.id) {
+        p.name = explicitName;
+      }
+      return p;
+    };
+
+    for (const rawLine of blockLines) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith('//') || line.startsWith('#')) continue;
+
+      const declMatch = line.match(
+        /^(actor|participant|database|boundary|control|entity)\s+(?:["']([^"']+)["']|(\S+))(?:\s+as\s+(?:["']([^"']+)["']|(\S+)))?/i
+      );
+      if (declMatch) {
+        const type = declMatch[1]!.toLowerCase() as SequenceParticipant['type'];
+        const first = declMatch[2] || declMatch[3]!;
+        const second = declMatch[4] || declMatch[5];
+
+        let id = first;
+        let displayName = first;
+
+        if (second) {
+          if (declMatch[2]) {
+            displayName = first;
+            id = second;
+          } else {
+            id = first;
+            displayName = second;
+          }
+        }
+
+        const p = ensureParticipant(id, type, displayName);
+        participantMap.set(id.toLowerCase(), p);
+        participantMap.set(displayName.toLowerCase(), p);
+        if (second) {
+          participantMap.set(second.toLowerCase(), p);
+        }
+        continue;
+      }
+
+      const noteMatch = line.match(/^note\s+(over|right\s+of|left\s+of)\s+(\S+)\s*:\s*(.+)$/i);
+      if (noteMatch) {
+        const pos = noteMatch[1]!.toLowerCase().includes('right')
+          ? 'right'
+          : noteMatch[1]!.toLowerCase().includes('left')
+            ? 'left'
+            : 'over';
+        const target = noteMatch[2]!;
+        const noteText = noteMatch[3]!.trim();
+        const p = ensureParticipant(target);
+        notes.push({
+          participant: p.id,
+          text: noteText,
+          position: pos as SequenceNote['position'],
+        });
+        continue;
+      }
+
+      const msgMatch = line.match(/^(\S+)\s*(->>|-->|->|<-|<--)\s*(\S+)\s*:\s*(.+)$/);
+      if (msgMatch) {
+        const fromRaw = msgMatch[1]!;
+        const arrowOp = msgMatch[2]!;
+        const toRaw = msgMatch[3]!;
+        const label = msgMatch[4]!.trim();
+
+        let pFrom = ensureParticipant(fromRaw);
+        let pTo = ensureParticipant(toRaw);
+
+        let style: 'solid' | 'dashed' = 'solid';
+        let arrowType: 'sync' | 'async' | 'return' = 'sync';
+
+        if (arrowOp === '<--' || arrowOp === '<-') {
+          // Arrow points backwards from toRaw to fromRaw
+          const temp = pFrom;
+          pFrom = pTo;
+          pTo = temp;
+          if (arrowOp === '<--') {
+            style = 'dashed';
+            arrowType = 'return';
+          }
+        } else if (arrowOp === '-->') {
+          style = 'dashed';
+          arrowType = 'return';
+        } else if (arrowOp === '->>') {
+          arrowType = 'async';
+        }
+
+        messages.push({
+          from: pFrom.id,
+          to: pTo.id,
+          label,
+          style,
+          arrowType,
+        });
+        continue;
+      }
+    }
+
+    return createSequence(participants, messages, { title, notes });
+  }
+
+  private parseClassDirective(directiveArg: string, blockLines: string[]): ClassDiagramElement {
+    const titleMatch = directiveArg.match(/\btitle=["']([^"']+)["']/);
+    const title = titleMatch ? titleMatch[1] : undefined;
+
+    const classes: ClassItem[] = [];
+    const classMap = new Map<string, ClassItem>();
+    const relationships: ClassRelationship[] = [];
+
+    const ensureClass = (name: string): ClassItem => {
+      const cleanId = name.trim().replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+      let c = classMap.get(cleanId);
+      if (!c) {
+        c = {
+          id: cleanId,
+          name: name.trim(),
+          members: [],
+        };
+        classMap.set(cleanId, c);
+        classes.push(c);
+      }
+      return c;
+    };
+
+    let currentClass: ClassItem | null = null;
+
+    for (const rawLine of blockLines) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith('//') || line.startsWith('#')) continue;
+
+      const classStartMatch = line.match(/^(?:(abstract\s+class|class|interface)\s+)(\w+)(?:\s*\{)?/i);
+      if (classStartMatch) {
+        const modifier = classStartMatch[1]!.toLowerCase();
+        const className = classStartMatch[2]!;
+        currentClass = ensureClass(className);
+        if (modifier.startsWith('abstract')) currentClass.isAbstract = true;
+        if (modifier === 'interface') currentClass.isInterface = true;
+        if (line.endsWith('}') && line.includes('{')) {
+          currentClass = null;
+        }
+        continue;
+      }
+
+      if (currentClass) {
+        if (line === '}') {
+          currentClass = null;
+          continue;
+        }
+        const memberMatch = line.match(/^([+\-#~])?\s*([\w]+)(?:\((.*?)\))?\s*(?::\s*([\w<>[\], ]+))?/);
+        if (memberMatch) {
+          const vis = (memberMatch[1] as ClassMember['visibility']) || '+';
+          const mName = memberMatch[2]!;
+          const isMethod = memberMatch[3] !== undefined;
+          const params = memberMatch[3];
+          const mType = memberMatch[4];
+          currentClass.members.push({
+            visibility: vis,
+            name: mName,
+            isMethod,
+            params: params ? params.trim() : undefined,
+            type: mType ? mType.trim() : undefined,
+          });
+        }
+        continue;
+      }
+
+      const relMatch = line.match(
+        /^(\w+)(?:\s*["']([^"']*)["'])?\s*(--\|>|\.\.\|>|<\|--|<\|\.\.|-->|<--|--|\*--|--\*|o--|--o)\s*(?:["']([^"']*)["']\s*)?(\w+)(?:\s*:\s*(.+))?/
+      );
+      if (relMatch) {
+        const leftClass = ensureClass(relMatch[1]!);
+        const leftMult = relMatch[2];
+        const relOp = relMatch[3]!;
+        const rightMult = relMatch[4];
+        const rightClass = ensureClass(relMatch[5]!);
+        const label = relMatch[6] ? relMatch[6].trim() : undefined;
+
+        let fromClass = leftClass;
+        let toClass = rightClass;
+        let fromMultiplicity = leftMult;
+        let toMultiplicity = rightMult;
+
+        let relationshipType = 'association';
+        if (relOp === '<|--' || relOp === '<|..') {
+          fromClass = rightClass;
+          toClass = leftClass;
+          fromMultiplicity = rightMult;
+          toMultiplicity = leftMult;
+          relationshipType = relOp === '<|..' ? 'implements' : 'inheritance';
+        } else if (relOp === '--|>' || relOp === '..|>') {
+          relationshipType = relOp === '..|>' ? 'implements' : 'inheritance';
+        } else if (relOp === '<--') {
+          fromClass = rightClass;
+          toClass = leftClass;
+          fromMultiplicity = rightMult;
+          toMultiplicity = leftMult;
+          relationshipType = 'association';
+        } else if (relOp === '*--' || relOp === '--*') {
+          relationshipType = 'composition';
+          if (relOp === '--*') {
+            fromClass = rightClass;
+            toClass = leftClass;
+          }
+        } else if (relOp === 'o--' || relOp === '--o') {
+          relationshipType = 'aggregation';
+          if (relOp === '--o') {
+            fromClass = rightClass;
+            toClass = leftClass;
+          }
+        }
+
+        relationships.push({
+          from: fromClass.id,
+          to: toClass.id,
+          relationshipType,
+          fromMultiplicity,
+          toMultiplicity,
+          label,
+        });
+        continue;
+      }
+    }
+
+    return createClassDiagram(classes, relationships, { title });
   }
 }
 

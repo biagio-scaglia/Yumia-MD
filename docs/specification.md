@@ -19,7 +19,7 @@ Yumia documents are UTF-8 encoded text files using either:
 ```yaml
 ---
 title: <string>
-theme: default | cyberpunk | minimal | corporate | terminal | academic
+theme: default | cyberpunk | minimal | corporate | terminal | academic | neo-brutalist | luxury | monokai | solarized-dark | nebula
 aspectRatio: "16:9" | "4:3" | "16:10"
 author: <string>
 transition: fade | push | wipe | zoom | split | none
@@ -38,7 +38,7 @@ colors:
 
 ```yumia
 document "Title"
-  theme "corporate"
+  theme "luxury"
   aspectRatio "16:9"
   author "Author Name"
   transition "fade"
@@ -66,7 +66,10 @@ All directives express high-level design intent rather than low-level CSS proper
 | `:::grid`       | `:::grid columns=N gap=N \n ... \n :::`                                    | `columns` (1..6), `gap`, `density`                                                    | PPTX, PDF, HTML                                        |
 | `:::card`       | `:::card [Title] [variant="..."] \n ... \n :::`                            | `variant` (`primary\|success\|warning\|danger\|accent`), `glow`, `padding`            | PPTX, PDF, HTML                                        |
 | `:::metric`     | `:::metric value="..." label="..." [change="..."] [variant="..."]`         | `value`, `label`, `change`/`diff`, `variant`, `trend` (`up\|down`)                    | PPTX, PDF, HTML                                        |
-| `:::chart`      | `:::chart type="..." title="..." labels="..." data="..."`                  | `type` (`bar\|line\|pie\|doughnut`), `title`, `labels`, `data`, `height`              | PPTX (Native OpenXML Chart), PDF (Vector), HTML (SVG)  |
+| `:::chart`      | `:::chart type="..." title="..." labels="..." [series...]`                 | `type` (`bar\|line\|pie\|doughnut\|radar\|area\|gauge\|scatter`), `title`, `labels`   | PPTX (Native OpenXML Chart), PDF (Vector), HTML (SVG)  |
+| `:::sequence`   | `:::sequence [title="..."] \n actor/participant... \n A -> B: msg \n :::`  | `title`, participants, actors, databases, arrows (`->`, `-->`, `->>`), notes          | PPTX (Native Shapes), PDF (Vector Lines), HTML (SVG)   |
+| `:::class`      | `:::class [title="..."] \n class/interface... \n A <\|.. B \n :::`         | `title`, classes, interfaces, attributes, methods, relationships (`<\|--`, `<\|..`)   | PPTX (Native Shapes), PDF (Vector Lines), HTML (SVG)   |
+| `:::diagram`    | `:::diagram [type="flow"] [direction="LR"] \n [A] -> [B] \n :::`           | `type`, `direction` (`LR\|TB`), nodes, edges, variants                                | PPTX (OpenXML Connectors), PDF (Vector), HTML (SVG)   |
 | `:::timeline`   | `:::timeline [layout="..."] \n - [Date] Title: Desc \n :::`                | `layout` (`horizontal\|vertical`), `variant`                                          | PPTX (Vector), PDF (Vector), HTML (Flex/Grid)          |
 | `:::compare`    | `:::compare left="..." right="..." \n ... \n :::vs \n ... \n :::`          | `left`, `right`, `leftVariant`, `rightVariant`                                        | PPTX (Split Box), PDF (Vector), HTML (Grid)            |
 | `:::mermaid`    | `:::mermaid \n graph ... \n :::`                                           | Diagram source text                                                                   | PPTX (Box), PDF (Box), HTML (Client SVG)               |

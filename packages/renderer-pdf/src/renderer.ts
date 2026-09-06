@@ -4,6 +4,7 @@ import {
   CalloutElement,
   CardElement,
   ChartElement,
+  ClassDiagramElement,
   CodeElement,
   ColumnElement,
   ColumnsElement,
@@ -21,6 +22,7 @@ import {
   Presentation,
   QuoteElement,
   SectionElement,
+  SequenceElement,
   Slide,
   SlideElement,
   StackElement,
@@ -824,6 +826,244 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
       case 'chart': {
         const ch = element as ChartElement;
+
+        if (ch.chartType === 'radar') {
+          const boxH = 160;
+          doc
+            .roundedRect(x, y, width, boxH, 8)
+            .fill(theme.colors.surface || 'rgba(255,255,255,0.04)');
+          doc
+            .roundedRect(x, y, width, boxH, 8)
+            .strokeColor(theme.colors.border || 'rgba(255,255,255,0.1)')
+            .stroke();
+
+          let topY = y + 8;
+          if (ch.title) {
+            doc
+              .font(this.getPdfFont(theme, 'bold'))
+              .fontSize(13)
+              .fillColor(theme.colors.text)
+              .text(this.stripFormatting(ch.title), x + 14, topY, { width: width - 28, align: 'center' });
+            topY += 18;
+          }
+
+          const values = ch.series[0]?.values || [];
+          const maxVal = Math.max(...values, 1);
+          const labels = ch.labels || [];
+          const N = Math.max(3, labels.length || values.length);
+          const cx = x + width / 2;
+          const cy = topY + (boxH - (topY - y)) / 2;
+          const radius = 52;
+
+          // Draw concentric polygon rings
+          [0.33, 0.66, 1.0].forEach((ratio) => {
+            doc.save();
+            doc.lineWidth(0.8).strokeColor(theme.colors.border || 'rgba(255,255,255,0.15)');
+            for (let i = 0; i < N; i++) {
+              const angle = (i * 2 * Math.PI) / N - Math.PI / 2;
+              const px = cx + ratio * radius * Math.cos(angle);
+              const py = cy + ratio * radius * Math.sin(angle);
+              if (i === 0) doc.moveTo(px, py);
+              else doc.lineTo(px, py);
+            }
+            doc.closePath().stroke();
+            doc.restore();
+          });
+
+          // Draw radial spokes & labels
+          for (let i = 0; i < N; i++) {
+            const angle = (i * 2 * Math.PI) / N - Math.PI / 2;
+            const px = cx + radius * Math.cos(angle);
+            const py = cy + radius * Math.sin(angle);
+            doc.save();
+            doc.lineWidth(0.6).strokeColor(theme.colors.border || 'rgba(255,255,255,0.2)').dash(2, { space: 2 });
+            doc.moveTo(cx, cy).lineTo(px, py).stroke();
+            doc.restore();
+
+            const lbl = labels[i] || `Axis ${i + 1}`;
+            const lx = cx + (radius + 14) * Math.cos(angle);
+            const ly = cy + (radius + 14) * Math.sin(angle);
+            doc
+              .font(this.getPdfFont(theme, 'regular'))
+              .fontSize(8)
+              .fillColor(theme.colors.muted || '#888888')
+              .text(this.stripFormatting(lbl), lx - 30, ly - 5, { width: 60, align: 'center' });
+          }
+
+          // Draw data polygon
+          if (values.length > 0) {
+            doc.save();
+            for (let i = 0; i < N; i++) {
+              const val = values[i] || 0;
+              const angle = (i * 2 * Math.PI) / N - Math.PI / 2;
+              const r = (Math.max(0, val) / maxVal) * radius;
+              const px = cx + r * Math.cos(angle);
+              const py = cy + r * Math.sin(angle);
+              if (i === 0) doc.moveTo(px, py);
+              else doc.lineTo(px, py);
+            }
+            doc.closePath();
+            doc.fillColor(theme.colors.primary, 0.25).fill();
+            doc.restore();
+
+            doc.save();
+            doc.lineWidth(1.5).strokeColor(theme.colors.primary);
+            for (let i = 0; i < N; i++) {
+              const val = values[i] || 0;
+              const angle = (i * 2 * Math.PI) / N - Math.PI / 2;
+              const r = (Math.max(0, val) / maxVal) * radius;
+              const px = cx + r * Math.cos(angle);
+              const py = cy + r * Math.sin(angle);
+              if (i === 0) doc.moveTo(px, py);
+              else doc.lineTo(px, py);
+            }
+            doc.closePath().stroke();
+            doc.restore();
+          }
+
+          return y + boxH + 8;
+        }
+
+        if (ch.chartType === 'gauge') {
+          const boxH = 120;
+          doc
+            .roundedRect(x, y, width, boxH, 8)
+            .fill(theme.colors.surface || 'rgba(255,255,255,0.04)');
+          doc
+            .roundedRect(x, y, width, boxH, 8)
+            .strokeColor(theme.colors.border || 'rgba(255,255,255,0.1)')
+            .stroke();
+
+          let topY = y + 8;
+          if (ch.title) {
+            doc
+              .font(this.getPdfFont(theme, 'bold'))
+              .fontSize(13)
+              .fillColor(theme.colors.text)
+              .text(this.stripFormatting(ch.title), x + 14, topY, { width: width - 28, align: 'center' });
+            topY += 18;
+          }
+
+          const val = ch.series[0]?.values[0] || 0;
+          const cx = x + width / 2;
+          const cy = topY + 58;
+          const radius = 45;
+
+          // Draw semi-circle track
+          doc.save();
+          doc.lineWidth(8).strokeColor(theme.colors.border || 'rgba(255,255,255,0.15)');
+          for (let a = Math.PI; a <= 2 * Math.PI; a += 0.05) {
+            const px = cx + radius * Math.cos(a);
+            const py = cy + radius * Math.sin(a);
+            if (a === Math.PI) doc.moveTo(px, py);
+            else doc.lineTo(px, py);
+          }
+          doc.stroke();
+          doc.restore();
+
+          // Draw progress arc
+          const pct = Math.min(100, Math.max(0, val));
+          const endAngle = Math.PI + (pct / 100) * Math.PI;
+          if (pct > 0) {
+            doc.save();
+            doc.lineWidth(8).strokeColor(theme.colors.primary);
+            for (let a = Math.PI; a <= endAngle; a += 0.05) {
+              const px = cx + radius * Math.cos(a);
+              const py = cy + radius * Math.sin(a);
+              if (a === Math.PI) doc.moveTo(px, py);
+              else doc.lineTo(px, py);
+            }
+            const pxEnd = cx + radius * Math.cos(endAngle);
+            const pyEnd = cy + radius * Math.sin(endAngle);
+            doc.lineTo(pxEnd, pyEnd);
+            doc.stroke();
+            doc.restore();
+          }
+
+          doc
+            .font(this.getPdfFont(theme, 'bold'))
+            .fontSize(20)
+            .fillColor(theme.colors.text)
+            .text(`${val}%`, cx - 40, cy - 16, { width: 80, align: 'center' });
+
+          if (ch.labels?.[0]) {
+            doc
+              .font(this.getPdfFont(theme, 'regular'))
+              .fontSize(9)
+              .fillColor(theme.colors.muted || '#888888')
+              .text(this.stripFormatting(ch.labels[0]), cx - 60, cy + 6, { width: 120, align: 'center' });
+          }
+
+          return y + boxH + 8;
+        }
+
+        if (ch.chartType === 'area') {
+          const boxH = 130;
+          doc
+            .roundedRect(x, y, width, boxH, 8)
+            .fill(theme.colors.surface || 'rgba(255,255,255,0.04)');
+          doc
+            .roundedRect(x, y, width, boxH, 8)
+            .strokeColor(theme.colors.border || 'rgba(255,255,255,0.1)')
+            .stroke();
+
+          let topY = y + 10;
+          if (ch.title) {
+            doc
+              .font(this.getPdfFont(theme, 'bold'))
+              .fontSize(13)
+              .fillColor(theme.colors.text)
+              .text(this.stripFormatting(ch.title), x + 14, topY, { width: width - 28 });
+            topY += 20;
+          }
+
+          const values = ch.series[0]?.values || [];
+          const maxVal = Math.max(...values, 1);
+          const plotH = boxH - (topY - y) - 28;
+          const pts: { x: number; y: number }[] = [];
+
+          values.forEach((val, idx) => {
+            const px = x + 30 + (idx / Math.max(values.length - 1, 1)) * (width - 60);
+            const h = (val / maxVal) * plotH;
+            const py = topY + plotH - h;
+            pts.push({ x: px, y: py });
+          });
+
+          if (pts.length > 1) {
+            const baselineY = topY + plotH;
+            doc.save();
+            doc.moveTo(pts[0]!.x, baselineY);
+            pts.forEach((pt) => doc.lineTo(pt.x, pt.y));
+            doc.lineTo(pts[pts.length - 1]!.x, baselineY);
+            doc.closePath();
+            doc.fillColor(theme.colors.primary, 0.25).fill();
+            doc.restore();
+
+            doc.save();
+            doc.lineWidth(2).strokeColor(theme.colors.primary);
+            doc.moveTo(pts[0]!.x, pts[0]!.y);
+            pts.forEach((pt) => doc.lineTo(pt.x, pt.y));
+            doc.stroke();
+            doc.restore();
+
+            pts.forEach((pt, idx) => {
+              doc.circle(pt.x, pt.y, 2.5).fill(theme.colors.primary);
+              if (ch.labels?.[idx]) {
+                doc
+                  .font(this.getPdfFont(theme, 'regular'))
+                  .fontSize(8.5)
+                  .fillColor(theme.colors.muted || '#888888')
+                  .text(this.stripFormatting(ch.labels[idx]!), pt.x - 20, baselineY + 4, {
+                    width: 40,
+                    align: 'center',
+                  });
+              }
+            });
+          }
+
+          return y + boxH + 8;
+        }
+
         const boxH = 130;
         doc
           .roundedRect(x, y, width, boxH, 8)
@@ -1092,6 +1332,14 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         return this.renderDiagram(doc, element as DiagramElement, x, y, width, theme);
       }
 
+      case 'sequence': {
+        return this.renderSequence(doc, element as SequenceElement, x, y, width, theme);
+      }
+
+      case 'class-diagram': {
+        return this.renderClassDiagram(doc, element as ClassDiagramElement, x, y, width, theme);
+      }
+
       default:
         return y;
     }
@@ -1308,6 +1556,205 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       : titleOffset + 20 + numRanks * (nodeH + gapY);
 
     return y + totalH + 8;
+  }
+
+  private renderSequence(
+    doc: PDFKit.PDFDocument,
+    s: SequenceElement,
+    x: number,
+    y: number,
+    width: number,
+    theme: YumiaTheme
+  ): number {
+    const participants = s.participants || [];
+    const messages = s.messages || [];
+    if (participants.length === 0) return y;
+
+    const partCount = participants.length;
+    const msgCount = Math.max(1, messages.length);
+    const partW = Math.min(100, Math.max(50, (width - 30) / partCount - 15));
+    const gapX = partCount > 1 ? (width - 30 - partW * partCount) / (partCount - 1) : 0;
+    const stepY = 38;
+    const totalH = 45 + msgCount * stepY + 30;
+
+    let topY = y;
+    if (s.title) {
+      doc
+        .font(this.getPdfFont(theme, 'bold'))
+        .fontSize(14)
+        .fillColor(theme.colors.primary)
+        .text(this.stripFormatting(s.title), x, topY, { width, align: 'center' });
+      topY += 24;
+    }
+
+    const positions: Record<string, number> = {};
+    participants.forEach((p, idx) => {
+      positions[p.id] = x + 15 + idx * (partW + gapX) + partW / 2;
+    });
+
+    const lifelineTop = topY + 28;
+    const lifelineBottom = topY + totalH - 10;
+    const primaryColor = theme.colors.primary;
+    const accentColor = theme.colors.accent || theme.colors.primary;
+
+    // Draw lifelines & top boxes
+    participants.forEach((p) => {
+      const cx = positions[p.id]!;
+      const boxX = cx - partW / 2;
+
+      doc.save();
+      doc.lineWidth(1).strokeColor(primaryColor).dash(4, { space: 3 });
+      doc.moveTo(cx, lifelineTop).lineTo(cx, lifelineBottom).stroke();
+      doc.restore();
+
+      doc.roundedRect(boxX, topY, partW, 26, 5).fill(theme.colors.surface || 'rgba(255,255,255,0.06)');
+      doc.roundedRect(boxX, topY, partW, 26, 5).lineWidth(1.2).strokeColor(primaryColor).stroke();
+
+      doc
+        .font(this.getPdfFont(theme, 'bold'))
+        .fontSize(9)
+        .fillColor(theme.colors.text)
+        .text(this.stripFormatting(p.name), boxX + 2, topY + 8, { width: partW - 4, align: 'center' });
+    });
+
+    // Draw messages
+    messages.forEach((msg, idx) => {
+      const x1 = positions[msg.from] || x + 20;
+      const x2 = positions[msg.to] || x + width - 20;
+      const lineY = topY + 45 + idx * stepY;
+      const isReturn = msg.style === 'dashed' || msg.arrowType === 'return';
+      const msgColor = isReturn ? accentColor : primaryColor;
+
+      doc.save();
+      doc.lineWidth(1.2).strokeColor(msgColor);
+      if (isReturn) doc.dash(3, { space: 3 });
+      doc.moveTo(x1, lineY).lineTo(x2, lineY).stroke();
+      doc.restore();
+
+      // Arrow head
+      const dir = x2 >= x1 ? 1 : -1;
+      doc.save();
+      doc.fillColor(msgColor);
+      doc.moveTo(x2, lineY).lineTo(x2 - dir * 6, lineY - 3.5).lineTo(x2 - dir * 6, lineY + 3.5).fill();
+      doc.restore();
+
+      // Message Label Pill
+      const labelText = this.stripFormatting(msg.label);
+      const midX = (x1 + x2) / 2;
+      const pillW = Math.min(130, Math.max(50, labelText.length * 5.2 + 12));
+      doc.roundedRect(midX - pillW / 2, lineY - 14, pillW, 12, 3).fill(theme.colors.surface || '#0f172a');
+      doc.roundedRect(midX - pillW / 2, lineY - 14, pillW, 12, 3).lineWidth(0.8).strokeColor(theme.colors.border || 'rgba(255,255,255,0.15)').stroke();
+
+      doc
+        .font(this.getPdfFont(theme, 'regular'))
+        .fontSize(7.5)
+        .fillColor(theme.colors.text)
+        .text(labelText, midX - pillW / 2, lineY - 12, { width: pillW, align: 'center' });
+    });
+
+    return topY + totalH + 8;
+  }
+
+  private renderClassDiagram(
+    doc: PDFKit.PDFDocument,
+    cd: ClassDiagramElement,
+    x: number,
+    y: number,
+    width: number,
+    theme: YumiaTheme
+  ): number {
+    const classes = cd.classes || [];
+    if (classes.length === 0) return y;
+
+    let topY = y;
+    if (cd.title) {
+      doc
+        .font(this.getPdfFont(theme, 'bold'))
+        .fontSize(14)
+        .fillColor(theme.colors.primary)
+        .text(this.stripFormatting(cd.title), x, topY, { width, align: 'center' });
+      topY += 24;
+    }
+
+    const cols = Math.min(3, Math.max(1, classes.length));
+    const gap = 16;
+    const colW = (width - (cols - 1) * gap) / cols;
+
+    let maxClassH = 0;
+    classes.forEach((c, idx) => {
+      const colIdx = idx % cols;
+      const cardX = x + colIdx * (colW + gap);
+      const attrCount = c.members.filter((m) => !m.isMethod).length;
+      const methodCount = c.members.filter((m) => m.isMethod).length;
+      const cardH =
+        34 + attrCount * 14 + (attrCount > 0 ? 6 : 0) + methodCount * 14 + (methodCount > 0 ? 6 : 0);
+
+      doc.roundedRect(cardX, topY, colW, cardH, 6).fill(theme.colors.surface || 'rgba(255,255,255,0.06)');
+      doc
+        .roundedRect(cardX, topY, colW, cardH, 6)
+        .lineWidth(1.2)
+        .strokeColor(theme.colors.border || 'rgba(255,255,255,0.2)')
+        .stroke();
+
+      // Header bar
+      doc.rect(cardX, topY, colW, 24).fill(theme.colors.surface || 'rgba(255,255,255,0.04)');
+      doc
+        .moveTo(cardX, topY + 24)
+        .lineTo(cardX + colW, topY + 24)
+        .lineWidth(1.2)
+        .strokeColor(theme.colors.primary)
+        .stroke();
+
+      doc
+        .font(this.getPdfFont(theme, 'bold'))
+        .fontSize(10)
+        .fillColor(theme.colors.primary)
+        .text(this.stripFormatting(c.name), cardX, topY + 6, { width: colW, align: 'center' });
+
+      let curItemY = topY + 28;
+      c.members
+        .filter((m) => !m.isMethod)
+        .forEach((attr) => {
+          const tStr = attr.type ? `: ${attr.type}` : '';
+          doc
+            .font(this.getPdfFont(theme, 'code'))
+            .fontSize(8)
+            .fillColor(theme.colors.text)
+            .text(`${attr.visibility || '+'} ${attr.name}${tStr}`, cardX + 8, curItemY, {
+              width: colW - 16,
+            });
+          curItemY += 13;
+        });
+
+      if (attrCount > 0 && methodCount > 0) {
+        doc
+          .moveTo(cardX, curItemY)
+          .lineTo(cardX + colW, curItemY)
+          .lineWidth(0.8)
+          .strokeColor(theme.colors.border || 'rgba(255,255,255,0.1)')
+          .stroke();
+        curItemY += 4;
+      }
+
+      c.members
+        .filter((m) => m.isMethod)
+        .forEach((m) => {
+          const pStr = `(${m.params || ''})`;
+          const tStr = m.type ? `: ${m.type}` : '';
+          doc
+            .font(this.getPdfFont(theme, 'code'))
+            .fontSize(8)
+            .fillColor(theme.colors.accent || theme.colors.primary)
+            .text(`${m.visibility || '+'} ${m.name}${pStr}${tStr}`, cardX + 8, curItemY, {
+              width: colW - 16,
+            });
+          curItemY += 13;
+        });
+
+      if (cardH > maxClassH) maxClassH = cardH;
+    });
+
+    return topY + maxClassH + 16;
   }
 
   private getVariantColor(variant: string | undefined, theme: YumiaTheme): string {

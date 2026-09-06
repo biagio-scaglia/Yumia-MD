@@ -4,6 +4,7 @@ import {
   CalloutElement,
   CardElement,
   ChartElement,
+  ClassDiagramElement,
   CodeElement,
   CompareElement,
   DiagramElement,
@@ -19,6 +20,7 @@ import {
   Presentation,
   QuoteElement,
   SectionElement,
+  SequenceElement,
   TableElement,
   TimelineElement,
   TocElement,
@@ -322,6 +324,12 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         break;
       case 'diagram':
         this.renderDiagram(pptxSlide, pptx, element as DiagramElement, rect, theme);
+        break;
+      case 'sequence':
+        this.renderSequence(pptxSlide, pptx, element as SequenceElement, rect, theme);
+        break;
+      case 'class-diagram':
+        this.renderClassDiagram(pptxSlide, pptx, element as ClassDiagramElement, rect, theme);
         break;
       case 'icon': {
         const ic = element as IconElement;
@@ -1062,10 +1070,125 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       values: s.values,
     }));
 
+    if (chartData.length === 0) {
+      chartData.push({
+        name: chart.title || 'Data',
+        labels: labels.length > 0 ? labels : ['Point 1'],
+        values: [0],
+      });
+    }
+
+    if (chart.chartType === 'gauge') {
+      const val = series[0]?.values[0] || 0;
+      const surfaceColor = this.cleanHexColor(theme.colors.surface || '1e293b');
+      const borderColor = this.cleanHexColor(theme.colors.border || '475569');
+      const primaryColor = this.cleanHexColor(theme.colors.primary);
+
+      pptxSlide.addShape(pptx.ShapeType.roundRect, {
+        x: rect.x,
+        y: rect.y,
+        w: rect.w,
+        h: rect.h,
+        fill: { color: surfaceColor },
+        line: { color: borderColor, width: 1 },
+        rectRadius: 0.1,
+      });
+
+      if (chart.title) {
+        pptxSlide.addText(chart.title, {
+          x: rect.x,
+          y: rect.y + 0.15,
+          w: rect.w,
+          h: 0.35,
+          fontSize: 14,
+          bold: true,
+          color: primaryColor,
+          fontFace: cleanFontFace(theme.typography.headingFont),
+          align: 'center',
+        });
+      }
+
+      pptxSlide.addText(`${val}%`, {
+        x: rect.x,
+        y: rect.y + (chart.title ? 0.5 : 0.25),
+        w: rect.w,
+        h: 0.8,
+        fontSize: 36,
+        bold: true,
+        color: this.cleanHexColor(theme.colors.text || 'ffffff'),
+        fontFace: cleanFontFace(theme.typography.headingFont),
+        align: 'center',
+        valign: 'middle',
+      });
+
+      if (labels[0]) {
+        pptxSlide.addText(labels[0], {
+          x: rect.x,
+          y: rect.y + (chart.title ? 1.3 : 1.05),
+          w: rect.w,
+          h: 0.3,
+          fontSize: 12,
+          color: this.cleanHexColor(theme.colors.muted || '94a3b8'),
+          fontFace: cleanFontFace(theme.typography.bodyFont),
+          align: 'center',
+        });
+      }
+      return;
+    }
+
+    if (chart.chartType === 'radar') {
+      const surfaceColor = this.cleanHexColor(theme.colors.surface || '1e293b');
+      const borderColor = this.cleanHexColor(theme.colors.border || '475569');
+      const primaryColor = this.cleanHexColor(theme.colors.primary);
+      const textHex = this.cleanHexColor(theme.colors.text || 'ffffff');
+
+      pptxSlide.addShape(pptx.ShapeType.roundRect, {
+        x: rect.x,
+        y: rect.y,
+        w: rect.w,
+        h: rect.h,
+        fill: { color: surfaceColor },
+        line: { color: borderColor, width: 1 },
+        rectRadius: 0.1,
+      });
+
+      if (chart.title) {
+        pptxSlide.addText(chart.title, {
+          x: rect.x,
+          y: rect.y + 0.12,
+          w: rect.w,
+          h: 0.35,
+          fontSize: 14,
+          bold: true,
+          color: primaryColor,
+          fontFace: cleanFontFace(theme.typography.headingFont),
+          align: 'center',
+        });
+      }
+
+      const values = series[0]?.values || [];
+      const radarItems = labels.map((lbl, idx) => `${lbl}: ${values[idx] || 0}`).join('   •   ');
+      pptxSlide.addText(`[RADAR ASSESSMENT]\n\n${radarItems}`, {
+        x: rect.x + 0.2,
+        y: rect.y + (chart.title ? 0.5 : 0.25),
+        w: rect.w - 0.4,
+        h: rect.h - (chart.title ? 0.6 : 0.35),
+        fontSize: 12,
+        bold: true,
+        color: textHex,
+        fontFace: cleanFontFace(theme.typography.bodyFont),
+        align: 'center',
+        valign: 'middle',
+      });
+      return;
+    }
+
     let pptxChartType = pptx.ChartType.bar;
     if (chart.chartType === 'line') pptxChartType = pptx.ChartType.line;
+    if (chart.chartType === 'area') pptxChartType = pptx.ChartType.area;
     if (chart.chartType === 'pie') pptxChartType = pptx.ChartType.pie;
     if (chart.chartType === 'doughnut') pptxChartType = pptx.ChartType.doughnut;
+    if (chart.chartType === 'scatter') pptxChartType = pptx.ChartType.scatter;
 
     const chartColors = [
       this.cleanHexColor(theme.colors.primary),
@@ -1853,6 +1976,373 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         fontFace: cleanFontFace(theme.typography.headingFont),
       });
     });
+  }
+
+  private renderSequence(
+    pptxSlide: PptxSlide,
+    pptx: PptxInstance,
+    seq: SequenceElement,
+    rect: { x: number; y: number; w: number; h: number },
+    theme: YumiaTheme
+  ): void {
+    if (!seq.participants || seq.participants.length === 0) return;
+
+    const N = seq.participants.length;
+    const availW = Math.max(0.5, rect.w - 0.4);
+    const pWidth = Math.min(1.4, availW / (N * 1.15));
+    const pGap = N > 1 ? (availW - N * pWidth) / (N - 1) : 0;
+
+    const primaryColor = this.cleanHexColor(theme.colors.primary);
+    const surfaceColor = this.cleanHexColor(theme.colors.surface || '1e293b');
+    const borderColor = this.cleanHexColor(theme.colors.border || '334155');
+    const textColor = this.cleanHexColor(theme.colors.text || 'f8fafc');
+    const accentColor = this.cleanHexColor(theme.colors.accent || theme.colors.primary);
+
+    const participantPositions: Record<string, number> = {};
+
+    // Draw participant lifelines and header boxes
+    seq.participants.forEach((p, idx) => {
+      const px = rect.x + 0.2 + idx * (pWidth + pGap);
+      const centerX = px + pWidth / 2;
+      participantPositions[p.id] = centerX;
+
+      const headerH = 0.45;
+      const headerY = rect.y + 0.1;
+      const bottomY = rect.y + rect.h - 0.15;
+      const isActor = p.type === 'actor';
+
+      // Lifeline (dashed line from header bottom to slide bottom)
+      pptxSlide.addShape(pptx.ShapeType.line, {
+        x: centerX,
+        y: headerY + headerH,
+        w: 0.01,
+        h: Math.max(0.1, bottomY - (headerY + headerH)),
+        line: {
+          color: borderColor,
+          width: 1.5,
+          dashType: 'dash',
+        },
+      });
+
+      // Participant Box
+      pptxSlide.addShape(pptx.ShapeType.roundRect, {
+        x: px,
+        y: headerY,
+        w: pWidth,
+        h: headerH,
+        fill: { color: isActor ? accentColor : surfaceColor },
+        line: { color: primaryColor, width: 1.5 },
+        rectRadius: 0.06,
+      });
+
+      pptxSlide.addText(p.name, {
+        x: px + 0.05,
+        y: headerY + 0.04,
+        w: Math.max(0.1, pWidth - 0.1),
+        h: Math.max(0.1, headerH - 0.08),
+        align: 'center',
+        valign: 'middle',
+        fontSize: p.name.length > 14 ? 9 : 10,
+        bold: true,
+        color: isActor ? 'ffffff' : textColor,
+        fontFace: cleanFontFace(theme.typography.headingFont),
+      });
+    });
+
+    // Draw messages
+    if (seq.messages && seq.messages.length > 0) {
+      const msgCount = seq.messages.length;
+      const startY = rect.y + 0.75;
+      const availH = Math.max(0.5, rect.h - 1.0);
+      const stepY = availH / Math.max(1, msgCount);
+
+      seq.messages.forEach((msg, mIdx) => {
+        const x1 = participantPositions[msg.from] ?? rect.x;
+        const x2 = participantPositions[msg.to] ?? rect.x + rect.w;
+        const currentY = startY + mIdx * stepY;
+
+        const minX = Math.min(x1, x2);
+        const lineW = Math.max(0.05, Math.abs(x2 - x1));
+        const flipH = x2 < x1;
+        const isReturn = msg.style === 'dashed' || msg.arrowType === 'return';
+
+        pptxSlide.addShape(pptx.ShapeType.line, {
+          x: minX,
+          y: currentY,
+          w: lineW,
+          h: 0.01,
+          flipH,
+          line: {
+            color: isReturn ? accentColor : primaryColor,
+            width: 2,
+            endArrowType: 'triangle',
+            dashType: isReturn ? 'dash' : 'solid',
+          },
+        });
+
+        // Message text pill / label
+        const labelText = msg.label || '';
+        const pillW = Math.min(lineW, Math.max(0.8, labelText.length * 0.08 + 0.2));
+        const pillX = minX + (lineW - pillW) / 2;
+
+        pptxSlide.addShape(pptx.ShapeType.roundRect, {
+          x: pillX,
+          y: currentY - 0.24,
+          w: pillW,
+          h: 0.22,
+          fill: { color: surfaceColor },
+          line: { color: borderColor, width: 1 },
+          rectRadius: 0.04,
+        });
+
+        pptxSlide.addText(labelText, {
+          x: pillX,
+          y: currentY - 0.24,
+          w: pillW,
+          h: 0.22,
+          align: 'center',
+          valign: 'middle',
+          fontSize: 8.5,
+          bold: true,
+          color: textColor,
+          fontFace: cleanFontFace(theme.typography.bodyFont),
+        });
+      });
+    }
+
+    // Draw notes if any
+    if (seq.notes && seq.notes.length > 0) {
+      seq.notes.forEach((note, nIdx) => {
+        const targetX = participantPositions[note.participant];
+        const noteX =
+          targetX !== undefined
+            ? note.position === 'right'
+              ? targetX + 0.3
+              : note.position === 'left'
+                ? targetX - 1.3
+                : targetX - 0.6
+            : rect.x + 0.2 + nIdx * 1.5;
+        const noteY = rect.y + rect.h - 0.45;
+
+        pptxSlide.addShape(pptx.ShapeType.roundRect, {
+          x: noteX,
+          y: noteY,
+          w: 1.2,
+          h: 0.35,
+          fill: { color: this.cleanHexColor(theme.colors.warning || 'eab308') },
+          line: { color: this.cleanHexColor(theme.colors.border || 'ca8a04'), width: 1 },
+          rectRadius: 0.04,
+        });
+
+        pptxSlide.addText(note.text, {
+          x: noteX + 0.05,
+          y: noteY + 0.04,
+          w: 1.1,
+          h: 0.27,
+          fontSize: 8,
+          bold: true,
+          color: '000000',
+          fontFace: cleanFontFace(theme.typography.bodyFont),
+          align: 'center',
+          valign: 'middle',
+        });
+      });
+    }
+  }
+
+  private renderClassDiagram(
+    pptxSlide: PptxSlide,
+    pptx: PptxInstance,
+    diagram: ClassDiagramElement,
+    rect: { x: number; y: number; w: number; h: number },
+    theme: YumiaTheme
+  ): void {
+    if (!diagram.classes || diagram.classes.length === 0) return;
+
+    const K = diagram.classes.length;
+    const cols = Math.min(K, K <= 3 ? K : Math.ceil(Math.sqrt(K * 1.4)));
+    const rows = Math.ceil(K / cols);
+
+    const gapX = cols > 1 ? 0.25 : 0;
+    const gapY = rows > 1 ? 0.25 : 0;
+    const cardW = Math.max(1.2, (rect.w - (cols - 1) * gapX) / cols);
+    const cardH = Math.max(1.0, (rect.h - (rows - 1) * gapY) / rows);
+
+    const primaryColor = this.cleanHexColor(theme.colors.primary);
+    const surfaceColor = this.cleanHexColor(theme.colors.surface || '1e293b');
+    const borderColor = this.cleanHexColor(theme.colors.border || '334155');
+    const textColor = this.cleanHexColor(theme.colors.text || 'f8fafc');
+    const accentColor = this.cleanHexColor(theme.colors.accent || theme.colors.primary);
+    const mutedColor = this.cleanHexColor(theme.colors.muted || '94a3b8');
+
+    const classPositions: Record<string, { x: number; y: number; w: number; h: number }> = {};
+
+    diagram.classes.forEach((cls, idx) => {
+      const cCol = idx % cols;
+      const cRow = Math.floor(idx / cols);
+      const cx = rect.x + cCol * (cardW + gapX);
+      const cy = rect.y + cRow * (cardH + gapY);
+
+      classPositions[cls.name] = { x: cx, y: cy, w: cardW, h: cardH };
+      classPositions[cls.id] = { x: cx, y: cy, w: cardW, h: cardH };
+
+      // Outer container card
+      pptxSlide.addShape(pptx.ShapeType.roundRect, {
+        x: cx,
+        y: cy,
+        w: cardW,
+        h: cardH,
+        fill: { color: surfaceColor },
+        line: { color: borderColor, width: 1.5 },
+        rectRadius: 0.06,
+      });
+
+      // Header band
+      const headerH = cls.isInterface || cls.isAbstract ? 0.44 : 0.34;
+      pptxSlide.addShape(pptx.ShapeType.roundRect, {
+        x: cx,
+        y: cy,
+        w: cardW,
+        h: headerH,
+        fill: { color: cls.isInterface ? accentColor : primaryColor },
+        line: { color: cls.isInterface ? accentColor : primaryColor, width: 0 },
+        rectRadius: 0.06,
+      });
+
+      let headerLabel = cls.name;
+      if (cls.isInterface) headerLabel = `<<interface>>\n${cls.name}`;
+      else if (cls.isAbstract) headerLabel = `<<abstract>>\n${cls.name}`;
+
+      pptxSlide.addText(headerLabel, {
+        x: cx + 0.05,
+        y: cy + 0.02,
+        w: cardW - 0.1,
+        h: headerH - 0.04,
+        align: 'center',
+        valign: 'middle',
+        fontSize: 9.5,
+        bold: true,
+        color: 'ffffff',
+        fontFace: cleanFontFace(theme.typography.headingFont),
+      });
+
+      const attributes = cls.members.filter((m) => !m.isMethod);
+      const methods = cls.members.filter((m) => m.isMethod);
+
+      // Attributes section
+      let currentContentY = cy + headerH + 0.06;
+      if (attributes.length > 0) {
+        const attrLines = attributes
+          .slice(0, 4)
+          .map((a) => `${a.visibility || '+'} ${a.name}${a.type ? `: ${a.type}` : ''}`)
+          .join('\n');
+        const attrH = Math.min(0.55, attributes.length * 0.16 + 0.05);
+        pptxSlide.addText(attrLines, {
+          x: cx + 0.1,
+          y: currentContentY,
+          w: cardW - 0.2,
+          h: attrH,
+          align: 'left',
+          valign: 'top',
+          fontSize: 8,
+          color: textColor,
+          fontFace: 'Consolas',
+        });
+        currentContentY += attrH;
+
+        // Divider
+        pptxSlide.addShape(pptx.ShapeType.line, {
+          x: cx,
+          y: currentContentY,
+          w: cardW,
+          h: 0.01,
+          line: { color: borderColor, width: 1 },
+        });
+        currentContentY += 0.05;
+      }
+
+      // Methods section
+      if (methods.length > 0) {
+        const methodLines = methods
+          .slice(0, 4)
+          .map(
+            (m) =>
+              `${m.visibility || '+'} ${m.name}(${m.params || ''})${m.type ? `: ${m.type}` : ''}`
+          )
+          .join('\n');
+        const methodH = Math.min(
+          cardH - (currentContentY - cy) - 0.05,
+          methods.length * 0.16 + 0.05
+        );
+        if (methodH > 0.1) {
+          pptxSlide.addText(methodLines, {
+            x: cx + 0.1,
+            y: currentContentY,
+            w: cardW - 0.2,
+            h: methodH,
+            align: 'left',
+            valign: 'top',
+            fontSize: 8,
+            color: mutedColor,
+            fontFace: 'Consolas',
+          });
+        }
+      }
+    });
+
+    // Draw relationships
+    if (diagram.relationships && diagram.relationships.length > 0) {
+      diagram.relationships.forEach((rel) => {
+        const p1 = classPositions[rel.from];
+        const p2 = classPositions[rel.to];
+        if (!p1 || !p2) return;
+
+        const x1 = p1.x + p1.w / 2;
+        const y1 = p1.y + p1.h;
+        const x2 = p2.x + p2.w / 2;
+        const y2 = p2.y;
+
+        const minX = Math.min(x1, x2);
+        const minY = Math.min(y1, y2);
+        const lineW = Math.max(0.02, Math.abs(x2 - x1));
+        const lineH = Math.max(0.02, Math.abs(y2 - y1));
+        const flipH = x2 < x1;
+        const flipV = y2 < y1;
+        const isImplements =
+          rel.relationshipType === 'implements' || rel.relationshipType === 'dependency';
+
+        pptxSlide.addShape(pptx.ShapeType.line, {
+          x: minX,
+          y: minY,
+          w: lineW,
+          h: lineH,
+          flipH,
+          flipV,
+          line: {
+            color: accentColor,
+            width: 1.5,
+            endArrowType: 'triangle',
+            dashType: isImplements ? 'dash' : 'solid',
+          },
+        });
+
+        if (rel.label) {
+          const midX = (x1 + x2) / 2;
+          const midY = (y1 + y2) / 2;
+          pptxSlide.addText(rel.label, {
+            x: midX - 0.5,
+            y: midY - 0.12,
+            w: 1.0,
+            h: 0.24,
+            align: 'center',
+            valign: 'middle',
+            fontSize: 8,
+            color: mutedColor,
+            fontFace: cleanFontFace(theme.typography.bodyFont),
+          });
+        }
+      });
+    }
   }
 
   private isDarkColor(rawHex?: string): boolean {

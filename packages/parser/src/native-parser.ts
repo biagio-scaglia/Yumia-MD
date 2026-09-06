@@ -35,11 +35,19 @@ import {
   createPresentation,
   createQuote,
   createSection,
+  createSequence,
+  createClassDiagram,
   createSlide,
   createStack,
   createTable,
   createTimeline,
   createToc,
+  SequenceParticipant,
+  SequenceMessage,
+  SequenceNote,
+  ClassItem,
+  ClassMember,
+  ClassRelationship,
 } from '@yumiamd/ast';
 import { parseHighlightLines } from './parser.js';
 
@@ -588,10 +596,24 @@ export class NativeYumiaParser {
           if (sub.command === 'series') {
             const sNameMatch = sub.args.match(/name=["']([^"']+)["']/);
             const sDataMatch = sub.args.match(/data=["']([^"']+)["']/);
+            const colonMatch = sub.text.match(/^series\s+([^:]+):\s*(.+)$/i);
+            const bracketMatch = sub.text.match(/^series:?\s*(.*?)\s*\[(.*?)\]$/i);
             if (sDataMatch) {
               const vals = sDataMatch[1]!.split(',').map((v) => parseFloat(v.trim()) || 0);
               series.push({
                 name: sNameMatch ? sNameMatch[1] : 'Series',
+                values: vals,
+              });
+            } else if (colonMatch && colonMatch[1] && colonMatch[2]) {
+              const vals = colonMatch[2]!.split(',').map((v) => parseFloat(v.trim()) || 0);
+              series.push({
+                name: colonMatch[1]!.trim(),
+                values: vals,
+              });
+            } else if (bracketMatch && bracketMatch[1] && bracketMatch[2]) {
+              const vals = bracketMatch[2]!.split(',').map((v) => parseFloat(v.trim()) || 0);
+              series.push({
+                name: bracketMatch[1]!.trim(),
                 values: vals,
               });
             }
@@ -742,6 +764,277 @@ export class NativeYumiaParser {
           end: { line: tok.lineNum, column: tok.text.length },
         };
         return { element: diagEl, nextIdx };
+      }
+
+      case 'sequence': {
+        const titleMatch = tok.args.match(/\btitle=["']([^"']+)["']/);
+        const title = titleMatch ? titleMatch[1] : undefined;
+
+        const participants: SequenceParticipant[] = [];
+        const participantMap = new Map<string, SequenceParticipant>();
+        const messages: SequenceMessage[] = [];
+        const notes: SequenceNote[] = [];
+
+        const ensureParticipant = (
+          rawId: string,
+          type: SequenceParticipant['type'] = 'participant',
+          explicitName?: string
+        ): SequenceParticipant => {
+          const cleanId = rawId.trim().replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+          let p = participantMap.get(cleanId);
+          if (!p) {
+            p = {
+              id: cleanId,
+              name: explicitName || rawId.trim(),
+              type,
+            };
+            participantMap.set(cleanId, p);
+            participants.push(p);
+          } else if (explicitName && p.name === p.id) {
+            p.name = explicitName;
+          }
+          return p;
+        };
+
+        let nextIdx = idx + 1;
+        while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
+          const line = tokens[nextIdx]!.text;
+          const declMatch = line.match(
+            /^(actor|participant|database|boundary|control|entity)\s+(?:["']([^"']+)["']|(\S+))(?:\s+as\s+(?:["']([^"']+)["']|(\S+)))?/i
+          );
+          if (declMatch) {
+            const type = declMatch[1]!.toLowerCase() as SequenceParticipant['type'];
+            const first = declMatch[2] || declMatch[3]!;
+            const second = declMatch[4] || declMatch[5];
+
+            let id = first;
+            let displayName = first;
+
+            if (second) {
+              if (declMatch[2]) {
+                displayName = first;
+                id = second;
+              } else {
+                id = first;
+                displayName = second;
+              }
+            }
+
+            const p = ensureParticipant(id, type, displayName);
+            participantMap.set(id.toLowerCase(), p);
+            participantMap.set(displayName.toLowerCase(), p);
+            if (second) {
+              participantMap.set(second.toLowerCase(), p);
+            }
+            nextIdx++;
+            continue;
+          }
+
+          const noteMatch = line.match(/^note\s+(over|right\s+of|left\s+of)\s+(\S+)\s*:\s*(.+)$/i);
+          if (noteMatch) {
+            const pos = noteMatch[1]!.toLowerCase().includes('right')
+              ? 'right'
+              : noteMatch[1]!.toLowerCase().includes('left')
+                ? 'left'
+                : 'over';
+            const target = noteMatch[2]!;
+            const noteText = noteMatch[3]!.trim();
+            const p = ensureParticipant(target);
+            notes.push({
+              participant: p.id,
+              text: noteText,
+              position: pos as SequenceNote['position'],
+            });
+            nextIdx++;
+            continue;
+          }
+
+          const msgMatch = line.match(/^(\S+)\s*(->>|-->|->|<-|<--)\s*(\S+)\s*:\s*(.+)$/);
+          if (msgMatch) {
+            const fromRaw = msgMatch[1]!;
+            const arrowOp = msgMatch[2]!;
+            const toRaw = msgMatch[3]!;
+            const label = msgMatch[4]!.trim();
+
+            let pFrom = ensureParticipant(fromRaw);
+            let pTo = ensureParticipant(toRaw);
+
+            let style: 'solid' | 'dashed' = 'solid';
+            let arrowType: 'sync' | 'async' | 'return' = 'sync';
+
+            if (arrowOp === '<--' || arrowOp === '<-') {
+              const temp = pFrom;
+              pFrom = pTo;
+              pTo = temp;
+              if (arrowOp === '<--') {
+                style = 'dashed';
+                arrowType = 'return';
+              }
+            } else if (arrowOp === '-->') {
+              style = 'dashed';
+              arrowType = 'return';
+            } else if (arrowOp === '->>') {
+              arrowType = 'async';
+            }
+
+            messages.push({
+              from: pFrom.id,
+              to: pTo.id,
+              label,
+              style,
+              arrowType,
+            });
+            nextIdx++;
+            continue;
+          }
+          nextIdx++;
+        }
+
+        const seqEl = createSequence(participants, messages, { title, notes });
+        seqEl.loc = {
+          start: { line: tok.lineNum, column: 1 },
+          end: { line: tok.lineNum, column: tok.text.length },
+        };
+        return { element: seqEl, nextIdx };
+      }
+
+      case 'class':
+      case 'class-diagram': {
+        const titleMatch = tok.args.match(/\btitle=["']([^"']+)["']/);
+        const title = titleMatch ? titleMatch[1] : undefined;
+
+        const classes: ClassItem[] = [];
+        const classMap = new Map<string, ClassItem>();
+        const relationships: ClassRelationship[] = [];
+
+        const ensureClass = (name: string): ClassItem => {
+          const cleanId = name.trim().replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+          let c = classMap.get(cleanId);
+          if (!c) {
+            c = {
+              id: cleanId,
+              name: name.trim(),
+              members: [],
+            };
+            classMap.set(cleanId, c);
+            classes.push(c);
+          }
+          return c;
+        };
+
+        let currentClass: ClassItem | null = null;
+        let nextIdx = idx + 1;
+
+        while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
+          const line = tokens[nextIdx]!.text;
+          const classStartMatch = line.match(
+            /^(?:(abstract\s+class|class|interface)\s+)(\w+)(?:\s*\{)?/i
+          );
+          if (classStartMatch) {
+            const modifier = classStartMatch[1]!.toLowerCase();
+            const className = classStartMatch[2]!;
+            currentClass = ensureClass(className);
+            if (modifier.startsWith('abstract')) currentClass.isAbstract = true;
+            if (modifier === 'interface') currentClass.isInterface = true;
+            if (line.endsWith('}') && line.includes('{')) {
+              currentClass = null;
+            }
+            nextIdx++;
+            continue;
+          }
+
+          if (currentClass) {
+            if (line === '}') {
+              currentClass = null;
+              nextIdx++;
+              continue;
+            }
+            const memberMatch = line.match(
+              /^([+\-#~])?\s*([\w]+)(?:\((.*?)\))?\s*(?::\s*([\w<>[\], ]+))?/
+            );
+            if (memberMatch) {
+              const vis = (memberMatch[1] as ClassMember['visibility']) || '+';
+              const mName = memberMatch[2]!;
+              const isMethod = memberMatch[3] !== undefined;
+              const params = memberMatch[3];
+              const mType = memberMatch[4];
+              currentClass.members.push({
+                visibility: vis,
+                name: mName,
+                isMethod,
+                params: params ? params.trim() : undefined,
+                type: mType ? mType.trim() : undefined,
+              });
+            }
+            nextIdx++;
+            continue;
+          }
+
+          const relMatch = line.match(
+            /^(\w+)(?:\s*["']([^"']*)["'])?\s*(--\|>|\.\.\|>|<\|--|<\|\.\.|-->|<--|--|\*--|--\*|o--|--o)\s*(?:["']([^"']*)["']\s*)?(\w+)(?:\s*:\s*(.+))?/
+          );
+          if (relMatch) {
+            const leftClass = ensureClass(relMatch[1]!);
+            const leftMult = relMatch[2];
+            const relOp = relMatch[3]!;
+            const rightMult = relMatch[4];
+            const rightClass = ensureClass(relMatch[5]!);
+            const label = relMatch[6] ? relMatch[6].trim() : undefined;
+
+            let fromClass = leftClass;
+            let toClass = rightClass;
+            let fromMultiplicity = leftMult;
+            let toMultiplicity = rightMult;
+
+            let relationshipType = 'association';
+            if (relOp === '<|--' || relOp === '<|..') {
+              fromClass = rightClass;
+              toClass = leftClass;
+              fromMultiplicity = rightMult;
+              toMultiplicity = leftMult;
+              relationshipType = relOp === '<|..' ? 'implements' : 'inheritance';
+            } else if (relOp === '--|>' || relOp === '..|>') {
+              relationshipType = relOp === '..|>' ? 'implements' : 'inheritance';
+            } else if (relOp === '<--') {
+              fromClass = rightClass;
+              toClass = leftClass;
+              fromMultiplicity = rightMult;
+              toMultiplicity = leftMult;
+              relationshipType = 'association';
+            } else if (relOp === '*--' || relOp === '--*') {
+              relationshipType = 'composition';
+              if (relOp === '--*') {
+                fromClass = rightClass;
+                toClass = leftClass;
+              }
+            } else if (relOp === 'o--' || relOp === '--o') {
+              relationshipType = 'aggregation';
+              if (relOp === '--o') {
+                fromClass = rightClass;
+                toClass = leftClass;
+              }
+            }
+
+            relationships.push({
+              from: fromClass.id,
+              to: toClass.id,
+              relationshipType,
+              fromMultiplicity,
+              toMultiplicity,
+              label,
+            });
+            nextIdx++;
+            continue;
+          }
+          nextIdx++;
+        }
+
+        const classEl = createClassDiagram(classes, relationships, { title });
+        classEl.loc = {
+          start: { line: tok.lineNum, column: 1 },
+          end: { line: tok.lineNum, column: tok.text.length },
+        };
+        return { element: classEl, nextIdx };
       }
 
       case 'compare': {
