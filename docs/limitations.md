@@ -7,23 +7,23 @@ Features listed as limited below are intentionally not claimed as production-com
 
 ## Rendering targets
 
-| Capability | HTML | PPTX | PDF |
-| --- | --- | --- | --- |
-| Shared layout engine geometry | CSS flex | Yes (`@yumiamd/layout` roots + nested children) | Yes (`@yumiamd/layout` roots + nested card/grid/columns/compare paint) |
-| Theme colors | Yes | Yes | Yes |
-| Theme typography scale | CSS tokens | Scaled to PPTX points (`×0.72`) | Scaled to PDF points (`×0.55`) |
-| Local raster images (PNG/JPEG) | Yes | Yes (`contain` fit) | Yes (aspect preserved) |
-| Remote image URLs | Browser fetch | **Not embedded** (placeholder) | **Not embedded** (placeholder) |
-| SVG diagrams / icons | Yes (`IconResolver`) | Rasterized PNG via `@resvg/resvg-js` | Rasterized PNG via `@resvg/resvg-js` |
-| Native flow `diagram` | SVG | Orthogonal connectors + layered layout | Orthogonal connectors + layered layout |
-| Mermaid | Client-rendered | Source box | Source box |
-| Speaker notes | Speaker view | Native notes | Not shown on page |
-| `16:9` / `4:3` / `16:10` | CSS aspect | Shared geometry helper | Shared geometry helper |
-| Font embedding (`embedFonts`) | N/A (web fonts) | **Not implemented** | System TTF when found (Segoe/Arial/DejaVu); else PDF core fonts |
-| POTX templates (`--template`) | N/A | **Not implemented** | N/A |
-| Emoji / broad Unicode | Yes | Depends on Office fonts | Preserved when system Unicode TTF registers; otherwise stripped for WinAnsi safety |
-| Cyclic flow diagrams | Guarded | Guarded (visit budget) | Guarded (visit budget) |
-| Hero `badge` attribute | Yes | Yes (compact when sharing a slide) | Yes (compact when sharing a slide) |
+| Capability                     | HTML                 | PPTX                                            | PDF                                                                                |
+| ------------------------------ | -------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Shared layout engine geometry  | CSS flex             | Yes (`@yumiamd/layout` roots + nested children) | Yes (`@yumiamd/layout` roots + nested card/grid/columns/compare paint)             |
+| Theme colors                   | Yes                  | Yes                                             | Yes                                                                                |
+| Theme typography scale         | CSS tokens           | Scaled to PPTX points (`×0.72`)                 | Scaled to PDF points (`×0.55`)                                                     |
+| Local raster images (PNG/JPEG) | Yes                  | Yes (`contain` fit)                             | Yes (aspect preserved)                                                             |
+| Remote image URLs              | Browser fetch        | **Not embedded** (placeholder)                  | **Not embedded** (placeholder)                                                     |
+| SVG diagrams / icons           | Yes (`IconResolver`) | Rasterized PNG via `@resvg/resvg-js`            | Rasterized PNG via `@resvg/resvg-js`                                               |
+| Native flow `diagram`          | SVG                  | Orthogonal connectors + layered layout          | Orthogonal connectors + layered layout                                             |
+| Mermaid                        | Client-rendered      | Source box                                      | Source box                                                                         |
+| Speaker notes                  | Speaker view         | Native notes                                    | Not shown on page                                                                  |
+| `16:9` / `4:3` / `16:10`       | CSS aspect           | Shared geometry helper                          | Shared geometry helper                                                             |
+| Font embedding (`embedFonts`)  | N/A (web fonts)      | **Not implemented**                             | System TTF when found (Segoe/Arial/DejaVu); else PDF core fonts                    |
+| POTX templates (`--template`)  | N/A                  | **Not implemented**                             | N/A                                                                                |
+| Emoji / broad Unicode          | Yes                  | Depends on Office fonts                         | Preserved when system Unicode TTF registers; otherwise stripped for WinAnsi safety |
+| Cyclic flow diagrams           | Guarded              | Guarded (visit budget)                          | Guarded (visit budget)                                                             |
+| Hero `badge` attribute         | Yes                  | Yes (compact when sharing a slide)              | Yes (compact when sharing a slide)                                                 |
 
 ## Layout & overflow
 

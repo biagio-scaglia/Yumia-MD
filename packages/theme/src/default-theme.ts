@@ -1113,7 +1113,8 @@ export const synthwaveTheme: YumiaTheme = {
 
 export const neoBrutalistTheme: YumiaTheme = {
   name: 'neo-brutalist',
-  description: 'High-contrast neo-brutalist aesthetic with stark borders, bold typography, and electric accents',
+  description:
+    'High-contrast neo-brutalist aesthetic with stark borders, bold typography, and electric accents',
   colors: {
     primary: '#FFE600',
     secondary: '#00F5D4',
@@ -1214,7 +1215,8 @@ export const neoBrutalistTheme: YumiaTheme = {
 
 export const luxuryTheme: YumiaTheme = {
   name: 'luxury',
-  description: 'Ultra-refined obsidian, champagne gold, and bronze luxury aesthetic with editorial serif typography',
+  description:
+    'Ultra-refined obsidian, champagne gold, and bronze luxury aesthetic with editorial serif typography',
   colors: {
     primary: '#D4AF37',
     secondary: '#C5A059',
@@ -1315,7 +1317,8 @@ export const luxuryTheme: YumiaTheme = {
 
 export const monokaiTheme: YumiaTheme = {
   name: 'monokai',
-  description: 'Iconic developer dark theme with charcoal background and vibrant yellow, pink, cyan, and green accents',
+  description:
+    'Iconic developer dark theme with charcoal background and vibrant yellow, pink, cyan, and green accents',
   colors: {
     primary: '#E6DB74',
     secondary: '#66D9EF',
@@ -1517,7 +1520,8 @@ export const solarizedDarkTheme: YumiaTheme = {
 
 export const nebulaTheme: YumiaTheme = {
   name: 'nebula',
-  description: 'Deep space aesthetic with galactic violet, electric lavender, and vibrant neon coral gradients',
+  description:
+    'Deep space aesthetic with galactic violet, electric lavender, and vibrant neon coral gradients',
   colors: {
     primary: '#C084FC',
     secondary: '#FB7185',

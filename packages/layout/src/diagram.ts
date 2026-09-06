@@ -52,8 +52,7 @@ export function computeDiagramLayout(
     connected.add(e.from);
     connected.add(e.to);
   });
-  const activeIds =
-    connected.size > 0 ? nodeIds.filter((id) => connected.has(id)) : nodeIds;
+  const activeIds = connected.size > 0 ? nodeIds.filter((id) => connected.has(id)) : nodeIds;
   if (activeIds.length === 0) return empty;
 
   const inDegree: Record<string, number> = {};
@@ -138,10 +137,7 @@ export function computeDiagramLayout(
 
   // Prefer readable labels: use most of the available width across ranks.
   const nodeWidth = isLR
-    ? Math.max(
-        100,
-        Math.min(260, (availableWidth - 48 - gapX * (numRanks - 1)) / numRanks)
-      )
+    ? Math.max(100, Math.min(260, (availableWidth - 48 - gapX * (numRanks - 1)) / numRanks))
     : Math.max(
         100,
         Math.min(220, (availableWidth - 48 - gapX * (maxLane - 1)) / Math.max(1, maxLane))

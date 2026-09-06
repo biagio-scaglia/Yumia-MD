@@ -25,8 +25,24 @@ import {
   TimelineElement,
   TocElement,
 } from '@yumiamd/ast';
-import { DefaultLayoutEngine, LayoutNode, Rect, Size, SlideLayoutResult, computeDiagramLayout, fitDiagramLabel, orthogonalEdgePoints } from '@yumiamd/layout';
-import { RenderContext, YumiaRenderer, resolveSlideGeometry, themeSizeToPptxPoints, resolveLocalAsset, rasterizeIcon } from '@yumiamd/renderer';
+import {
+  DefaultLayoutEngine,
+  LayoutNode,
+  Rect,
+  Size,
+  SlideLayoutResult,
+  computeDiagramLayout,
+  fitDiagramLabel,
+  orthogonalEdgePoints,
+} from '@yumiamd/layout';
+import {
+  RenderContext,
+  YumiaRenderer,
+  resolveSlideGeometry,
+  themeSizeToPptxPoints,
+  resolveLocalAsset,
+  rasterizeIcon,
+} from '@yumiamd/renderer';
 import { resolveTheme, YumiaTheme } from '@yumiamd/theme';
 
 export interface PptxRenderOptions {
@@ -1111,10 +1127,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
 
     if (hero.subtitle && curY < maxY - 0.14) {
       const subLines = Math.max(1, Math.ceil(hero.subtitle.length / (compact ? 64 : 56)));
-      const subH = Math.min(
-        Math.max(compact ? 0.28 : 0.38, subLines * 0.28 + 0.06),
-        maxY - curY
-      );
+      const subH = Math.min(Math.max(compact ? 0.28 : 0.38, subLines * 0.28 + 0.06), maxY - curY);
       const bodySize = themeSizeToPptxPoints(theme.typography.sizes?.body, 18);
       const subFontSize = compact ? bodySize - 1 : subLines > 2 ? bodySize - 1 : bodySize + 1;
       pptxSlide.addText(hero.subtitle, {

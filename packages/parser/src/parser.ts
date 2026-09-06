@@ -1196,7 +1196,10 @@ export class DefaultYumiaParser implements YumiaParser {
           .split(',')
           .map((s) => s.trim())
           .filter(Boolean);
-      } else if (trimmed.toLowerCase().startsWith('series:') || trimmed.toLowerCase().startsWith('series ')) {
+      } else if (
+        trimmed.toLowerCase().startsWith('series:') ||
+        trimmed.toLowerCase().startsWith('series ')
+      ) {
         const seriesContent = trimmed.replace(/^series:?\s*/i, '');
         const bracketMatch = seriesContent.match(/^(.*?)\s*\[(.*?)\]$/);
         const colonMatch = seriesContent.match(/^(.*?)\s*:\s*(.+)$/);
@@ -1442,7 +1445,10 @@ export class DefaultYumiaParser implements YumiaParser {
       type: SequenceParticipant['type'] = 'participant',
       explicitName?: string
     ): SequenceParticipant => {
-      const cleanId = rawId.trim().replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+      const cleanId = rawId
+        .trim()
+        .replace(/[^a-zA-Z0-9_-]/g, '_')
+        .toLowerCase();
       let p = participantMap.get(cleanId);
       if (!p) {
         p = {
@@ -1562,7 +1568,10 @@ export class DefaultYumiaParser implements YumiaParser {
     const relationships: ClassRelationship[] = [];
 
     const ensureClass = (name: string): ClassItem => {
-      const cleanId = name.trim().replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+      const cleanId = name
+        .trim()
+        .replace(/[^a-zA-Z0-9_-]/g, '_')
+        .toLowerCase();
       let c = classMap.get(cleanId);
       if (!c) {
         c = {
@@ -1582,7 +1591,9 @@ export class DefaultYumiaParser implements YumiaParser {
       const line = rawLine.trim();
       if (!line || line.startsWith('//') || line.startsWith('#')) continue;
 
-      const classStartMatch = line.match(/^(?:(abstract\s+class|class|interface)\s+)(\w+)(?:\s*\{)?/i);
+      const classStartMatch = line.match(
+        /^(?:(abstract\s+class|class|interface)\s+)(\w+)(?:\s*\{)?/i
+      );
       if (classStartMatch) {
         const modifier = classStartMatch[1]!.toLowerCase();
         const className = classStartMatch[2]!;
@@ -1600,7 +1611,9 @@ export class DefaultYumiaParser implements YumiaParser {
           currentClass = null;
           continue;
         }
-        const memberMatch = line.match(/^([+\-#~])?\s*([\w]+)(?:\((.*?)\))?\s*(?::\s*([\w<>[\], ]+))?/);
+        const memberMatch = line.match(
+          /^([+\-#~])?\s*([\w]+)(?:\((.*?)\))?\s*(?::\s*([\w<>[\], ]+))?/
+        );
         if (memberMatch) {
           const vis = (memberMatch[1] as ClassMember['visibility']) || '+';
           const mName = memberMatch[2]!;

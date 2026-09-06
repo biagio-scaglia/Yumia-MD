@@ -40,7 +40,13 @@ import {
   resolveSlideGeometry,
   themeSizeToPdfPoints,
 } from '@yumiamd/renderer';
-import { DefaultLayoutEngine, LayoutNode, computeDiagramLayout, fitDiagramLabel, orthogonalEdgePoints } from '@yumiamd/layout';
+import {
+  DefaultLayoutEngine,
+  LayoutNode,
+  computeDiagramLayout,
+  fitDiagramLabel,
+  orthogonalEdgePoints,
+} from '@yumiamd/layout';
 import { defaultTheme, resolveTheme, ThemeOverrides, YumiaTheme } from '@yumiamd/theme';
 
 export interface PdfOutput {
@@ -289,10 +295,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
     const hasChildren = !!(node.children && node.children.length > 0);
     if (
       hasChildren &&
-      (el.type === 'grid' ||
-        el.type === 'stack' ||
-        el.type === 'columns' ||
-        el.type === 'column')
+      (el.type === 'grid' || el.type === 'stack' || el.type === 'columns' || el.type === 'column')
     ) {
       for (const child of node.children!) {
         this.paintLayoutNode(doc, child, scaleX, scaleY, theme, presentation, contentBottom);
@@ -340,9 +343,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
   ): void {
     const variantColor = this.getVariantColor(card.variant, theme);
     doc.save();
-    doc
-      .roundedRect(x, y, width, height, 8)
-      .fill(theme.colors.surface || 'rgba(255,255,255,0.06)');
+    doc.roundedRect(x, y, width, height, 8).fill(theme.colors.surface || 'rgba(255,255,255,0.06)');
     doc.roundedRect(x, y, width, height, 8).lineWidth(1.5).strokeColor(variantColor).stroke();
     doc.restore();
     if (card.title) {
@@ -378,9 +379,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       .lineWidth(1.4)
       .strokeColor(theme.colors.border || 'rgba(255,255,255,0.15)')
       .stroke();
-    doc
-      .roundedRect(x + colW + gap, y, colW, height, 8)
-      .fill(theme.colors.surface || '#151522');
+    doc.roundedRect(x + colW + gap, y, colW, height, 8).fill(theme.colors.surface || '#151522');
     doc
       .roundedRect(x + colW + gap, y, colW, height, 8)
       .lineWidth(1.4)
@@ -455,7 +454,10 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         .text(label, badgeX, curY + 3, { width: labelW, align: 'center' });
       curY += compact ? 22 : 28;
     } else if (hero.tagline && curY < maxY) {
-      doc.font(this.getPdfFont(theme, 'bold')).fontSize(compact ? 10 : 11).fillColor(theme.colors.primary);
+      doc
+        .font(this.getPdfFont(theme, 'bold'))
+        .fontSize(compact ? 10 : 11)
+        .fillColor(theme.colors.primary);
       doc.text(this.stripFormatting(hero.tagline).toUpperCase(), x, curY, { width, align });
       curY += 20;
     }
@@ -513,7 +515,11 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           doc.font(this.getPdfFont(theme, 'bold')).fontSize(9);
           const labelW = Math.min(width, Math.max(70, doc.widthOfString(label) + 24));
           const badgeX =
-            align === 'left' ? x : align === 'right' ? x + width - labelW : x + (width - labelW) / 2;
+            align === 'left'
+              ? x
+              : align === 'right'
+                ? x + width - labelW
+                : x + (width - labelW) / 2;
           doc
             .roundedRect(badgeX, curY, labelW, 18, 9)
             .lineWidth(1.2)
@@ -672,9 +678,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           }
           return y + fitH + 8;
         } catch {
-          doc
-            .roundedRect(x, y, width, 80, 6)
-            .fill(theme.colors.surface || '#e2e8f0');
+          doc.roundedRect(x, y, width, 80, 6).fill(theme.colors.surface || '#e2e8f0');
           doc
             .font(this.getPdfFont(theme, 'regular'))
             .fontSize(11)
@@ -768,7 +772,8 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         const heights = lines.map((line) =>
           Math.max(14, doc.heightOfString(line || ' ', { width: textW, lineGap: 0 }))
         );
-        const contentH = heights.reduce((sum, h) => sum + h, 0) + Math.max(0, lines.length - 1) * lineGap;
+        const contentH =
+          heights.reduce((sum, h) => sum + h, 0) + Math.max(0, lines.length - 1) * lineGap;
         const boxHeight = contentH + 20;
 
         doc
@@ -1259,7 +1264,10 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
               .font(this.getPdfFont(theme, 'bold'))
               .fontSize(13)
               .fillColor(theme.colors.text)
-              .text(this.stripFormatting(ch.title), x + 14, topY, { width: width - 28, align: 'center' });
+              .text(this.stripFormatting(ch.title), x + 14, topY, {
+                width: width - 28,
+                align: 'center',
+              });
             topY += 18;
           }
 
@@ -1292,7 +1300,10 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
             const px = cx + radius * Math.cos(angle);
             const py = cy + radius * Math.sin(angle);
             doc.save();
-            doc.lineWidth(0.6).strokeColor(theme.colors.border || 'rgba(255,255,255,0.2)').dash(2, { space: 2 });
+            doc
+              .lineWidth(0.6)
+              .strokeColor(theme.colors.border || 'rgba(255,255,255,0.2)')
+              .dash(2, { space: 2 });
             doc.moveTo(cx, cy).lineTo(px, py).stroke();
             doc.restore();
 
@@ -1356,7 +1367,10 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
               .font(this.getPdfFont(theme, 'bold'))
               .fontSize(13)
               .fillColor(theme.colors.text)
-              .text(this.stripFormatting(ch.title), x + 14, topY, { width: width - 28, align: 'center' });
+              .text(this.stripFormatting(ch.title), x + 14, topY, {
+                width: width - 28,
+                align: 'center',
+              });
             topY += 18;
           }
 
@@ -1407,7 +1421,10 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
               .font(this.getPdfFont(theme, 'regular'))
               .fontSize(9)
               .fillColor(theme.colors.muted || '#888888')
-              .text(this.stripFormatting(ch.labels[0]), cx - 60, cy + 6, { width: 120, align: 'center' });
+              .text(this.stripFormatting(ch.labels[0]), cx - 60, cy + 6, {
+                width: 120,
+                align: 'center',
+              });
           }
 
           return y + boxH + 8;
@@ -1962,14 +1979,19 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       doc.moveTo(cx, lifelineTop).lineTo(cx, lifelineBottom).stroke();
       doc.restore();
 
-      doc.roundedRect(boxX, topY, partW, 26, 5).fill(theme.colors.surface || 'rgba(255,255,255,0.06)');
+      doc
+        .roundedRect(boxX, topY, partW, 26, 5)
+        .fill(theme.colors.surface || 'rgba(255,255,255,0.06)');
       doc.roundedRect(boxX, topY, partW, 26, 5).lineWidth(1.2).strokeColor(primaryColor).stroke();
 
       doc
         .font(this.getPdfFont(theme, 'bold'))
         .fontSize(9)
         .fillColor(theme.colors.text)
-        .text(this.stripFormatting(p.name), boxX + 2, topY + 8, { width: partW - 4, align: 'center' });
+        .text(this.stripFormatting(p.name), boxX + 2, topY + 8, {
+          width: partW - 4,
+          align: 'center',
+        });
     });
 
     // Draw messages
@@ -1990,15 +2012,25 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       const dir = x2 >= x1 ? 1 : -1;
       doc.save();
       doc.fillColor(msgColor);
-      doc.moveTo(x2, lineY).lineTo(x2 - dir * 6, lineY - 3.5).lineTo(x2 - dir * 6, lineY + 3.5).fill();
+      doc
+        .moveTo(x2, lineY)
+        .lineTo(x2 - dir * 6, lineY - 3.5)
+        .lineTo(x2 - dir * 6, lineY + 3.5)
+        .fill();
       doc.restore();
 
       // Message Label Pill
       const labelText = this.stripFormatting(msg.label);
       const midX = (x1 + x2) / 2;
       const pillW = Math.min(130, Math.max(50, labelText.length * 5.2 + 12));
-      doc.roundedRect(midX - pillW / 2, lineY - 14, pillW, 12, 3).fill(theme.colors.surface || '#0f172a');
-      doc.roundedRect(midX - pillW / 2, lineY - 14, pillW, 12, 3).lineWidth(0.8).strokeColor(theme.colors.border || 'rgba(255,255,255,0.15)').stroke();
+      doc
+        .roundedRect(midX - pillW / 2, lineY - 14, pillW, 12, 3)
+        .fill(theme.colors.surface || '#0f172a');
+      doc
+        .roundedRect(midX - pillW / 2, lineY - 14, pillW, 12, 3)
+        .lineWidth(0.8)
+        .strokeColor(theme.colors.border || 'rgba(255,255,255,0.15)')
+        .stroke();
 
       doc
         .font(this.getPdfFont(theme, 'regular'))
@@ -2042,9 +2074,15 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       const attrCount = c.members.filter((m) => !m.isMethod).length;
       const methodCount = c.members.filter((m) => m.isMethod).length;
       const cardH =
-        34 + attrCount * 14 + (attrCount > 0 ? 6 : 0) + methodCount * 14 + (methodCount > 0 ? 6 : 0);
+        34 +
+        attrCount * 14 +
+        (attrCount > 0 ? 6 : 0) +
+        methodCount * 14 +
+        (methodCount > 0 ? 6 : 0);
 
-      doc.roundedRect(cardX, topY, colW, cardH, 6).fill(theme.colors.surface || 'rgba(255,255,255,0.06)');
+      doc
+        .roundedRect(cardX, topY, colW, cardH, 6)
+        .fill(theme.colors.surface || 'rgba(255,255,255,0.06)');
       doc
         .roundedRect(cardX, topY, colW, cardH, 6)
         .lineWidth(1.2)

@@ -209,16 +209,7 @@ export interface ChartDataSeries {
 
 export interface ChartElement extends BaseElement {
   type: 'chart';
-  chartType:
-    | 'bar'
-    | 'line'
-    | 'pie'
-    | 'doughnut'
-    | 'area'
-    | 'radar'
-    | 'scatter'
-    | 'gauge'
-    | string;
+  chartType: 'bar' | 'line' | 'pie' | 'doughnut' | 'area' | 'radar' | 'scatter' | 'gauge' | string;
   labels: string[];
   series: ChartDataSeries[];
   title?: string | undefined;
@@ -378,7 +369,8 @@ export interface DiagramElement extends BaseElement {
 export interface SequenceParticipant {
   id: string;
   name: string;
-  type?: 'actor' | 'participant' | 'database' | 'boundary' | 'control' | 'entity' | string | undefined;
+  type?:
+    'actor' | 'participant' | 'database' | 'boundary' | 'control' | 'entity' | string | undefined;
   variant?: string | undefined;
 }
 

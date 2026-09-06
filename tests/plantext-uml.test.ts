@@ -141,7 +141,9 @@ series Egress: 8, 10, 25, 50, 40, 20
   it('should parse Markdown :::class diagram directive with classes, members, and relationships', () => {
     const ast = parseYumia(markdownClassDoc);
     expect(ast.slides).toHaveLength(1);
-    const cd = ast.slides[0]!.elements.find((el) => el.type === 'class-diagram') as ClassDiagramElement;
+    const cd = ast.slides[0]!.elements.find(
+      (el) => el.type === 'class-diagram'
+    ) as ClassDiagramElement;
     expect(cd).toBeDefined();
     expect(cd.title).toBe('Core Presentation Architecture');
     expect(cd.classes.length).toBe(3);

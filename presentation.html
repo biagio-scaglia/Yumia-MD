@@ -1,1452 +1,2107 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Yumia — Un linguaggio dichiarativo per documenti visivi</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Orbitron:wght@500;700;900&family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap">
-  
-  
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
-  <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-    try {
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: 'dark',
-        securityLevel: 'loose',
-        themeVariables: {
-          darkMode: true,
-          background: '#0B0B12',
-          primaryColor: '#FF2E88',
-          primaryTextColor: '#ffffff',
-          primaryBorderColor: '#FF2E88',
-          lineColor: '#7B61FF',
-          secondaryColor: '#151522',
-          tertiaryColor: '#151522'
-        }
-      });
-      window.mermaid = mermaid;
-      window.renderMermaidInSlide = async function(slideEl) {
-        if (!slideEl || !window.mermaid) return;
-        const nodes = Array.from(slideEl.querySelectorAll('.mermaid:not([data-processed="true"])'));
-        if (nodes.length > 0) {
-          try {
-            await window.mermaid.run({ nodes: nodes });
-          } catch (e) {
-            console.warn('Mermaid render notice:', e);
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Yumia — Un linguaggio dichiarativo per documenti visivi</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Orbitron:wght@500;700;900&family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"
+      crossorigin="anonymous"
+    />
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+      try {
+        mermaid.initialize({
+          startOnLoad: false,
+          theme: 'dark',
+          securityLevel: 'loose',
+          themeVariables: {
+            darkMode: true,
+            background: '#0B0B12',
+            primaryColor: '#FF2E88',
+            primaryTextColor: '#ffffff',
+            primaryBorderColor: '#FF2E88',
+            lineColor: '#7B61FF',
+            secondaryColor: '#151522',
+            tertiaryColor: '#151522',
+          },
+        });
+        window.mermaid = mermaid;
+        window.renderMermaidInSlide = async function (slideEl) {
+          if (!slideEl || !window.mermaid) return;
+          const nodes = Array.from(
+            slideEl.querySelectorAll('.mermaid:not([data-processed="true"])')
+          );
+          if (nodes.length > 0) {
+            try {
+              await window.mermaid.run({ nodes: nodes });
+            } catch (e) {
+              console.warn('Mermaid render notice:', e);
+            }
           }
-        }
-      };
-      // Auto-render visible slide if present
-      const cur = document.querySelector('.yumia-slide-wrapper.active');
-      if (cur) window.renderMermaidInSlide(cur);
-    } catch (err) {
-      console.warn('Mermaid load notice:', err);
-    }
-  </script>
-  <style>
-    :root {
-      --yumia-bg: #0B0B12;
-      --yumia-surface: #151522;
-      --yumia-elevated-surface: #1D1D2E;
-      --yumia-text: #FFFFFF;
-      --yumia-muted: #A7A7B5;
-      --yumia-primary: #FF2E88;
-      --yumia-secondary: #00F0FF;
-      --yumia-accent: #7B61FF;
-      --yumia-border: #2E2E48;
-      --yumia-divider: #3E3E5E;
-      --yumia-success: #00FF9F;
-      --yumia-warning: #FFE600;
-      --yumia-danger: #FF0055;
-      --yumia-info: #00F0FF;
-      --yumia-font-heading: Outfit, Inter, sans-serif;
-      --yumia-font-body: Inter, sans-serif;
-      --yumia-font-code: JetBrains Mono, monospace;
-      --yumia-line-height-tight: 1.15;
-      --yumia-line-height-normal: 1.55;
-      --yumia-line-height-relaxed: 1.7;
-      --yumia-line-height-body: 1.55;
-      --yumia-letter-spacing-tight: -0.02em;
-      --yumia-radius-sm: 6px;
-      --yumia-radius-md: 12px;
-      --yumia-radius-lg: 20px;
-      --yumia-radius-default: 12px;
-      --yumia-radius-card: 16px;
-      --yumia-shadow-glow: 0 0 20px rgba(255, 46, 136, 0.45);
-      --yumia-ratio: 16 / 9;
-      --yumia-ratio-w: 16;
-      --yumia-ratio-h: 9;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background-color: #050508;
-      color: var(--yumia-text);
-      font-family: var(--yumia-font-body), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      overflow: hidden;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      user-select: none;
-    }
-
-    #deck-container {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      background: #050508;
-    }
-
-    #yumia-deck {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      max-width: calc(100vh * var(--yumia-ratio-w) / var(--yumia-ratio-h));
-      max-height: calc(100vw * var(--yumia-ratio-h) / var(--yumia-ratio-w));
-      aspect-ratio: var(--yumia-ratio);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .yumia-slide-wrapper {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      aspect-ratio: var(--yumia-ratio);
-      background-color: var(--yumia-bg);
-      border-radius: var(--yumia-radius-default);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--yumia-border);
-      overflow: hidden;
-      display: none;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: stretch;
-      padding: clamp(1.4rem, 2.8vw, 2.2rem) clamp(2rem, 4vw, 3.8rem) clamp(2.2rem, 3.5vw, 3.2rem);
-      box-sizing: border-box;
-      animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .yumia-slide-wrapper.active {
-      display: flex;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.985); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    /* Headings */
-    h1, h2, h3, h4 {
-      font-family: var(--yumia-font-heading), system-ui, -apple-system, sans-serif;
-      font-weight: 700;
-      line-height: var(--yumia-line-height-tight);
-      margin-bottom: 0.35em;
-      letter-spacing: var(--yumia-letter-spacing-tight);
-      overflow-wrap: break-word;
-      word-break: break-word;
-    }
-
-    h1 {
-      font-size: clamp(1.6rem, 2.8vw, 2.5rem);
-      color: var(--yumia-primary);
-      line-height: 1.15;
-    }
-
-    h1 + h2 {
-      margin-top: -0.15em;
-      margin-bottom: 0.75em;
-      font-size: clamp(1rem, 1.6vw, 1.35rem);
-      color: var(--yumia-muted);
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
-
-    h2 {
-      font-size: clamp(1.3rem, 2.2vw, 1.9rem);
-      color: var(--yumia-text);
-      line-height: 1.2;
-    }
-
-    h3 {
-      font-size: clamp(1.15rem, 1.8vw, 1.5rem);
-      color: var(--yumia-text);
-    }
-
-    h4 {
-      font-size: clamp(1rem, 1.4vw, 1.25rem);
-      color: var(--yumia-muted);
-    }
-
-    /* Paragraphs */
-    p {
-      font-size: clamp(0.95rem, 1.35vw, 1.2rem);
-      line-height: var(--yumia-line-height-normal);
-      color: var(--yumia-text);
-      margin-bottom: 0.6em;
-      overflow-wrap: break-word;
-    }
-
-    p strong, li strong {
-      color: var(--yumia-primary);
-      font-weight: 700;
-    }
-
-    p em, li em {
-      font-style: italic;
-      color: var(--yumia-secondary);
-    }
-
-    p code, li code {
-      font-family: var(--yumia-font-code);
-      background: rgba(255, 255, 255, 0.08);
-      padding: 0.15em 0.4em;
-      border-radius: 4px;
-      font-size: 0.9em;
-      color: var(--yumia-accent);
-    }
-
-    /* Lists */
-    ul, ol {
-      font-size: clamp(0.95rem, 1.3vw, 1.15rem);
-      line-height: 1.6;
-      margin-bottom: 0.8em;
-      padding-left: 1.5em;
-    }
-
-    li {
-      margin-bottom: 0.4em;
-      color: var(--yumia-text);
-    }
-
-    li::marker {
-      color: var(--yumia-primary);
-    }
-
-    /* Grid & Stack Layout Containers */
-    .yumia-grid {
-      display: grid;
-      width: 100%;
-      flex: 1;
-      min-height: 0;
-      gap: clamp(1rem, 1.8vw, 1.6rem);
-      align-items: stretch;
-      margin-top: 0.4rem;
-    }
-
-    .yumia-stack {
-      display: flex;
-      width: 100%;
-      flex: 1;
-      min-height: 0;
-      gap: clamp(1rem, 1.8vw, 1.6rem);
-      align-items: stretch;
-      margin-top: 0.4rem;
-    }
-
-    .yumia-stack.stack-horizontal > * {
-      flex: 1 1 0px;
-      min-width: 0;
-      height: 100%;
-    }
-
-    /* Columns */
-    .yumia-columns {
-      display: grid;
-      gap: clamp(1rem, 1.8vw, 1.6rem);
-      width: 100%;
-      flex: 1;
-      min-height: 0;
-      margin: 0.4rem 0;
-      align-items: stretch;
-    }
-
-    .yumia-column {
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem;
-      height: 100%;
-      min-width: 0;
-    }
-
-    /* Cards */
-    .yumia-card {
-      background: var(--yumia-surface);
-      border: 1.5px solid var(--yumia-border);
-      border-radius: 14px;
-      padding: clamp(1.2rem, 2vw, 1.8rem);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      gap: 0.7rem;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-      height: 100%;
-      min-height: 0;
-      box-sizing: border-box;
-      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .yumia-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-    }
-
-    .yumia-card[data-variant="primary"] {
-      border-color: var(--yumia-primary);
-    }
-    .yumia-card[data-variant="primary"] .yumia-card-title {
-      color: var(--yumia-primary);
-    }
-
-    .yumia-card[data-variant="warning"] {
-      border-color: var(--yumia-warning);
-    }
-    .yumia-card[data-variant="warning"] .yumia-card-title {
-      color: var(--yumia-warning);
-    }
-
-    .yumia-card[data-variant="success"] {
-      border-color: var(--yumia-success);
-    }
-    .yumia-card[data-variant="success"] .yumia-card-title {
-      color: var(--yumia-success);
-    }
-
-    .yumia-card[data-variant="accent"] {
-      border-color: var(--yumia-accent);
-    }
-    .yumia-card[data-variant="accent"] .yumia-card-title {
-      color: var(--yumia-accent);
-    }
-
-    .yumia-card[data-variant="info"] {
-      border-color: var(--yumia-info);
-    }
-    .yumia-card[data-variant="info"] .yumia-card-title {
-      color: var(--yumia-info);
-    }
-
-    .yumia-card-title {
-      font-family: var(--yumia-font-heading);
-      font-size: clamp(1.1rem, 1.6vw, 1.35rem);
-      font-weight: 700;
-      color: var(--yumia-primary);
-      margin-bottom: 0.2rem;
-    }
-
-    /* Metrics */
-    .yumia-metric {
-      background: var(--yumia-surface);
-      border: 1.5px solid var(--yumia-border);
-      border-radius: 14px;
-      padding: clamp(1.4rem, 2.5vw, 2.4rem) clamp(1rem, 2vw, 1.8rem);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      gap: 0.5rem;
-      height: 100%;
-      min-height: 150px;
-      box-sizing: border-box;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-      transition: transform 0.2s ease, border-color 0.2s ease;
-    }
-
-    .yumia-metric:hover {
-      transform: translateY(-2px);
-    }
-
-    .yumia-metric[data-variant="primary"] { border-color: var(--yumia-primary); }
-    .yumia-metric[data-variant="primary"] .yumia-metric-value { color: var(--yumia-primary); }
-    .yumia-metric[data-variant="success"] { border-color: var(--yumia-success); }
-    .yumia-metric[data-variant="success"] .yumia-metric-value { color: var(--yumia-success); }
-    .yumia-metric[data-variant="accent"] { border-color: var(--yumia-accent); }
-    .yumia-metric[data-variant="accent"] .yumia-metric-value { color: var(--yumia-accent); }
-    .yumia-metric[data-variant="info"] { border-color: var(--yumia-info); }
-    .yumia-metric[data-variant="info"] .yumia-metric-value { color: var(--yumia-info); }
-    .yumia-metric[data-variant="warning"] { border-color: var(--yumia-warning); }
-    .yumia-metric[data-variant="warning"] .yumia-metric-value { color: var(--yumia-warning); }
-    .yumia-metric[data-variant="danger"] { border-color: var(--yumia-danger); }
-    .yumia-metric[data-variant="danger"] .yumia-metric-value { color: var(--yumia-danger); }
-
-    .yumia-metric-label {
-      font-size: clamp(0.72rem, 1vw, 0.9rem);
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--yumia-muted);
-    }
-
-    .yumia-metric-value {
-      font-family: var(--yumia-font-heading);
-      font-size: clamp(2.3rem, 4.2vw, 3.8rem);
-      font-weight: 800;
-      line-height: 1.05;
-      color: var(--yumia-primary);
-    }
-
-    .yumia-metric-change {
-      font-size: clamp(0.8rem, 1.1vw, 1rem);
-      font-weight: 600;
-      padding: 4px 12px;
-      border-radius: 9999px;
-      background: rgba(255, 255, 255, 0.08);
-    }
-    .yumia-metric-change.positive { color: var(--yumia-success); }
-    .yumia-metric-change.negative { color: var(--yumia-danger); }
-
-    /* Chart Containers */
-    .yumia-chart-container {
-      width: 100%;
-      flex: 1;
-      min-height: 220px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      background: var(--yumia-surface);
-      border: 1.5px solid var(--yumia-border);
-      border-radius: 14px;
-      padding: clamp(1rem, 2vw, 1.6rem);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-    }
-
-    .yumia-chart-title {
-      font-family: var(--yumia-font-heading);
-      font-size: clamp(1.1rem, 1.5vw, 1.35rem);
-      font-weight: 700;
-      color: var(--yumia-primary);
-      margin-bottom: 0.6rem;
-      text-align: center;
-    }
-
-    /* Tables */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 1rem 0;
-      font-size: clamp(0.9rem, 1.15vw, 1.05rem);
-      border: 1px solid var(--yumia-border);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    th {
-      background: var(--yumia-primary);
-      color: #ffffff;
-      font-weight: 700;
-      padding: 0.75rem 1rem;
-      text-align: left;
-    }
-
-    td {
-      padding: 0.7rem 1rem;
-      border-top: 1px solid var(--yumia-border);
-      color: var(--yumia-text);
-      background: var(--yumia-surface);
-    }
-
-    tr:nth-child(even) td {
-      background: rgba(255, 255, 255, 0.03);
-    }
-
-    /* Code Blocks */
-    pre {
-      background: #0a0a10;
-      border: 1px solid var(--yumia-border);
-      border-radius: 8px;
-      padding: 1rem 1.25rem;
-      overflow-x: auto;
-      margin: 0.8rem 0;
-    }
-
-    pre code {
-      font-family: var(--yumia-font-code);
-      font-size: 0.95rem;
-      color: #00F0FF;
-      background: none;
-      padding: 0;
-    }
-
-    /* Blockquotes */
-    blockquote {
-      border-left: 4px solid var(--yumia-accent);
-      padding: 0.6rem 1.2rem;
-      margin: 1rem 0;
-      font-style: italic;
-      color: var(--yumia-muted);
-      font-size: 1.1rem;
-      background: rgba(255, 255, 255, 0.02);
-      border-radius: 0 8px 8px 0;
-    }
-
-    /* Controls Overlay */
-    .yumia-controls {
-      position: fixed;
-      bottom: 20px;
-      right: 24px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(15, 23, 42, 0.88);
-      backdrop-filter: blur(12px);
-      padding: 6px 14px;
-      border-radius: 30px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      z-index: 2500;
-      font-size: 13px;
-      color: #e2e8f0;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-    }
-
-    .yumia-btn {
-      background: none;
-      border: none;
-      color: #f8fafc;
-      cursor: pointer;
-      padding: 5px 9px;
-      border-radius: 6px;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.15s ease, transform 0.1s ease;
-    }
-
-    .yumia-btn:hover {
-      background: rgba(255, 255, 255, 0.15);
-      transform: translateY(-1px);
-    }
-
-    .yumia-progress-bar {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      height: 4px;
-      background: var(--yumia-primary);
-      transition: width 0.25s ease;
-    }
-
-    /* Badge Directive */
-    .yumia-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 4px 16px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--yumia-text);
-      border: 1.5px solid var(--yumia-border);
-      margin: 0.4rem auto;
-      align-self: center;
-      width: fit-content;
-      max-width: fit-content;
-      box-sizing: border-box;
-    }
-    .yumia-badge.variant-primary { background: rgba(0, 240, 255, 0.15); color: var(--yumia-primary); border-color: var(--yumia-primary); }
-    .yumia-badge.variant-success { background: rgba(16, 185, 129, 0.15); color: var(--yumia-success); border-color: var(--yumia-success); }
-    .yumia-badge.variant-warning { background: rgba(245, 158, 11, 0.15); color: var(--yumia-warning); border-color: var(--yumia-warning); }
-    .yumia-badge.variant-danger { background: rgba(239, 68, 68, 0.15); color: var(--yumia-danger); border-color: var(--yumia-danger); }
-    .yumia-badge.variant-info { background: rgba(59, 130, 246, 0.15); color: var(--yumia-info); border-color: var(--yumia-info); }
-    .yumia-badge.variant-accent { background: rgba(255, 46, 136, 0.15); color: var(--yumia-accent); border-color: var(--yumia-accent); }
-
-    /* Timeline Directive */
-    .yumia-timeline {
-      display: flex;
-      gap: 16px;
-      margin: 1.2rem 0;
-      width: 100%;
-    }
-    .yumia-timeline.layout-horizontal {
-      flex-direction: row;
-      justify-content: space-between;
-      position: relative;
-    }
-    .yumia-timeline.layout-horizontal::before {
-      content: '';
-      position: absolute;
-      top: 18px;
-      left: 20px;
-      right: 20px;
-      height: 2px;
-      background: var(--yumia-border);
-      z-index: 0;
-    }
-    .yumia-timeline-item {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      flex: 1;
-    }
-    .yumia-timeline-dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: var(--yumia-primary);
-      border: 3px solid var(--yumia-bg);
-      box-shadow: 0 0 10px var(--yumia-primary);
-      margin-bottom: 10px;
-    }
-    .yumia-timeline-date {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--yumia-accent);
-      margin-bottom: 4px;
-      font-family: var(--yumia-font-code);
-    }
-    .yumia-timeline-title {
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: var(--yumia-text);
-      margin-bottom: 4px;
-    }
-    .yumia-timeline-desc {
-      font-size: 0.85rem;
-      color: var(--yumia-muted);
-      line-height: 1.4;
-    }
-
-    /* Compare Directive */
-    .yumia-compare {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      gap: clamp(12px, 1.8vw, 20px);
-      align-items: stretch;
-      margin: 0.5rem 0;
-    }
-    .yumia-compare-col {
-      background: var(--yumia-surface);
-      border: 1.5px solid var(--yumia-border);
-      border-radius: var(--yumia-radius-card);
-      padding: clamp(1rem, 1.6vw, 1.3rem);
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-    }
-    .yumia-compare-title {
-      font-size: clamp(1rem, 1.4vw, 1.15rem);
-      font-weight: 700;
-      color: var(--yumia-primary);
-      margin-bottom: 0.6rem;
-      padding-bottom: 0.4rem;
-      border-bottom: 1px solid var(--yumia-divider);
-    }
-    .yumia-compare-divider {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 0.85rem;
-      color: var(--yumia-muted);
-      background: var(--yumia-surface);
-      border-radius: 50%;
-      width: 32px;
-      height: 32px;
-      align-self: center;
-      border: 1.5px solid var(--yumia-border);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    /* Native SVG Chart Container */
-    .yumia-chart-container {
-      background: var(--yumia-surface);
-      border: 1.5px solid var(--yumia-border);
-      border-radius: var(--yumia-radius-card);
-      padding: clamp(0.8rem, 1.4vw, 1.25rem);
-      margin: 0.6rem 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-    }
-    .yumia-chart-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--yumia-text);
-      margin-bottom: 0.6rem;
-      align-self: flex-start;
-    }
-
-    /* Diagram Container */
-    .yumia-diagram-container {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      margin: 0.5rem 0;
-      max-height: 52vh;
-    }
-    .yumia-diagram {
-      max-width: 100%;
-      max-height: 48vh;
-      height: auto;
-      background: var(--yumia-surface);
-      border: 1.5px solid var(--yumia-border);
-      border-radius: var(--yumia-radius-card);
-      padding: 12px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
-      box-sizing: border-box;
-    }
-    .yumia-diag-node {
-      transition: transform 0.2s ease, filter 0.2s ease;
-      cursor: pointer;
-    }
-    .yumia-diag-node:hover {
-      filter: brightness(1.1);
-    }
-
-    /* Mermaid Container */
-    .mermaid-container {
-      background: var(--yumia-surface);
-      border: 1.5px solid var(--yumia-border);
-      border-radius: var(--yumia-radius-card);
-      padding: 1.2rem;
-      margin: 0.6rem 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: auto;
-      width: 100%;
-      min-height: 200px;
-    }
-
-    .mermaid-container pre.mermaid,
-    .mermaid-container .mermaid {
-      background: transparent !important;
-      border: none !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      font-size: 1rem;
-      color: var(--yumia-text);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-    }
-
-    .mermaid-container svg {
-      max-width: 100%;
-      height: auto;
-      max-height: 420px;
-    }
-
-    /* Math Equation Container */
-    .yumia-math-container {
-      background: var(--yumia-surface);
-      border: 1.5px solid var(--yumia-border);
-      border-left: 4px solid var(--yumia-primary);
-      border-radius: var(--yumia-radius-card);
-      padding: 0.55rem 1.2rem;
-      margin: 0.45rem 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-      overflow-x: auto;
-      max-width: 100%;
-    }
-
-    .yumia-math-equation {
-      font-size: clamp(1rem, 1.6vw, 1.35rem);
-      color: var(--yumia-text);
-      letter-spacing: 0.03em;
-    }
-
-    /* Watermark Branding */
-    .yumia-watermark {
-      position: absolute;
-      bottom: 12px;
-      left: 20px;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--yumia-muted);
-      opacity: 0.35;
-      pointer-events: none;
-      user-select: none;
-      z-index: 10;
-      transition: opacity 0.2s ease;
-    }
-    .yumia-slide-wrapper:hover .yumia-watermark {
-      opacity: 0.65;
-    }
-
-    /* Slide Transitions */
-    .yumia-slide-wrapper.transition-fade.active {
-      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .yumia-slide-wrapper.transition-push.active {
-      animation: pushIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .yumia-slide-wrapper.transition-wipe.active {
-      animation: wipeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .yumia-slide-wrapper.transition-zoom.active {
-      animation: zoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    @keyframes pushIn {
-      from { opacity: 0; transform: translateX(40px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-    @keyframes wipeIn {
-      from { clip-path: polygon(0 0, 0 0, 0 100%, 0% 100%); }
-      to { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
-    }
-    @keyframes zoomIn {
-      from { opacity: 0; transform: scale(0.92); }
-      to { opacity: 1; transform: scale(1); }
-    }
-
-    /* Code Block Line Highlighting & Numbers */
-    .yumia-code-block {
-      display: block;
-      padding: 0.75rem 0;
-      font-family: var(--yumia-font-code);
-      font-size: 0.95rem;
-      line-height: 1.6;
-      overflow-x: auto;
-      border-radius: var(--yumia-radius-card);
-      background: rgba(10, 15, 30, 0.88);
-      border: 1.5px solid var(--yumia-border);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
-      margin: 0.8rem 0;
-    }
-    .yumia-code-block code {
-      display: block;
-      padding: 0;
-      background: transparent;
-      border: none;
-    }
-    .yumia-code-line {
-      display: flex;
-      align-items: center;
-      min-height: 1.6em;
-      padding: 0 1rem;
-      transition: background 0.15s ease, opacity 0.15s ease;
-    }
-    .yumia-code-line.dimmed {
-      opacity: 0.35;
-    }
-    .yumia-code-line.highlighted {
-      background: rgba(0, 240, 255, 0.16);
-      border-left: 3.5px solid var(--yumia-primary);
-      opacity: 1;
-      font-weight: 600;
-    }
-    .yumia-code-line .line-num {
-      user-select: none;
-      width: 28px;
-      margin-right: 14px;
-      color: rgba(255, 255, 255, 0.3);
-      font-size: 0.8rem;
-      text-align: right;
-    }
-    .yumia-code-line .line-text {
-      flex: 1;
-    }
-
-    /* Section Divider Card */
-    .yumia-section-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 3rem 2rem;
-      margin: auto 0;
-      background: radial-gradient(circle at center, rgba(0, 240, 255, 0.12) 0%, rgba(15, 23, 42, 0.6) 100%);
-      border: 1.5px solid var(--yumia-primary);
-      border-radius: var(--yumia-radius-card);
-      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 240, 255, 0.2);
-      width: 100%;
-    }
-    .yumia-section-pill {
-      display: inline-flex;
-      align-items: center;
-      padding: 4px 14px;
-      border-radius: 999px;
-      background: var(--yumia-primary);
-      color: #000;
-      font-weight: 800;
-      font-size: 0.85rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 1.2rem;
-    }
-    .yumia-section-title {
-      font-size: clamp(2rem, 3.5vw, 3rem);
-      font-weight: 800;
-      color: var(--yumia-text);
-      margin-bottom: 0.8rem;
-      line-height: 1.2;
-    }
-    .yumia-section-subtitle {
-      font-size: 1.15rem;
-      color: var(--yumia-muted);
-      max-width: 650px;
-    }
-
-    /* Table of Contents Grid */
-    .yumia-toc-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-      width: 100%;
-      margin: 1.2rem 0;
-    }
-    .yumia-toc-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      background: var(--yumia-surface);
-      border: 1.5px solid var(--yumia-border);
-      border-radius: 10px;
-      padding: 14px 18px;
-      transition: transform 0.2s ease, border-color 0.2s ease;
-    }
-    .yumia-toc-item:hover {
-      transform: translateX(4px);
-      border-color: var(--yumia-primary);
-    }
-    .yumia-toc-num {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
-      background: rgba(0, 240, 255, 0.15);
-      color: var(--yumia-primary);
-      font-weight: 800;
-      font-size: 0.95rem;
-    }
-    .yumia-toc-title {
-      font-weight: 600;
-      font-size: 1.05rem;
-      color: var(--yumia-text);
-    }
-
-    /* Print & Export Media Styles */
-    @media print {
-      @page {
-        size: landscape;
+        };
+        // Auto-render visible slide if present
+        const cur = document.querySelector('.yumia-slide-wrapper.active');
+        if (cur) window.renderMermaidInSlide(cur);
+      } catch (err) {
+        console.warn('Mermaid load notice:', err);
+      }
+    </script>
+    <style>
+      :root {
+        --yumia-bg: #0b0b12;
+        --yumia-surface: #151522;
+        --yumia-elevated-surface: #1d1d2e;
+        --yumia-text: #ffffff;
+        --yumia-muted: #a7a7b5;
+        --yumia-primary: #ff2e88;
+        --yumia-secondary: #00f0ff;
+        --yumia-accent: #7b61ff;
+        --yumia-border: #2e2e48;
+        --yumia-divider: #3e3e5e;
+        --yumia-success: #00ff9f;
+        --yumia-warning: #ffe600;
+        --yumia-danger: #ff0055;
+        --yumia-info: #00f0ff;
+        --yumia-font-heading: Outfit, Inter, sans-serif;
+        --yumia-font-body: Inter, sans-serif;
+        --yumia-font-code: JetBrains Mono, monospace;
+        --yumia-line-height-tight: 1.15;
+        --yumia-line-height-normal: 1.55;
+        --yumia-line-height-relaxed: 1.7;
+        --yumia-line-height-body: 1.55;
+        --yumia-letter-spacing-tight: -0.02em;
+        --yumia-radius-sm: 6px;
+        --yumia-radius-md: 12px;
+        --yumia-radius-lg: 20px;
+        --yumia-radius-default: 12px;
+        --yumia-radius-card: 16px;
+        --yumia-shadow-glow: 0 0 20px rgba(255, 46, 136, 0.45);
+        --yumia-ratio: 16 / 9;
+        --yumia-ratio-w: 16;
+        --yumia-ratio-h: 9;
+      }
+
+      * {
+        box-sizing: border-box;
         margin: 0;
+        padding: 0;
       }
+
       body {
-        background: #0f172a !important;
-        color: #f8fafc !important;
-        overflow: visible !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
+        background-color: #050508;
+        color: var(--yumia-text);
+        font-family:
+          var(--yumia-font-body),
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Roboto,
+          sans-serif;
+        overflow: hidden;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
       }
+
       #deck-container {
-        display: block !important;
-        width: 100% !important;
-        height: auto !important;
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: #050508;
       }
+
       #yumia-deck {
-        display: block !important;
-        position: static !important;
-        width: 100% !important;
-        height: auto !important;
+        position: relative;
+        width: 100%;
+        height: 100%;
+        max-width: calc(100vh * var(--yumia-ratio-w) / var(--yumia-ratio-h));
+        max-height: calc(100vw * var(--yumia-ratio-h) / var(--yumia-ratio-w));
+        aspect-ratio: var(--yumia-ratio);
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
+
       .yumia-slide-wrapper {
-        display: flex !important;
-        page-break-after: always !important;
-        break-after: page !important;
-        page-break-inside: avoid !important;
-        position: relative !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        min-height: 100vh !important;
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        aspect-ratio: var(--yumia-ratio);
+        background-color: var(--yumia-bg);
+        border-radius: var(--yumia-radius-default);
+        box-shadow:
+          0 25px 50px -12px rgba(0, 0, 0, 0.7),
+          0 0 0 1px var(--yumia-border);
+        overflow: hidden;
+        display: none;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: stretch;
+        padding: clamp(1.4rem, 2.8vw, 2.2rem) clamp(2rem, 4vw, 3.8rem) clamp(2.2rem, 3.5vw, 3.2rem);
+        box-sizing: border-box;
+        animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .yumia-slide-wrapper.active {
+        display: flex;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.985);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      /* Headings */
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family:
+          var(--yumia-font-heading),
+          system-ui,
+          -apple-system,
+          sans-serif;
+        font-weight: 700;
+        line-height: var(--yumia-line-height-tight);
+        margin-bottom: 0.35em;
+        letter-spacing: var(--yumia-letter-spacing-tight);
+        overflow-wrap: break-word;
+        word-break: break-word;
+      }
+
+      h1 {
+        font-size: clamp(1.6rem, 2.8vw, 2.5rem);
+        color: var(--yumia-primary);
+        line-height: 1.15;
+      }
+
+      h1 + h2 {
+        margin-top: -0.15em;
+        margin-bottom: 0.75em;
+        font-size: clamp(1rem, 1.6vw, 1.35rem);
+        color: var(--yumia-muted);
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+
+      h2 {
+        font-size: clamp(1.3rem, 2.2vw, 1.9rem);
+        color: var(--yumia-text);
+        line-height: 1.2;
+      }
+
+      h3 {
+        font-size: clamp(1.15rem, 1.8vw, 1.5rem);
+        color: var(--yumia-text);
+      }
+
+      h4 {
+        font-size: clamp(1rem, 1.4vw, 1.25rem);
+        color: var(--yumia-muted);
+      }
+
+      /* Paragraphs */
+      p {
+        font-size: clamp(0.95rem, 1.35vw, 1.2rem);
+        line-height: var(--yumia-line-height-normal);
+        color: var(--yumia-text);
+        margin-bottom: 0.6em;
+        overflow-wrap: break-word;
+      }
+
+      p strong,
+      li strong {
+        color: var(--yumia-primary);
+        font-weight: 700;
+      }
+
+      p em,
+      li em {
+        font-style: italic;
+        color: var(--yumia-secondary);
+      }
+
+      p code,
+      li code {
+        font-family: var(--yumia-font-code);
+        background: rgba(255, 255, 255, 0.08);
+        padding: 0.15em 0.4em;
+        border-radius: 4px;
+        font-size: 0.9em;
+        color: var(--yumia-accent);
+      }
+
+      /* Lists */
+      ul,
+      ol {
+        font-size: clamp(0.95rem, 1.3vw, 1.15rem);
+        line-height: 1.6;
+        margin-bottom: 0.8em;
+        padding-left: 1.5em;
+      }
+
+      li {
+        margin-bottom: 0.4em;
+        color: var(--yumia-text);
+      }
+
+      li::marker {
+        color: var(--yumia-primary);
+      }
+
+      /* Grid & Stack Layout Containers */
+      .yumia-grid {
+        display: grid;
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+        gap: clamp(1rem, 1.8vw, 1.6rem);
+        align-items: stretch;
+        margin-top: 0.4rem;
+      }
+
+      .yumia-stack {
+        display: flex;
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+        gap: clamp(1rem, 1.8vw, 1.6rem);
+        align-items: stretch;
+        margin-top: 0.4rem;
+      }
+
+      .yumia-stack.stack-horizontal > * {
+        flex: 1 1 0px;
+        min-width: 0;
+        height: 100%;
+      }
+
+      /* Columns */
+      .yumia-columns {
+        display: grid;
+        gap: clamp(1rem, 1.8vw, 1.6rem);
+        width: 100%;
+        flex: 1;
+        min-height: 0;
+        margin: 0.4rem 0;
+        align-items: stretch;
+      }
+
+      .yumia-column {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        height: 100%;
+        min-width: 0;
+      }
+
+      /* Cards */
+      .yumia-card {
+        background: var(--yumia-surface);
+        border: 1.5px solid var(--yumia-border);
+        border-radius: 14px;
+        padding: clamp(1.2rem, 2vw, 1.8rem);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 0.7rem;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        height: 100%;
+        min-height: 0;
+        box-sizing: border-box;
+        transition:
+          transform 0.2s ease,
+          border-color 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .yumia-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      }
+
+      .yumia-card[data-variant='primary'] {
+        border-color: var(--yumia-primary);
+      }
+      .yumia-card[data-variant='primary'] .yumia-card-title {
+        color: var(--yumia-primary);
+      }
+
+      .yumia-card[data-variant='warning'] {
+        border-color: var(--yumia-warning);
+      }
+      .yumia-card[data-variant='warning'] .yumia-card-title {
+        color: var(--yumia-warning);
+      }
+
+      .yumia-card[data-variant='success'] {
+        border-color: var(--yumia-success);
+      }
+      .yumia-card[data-variant='success'] .yumia-card-title {
+        color: var(--yumia-success);
+      }
+
+      .yumia-card[data-variant='accent'] {
+        border-color: var(--yumia-accent);
+      }
+      .yumia-card[data-variant='accent'] .yumia-card-title {
+        color: var(--yumia-accent);
+      }
+
+      .yumia-card[data-variant='info'] {
+        border-color: var(--yumia-info);
+      }
+      .yumia-card[data-variant='info'] .yumia-card-title {
+        color: var(--yumia-info);
+      }
+
+      .yumia-card-title {
+        font-family: var(--yumia-font-heading);
+        font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+        font-weight: 700;
+        color: var(--yumia-primary);
+        margin-bottom: 0.2rem;
+      }
+
+      /* Metrics */
+      .yumia-metric {
+        background: var(--yumia-surface);
+        border: 1.5px solid var(--yumia-border);
+        border-radius: 14px;
+        padding: clamp(1.4rem, 2.5vw, 2.4rem) clamp(1rem, 2vw, 1.8rem);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 0.5rem;
+        height: 100%;
+        min-height: 150px;
+        box-sizing: border-box;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        transition:
+          transform 0.2s ease,
+          border-color 0.2s ease;
+      }
+
+      .yumia-metric:hover {
+        transform: translateY(-2px);
+      }
+
+      .yumia-metric[data-variant='primary'] {
+        border-color: var(--yumia-primary);
+      }
+      .yumia-metric[data-variant='primary'] .yumia-metric-value {
+        color: var(--yumia-primary);
+      }
+      .yumia-metric[data-variant='success'] {
+        border-color: var(--yumia-success);
+      }
+      .yumia-metric[data-variant='success'] .yumia-metric-value {
+        color: var(--yumia-success);
+      }
+      .yumia-metric[data-variant='accent'] {
+        border-color: var(--yumia-accent);
+      }
+      .yumia-metric[data-variant='accent'] .yumia-metric-value {
+        color: var(--yumia-accent);
+      }
+      .yumia-metric[data-variant='info'] {
+        border-color: var(--yumia-info);
+      }
+      .yumia-metric[data-variant='info'] .yumia-metric-value {
+        color: var(--yumia-info);
+      }
+      .yumia-metric[data-variant='warning'] {
+        border-color: var(--yumia-warning);
+      }
+      .yumia-metric[data-variant='warning'] .yumia-metric-value {
+        color: var(--yumia-warning);
+      }
+      .yumia-metric[data-variant='danger'] {
+        border-color: var(--yumia-danger);
+      }
+      .yumia-metric[data-variant='danger'] .yumia-metric-value {
+        color: var(--yumia-danger);
+      }
+
+      .yumia-metric-label {
+        font-size: clamp(0.72rem, 1vw, 0.9rem);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--yumia-muted);
+      }
+
+      .yumia-metric-value {
+        font-family: var(--yumia-font-heading);
+        font-size: clamp(2.3rem, 4.2vw, 3.8rem);
+        font-weight: 800;
+        line-height: 1.05;
+        color: var(--yumia-primary);
+      }
+
+      .yumia-metric-change {
+        font-size: clamp(0.8rem, 1.1vw, 1rem);
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .yumia-metric-change.positive {
+        color: var(--yumia-success);
+      }
+      .yumia-metric-change.negative {
+        color: var(--yumia-danger);
+      }
+
+      /* Chart Containers */
+      .yumia-chart-container {
+        width: 100%;
+        flex: 1;
+        min-height: 220px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: var(--yumia-surface);
+        border: 1.5px solid var(--yumia-border);
+        border-radius: 14px;
+        padding: clamp(1rem, 2vw, 1.6rem);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      }
+
+      .yumia-chart-title {
+        font-family: var(--yumia-font-heading);
+        font-size: clamp(1.1rem, 1.5vw, 1.35rem);
+        font-weight: 700;
+        color: var(--yumia-primary);
+        margin-bottom: 0.6rem;
+        text-align: center;
+      }
+
+      /* Tables */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+        font-size: clamp(0.9rem, 1.15vw, 1.05rem);
+        border: 1px solid var(--yumia-border);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      th {
+        background: var(--yumia-primary);
+        color: #ffffff;
+        font-weight: 700;
+        padding: 0.75rem 1rem;
+        text-align: left;
+      }
+
+      td {
+        padding: 0.7rem 1rem;
+        border-top: 1px solid var(--yumia-border);
+        color: var(--yumia-text);
+        background: var(--yumia-surface);
+      }
+
+      tr:nth-child(even) td {
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      /* Code Blocks */
+      pre {
+        background: #0a0a10;
+        border: 1px solid var(--yumia-border);
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        overflow-x: auto;
+        margin: 0.8rem 0;
+      }
+
+      pre code {
+        font-family: var(--yumia-font-code);
+        font-size: 0.95rem;
+        color: #00f0ff;
+        background: none;
+        padding: 0;
+      }
+
+      /* Blockquotes */
+      blockquote {
+        border-left: 4px solid var(--yumia-accent);
+        padding: 0.6rem 1.2rem;
+        margin: 1rem 0;
+        font-style: italic;
+        color: var(--yumia-muted);
+        font-size: 1.1rem;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 0 8px 8px 0;
+      }
+
+      /* Controls Overlay */
+      .yumia-controls {
+        position: fixed;
+        bottom: 20px;
+        right: 24px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(15, 23, 42, 0.88);
+        backdrop-filter: blur(12px);
+        padding: 6px 14px;
+        border-radius: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        z-index: 2500;
+        font-size: 13px;
+        color: #e2e8f0;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+      }
+
+      .yumia-btn {
+        background: none;
+        border: none;
+        color: #f8fafc;
+        cursor: pointer;
+        padding: 5px 9px;
+        border-radius: 6px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          background 0.15s ease,
+          transform 0.1s ease;
+      }
+
+      .yumia-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-1px);
+      }
+
+      .yumia-progress-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 4px;
+        background: var(--yumia-primary);
+        transition: width 0.25s ease;
+      }
+
+      /* Badge Directive */
+      .yumia-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 16px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--yumia-text);
+        border: 1.5px solid var(--yumia-border);
+        margin: 0.4rem auto;
+        align-self: center;
+        width: fit-content;
+        max-width: fit-content;
+        box-sizing: border-box;
+      }
+      .yumia-badge.variant-primary {
+        background: rgba(0, 240, 255, 0.15);
+        color: var(--yumia-primary);
+        border-color: var(--yumia-primary);
+      }
+      .yumia-badge.variant-success {
+        background: rgba(16, 185, 129, 0.15);
+        color: var(--yumia-success);
+        border-color: var(--yumia-success);
+      }
+      .yumia-badge.variant-warning {
+        background: rgba(245, 158, 11, 0.15);
+        color: var(--yumia-warning);
+        border-color: var(--yumia-warning);
+      }
+      .yumia-badge.variant-danger {
+        background: rgba(239, 68, 68, 0.15);
+        color: var(--yumia-danger);
+        border-color: var(--yumia-danger);
+      }
+      .yumia-badge.variant-info {
+        background: rgba(59, 130, 246, 0.15);
+        color: var(--yumia-info);
+        border-color: var(--yumia-info);
+      }
+      .yumia-badge.variant-accent {
+        background: rgba(255, 46, 136, 0.15);
+        color: var(--yumia-accent);
+        border-color: var(--yumia-accent);
+      }
+
+      /* Timeline Directive */
+      .yumia-timeline {
+        display: flex;
+        gap: 16px;
+        margin: 1.2rem 0;
+        width: 100%;
+      }
+      .yumia-timeline.layout-horizontal {
+        flex-direction: row;
+        justify-content: space-between;
+        position: relative;
+      }
+      .yumia-timeline.layout-horizontal::before {
+        content: '';
+        position: absolute;
+        top: 18px;
+        left: 20px;
+        right: 20px;
+        height: 2px;
+        background: var(--yumia-border);
+        z-index: 0;
+      }
+      .yumia-timeline-item {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        flex: 1;
+      }
+      .yumia-timeline-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--yumia-primary);
+        border: 3px solid var(--yumia-bg);
+        box-shadow: 0 0 10px var(--yumia-primary);
+        margin-bottom: 10px;
+      }
+      .yumia-timeline-date {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--yumia-accent);
+        margin-bottom: 4px;
+        font-family: var(--yumia-font-code);
+      }
+      .yumia-timeline-title {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--yumia-text);
+        margin-bottom: 4px;
+      }
+      .yumia-timeline-desc {
+        font-size: 0.85rem;
+        color: var(--yumia-muted);
+        line-height: 1.4;
+      }
+
+      /* Compare Directive */
+      .yumia-compare {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: clamp(12px, 1.8vw, 20px);
+        align-items: stretch;
+        margin: 0.5rem 0;
+      }
+      .yumia-compare-col {
+        background: var(--yumia-surface);
+        border: 1.5px solid var(--yumia-border);
+        border-radius: var(--yumia-radius-card);
+        padding: clamp(1rem, 1.6vw, 1.3rem);
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+      }
+      .yumia-compare-title {
+        font-size: clamp(1rem, 1.4vw, 1.15rem);
+        font-weight: 700;
+        color: var(--yumia-primary);
+        margin-bottom: 0.6rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 1px solid var(--yumia-divider);
+      }
+      .yumia-compare-divider {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.85rem;
+        color: var(--yumia-muted);
+        background: var(--yumia-surface);
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        align-self: center;
+        border: 1.5px solid var(--yumia-border);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      /* Native SVG Chart Container */
+      .yumia-chart-container {
+        background: var(--yumia-surface);
+        border: 1.5px solid var(--yumia-border);
+        border-radius: var(--yumia-radius-card);
+        padding: clamp(0.8rem, 1.4vw, 1.25rem);
+        margin: 0.6rem 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+      }
+      .yumia-chart-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--yumia-text);
+        margin-bottom: 0.6rem;
+        align-self: flex-start;
+      }
+
+      /* Diagram Container */
+      .yumia-diagram-container {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 0.5rem 0;
+        max-height: 52vh;
+      }
+      .yumia-diagram {
+        max-width: 100%;
+        max-height: 48vh;
+        height: auto;
+        background: var(--yumia-surface);
+        border: 1.5px solid var(--yumia-border);
+        border-radius: var(--yumia-radius-card);
+        padding: 12px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        box-sizing: border-box;
+      }
+      .yumia-diag-node {
+        transition:
+          transform 0.2s ease,
+          filter 0.2s ease;
+        cursor: pointer;
+      }
+      .yumia-diag-node:hover {
+        filter: brightness(1.1);
+      }
+
+      /* Mermaid Container */
+      .mermaid-container {
+        background: var(--yumia-surface);
+        border: 1.5px solid var(--yumia-border);
+        border-radius: var(--yumia-radius-card);
+        padding: 1.2rem;
+        margin: 0.6rem 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: auto;
+        width: 100%;
+        min-height: 200px;
+      }
+
+      .mermaid-container pre.mermaid,
+      .mermaid-container .mermaid {
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
         margin: 0 !important;
-        box-shadow: none !important;
-        opacity: 1 !important;
-        visibility: visible !important;
-        transform: none !important;
+        font-size: 1rem;
+        color: var(--yumia-text);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
       }
-      .yumia-controls, .yumia-notes-drawer, .yumia-overview-modal, .yumia-progress-bar {
-        display: none !important;
+
+      .mermaid-container svg {
+        max-width: 100%;
+        height: auto;
+        max-height: 420px;
       }
-    }
 
-    /* Notes Drawer */
-    .yumia-notes-drawer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      max-height: 260px;
-      background: rgba(10, 10, 18, 0.96);
-      backdrop-filter: blur(16px);
-      border-top: 2px solid var(--yumia-primary);
-      padding: 14px 24px 18px 24px;
-      overflow-y: auto;
-      display: none;
-      z-index: 2000;
-      font-size: 15px;
-      line-height: 1.6;
-      color: #cbd5e1;
-      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
-    }
+      /* Math Equation Container */
+      .yumia-math-container {
+        background: var(--yumia-surface);
+        border: 1.5px solid var(--yumia-border);
+        border-left: 4px solid var(--yumia-primary);
+        border-radius: var(--yumia-radius-card);
+        padding: 0.55rem 1.2rem;
+        margin: 0.45rem 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        overflow-x: auto;
+        max-width: 100%;
+      }
 
-    .yumia-notes-drawer.open {
-      display: block;
-    }
+      .yumia-math-equation {
+        font-size: clamp(1rem, 1.6vw, 1.35rem);
+        color: var(--yumia-text);
+        letter-spacing: 0.03em;
+      }
 
-    .yumia-notes-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      padding-bottom: 6px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      font-weight: 700;
-      font-size: 14px;
-      color: var(--yumia-primary);
-    }
+      /* Watermark Branding */
+      .yumia-watermark {
+        position: absolute;
+        bottom: 12px;
+        left: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--yumia-muted);
+        opacity: 0.35;
+        pointer-events: none;
+        user-select: none;
+        z-index: 10;
+        transition: opacity 0.2s ease;
+      }
+      .yumia-slide-wrapper:hover .yumia-watermark {
+        opacity: 0.65;
+      }
 
-    .yumia-notes-content {
-      padding-right: 200px;
-    }
+      /* Slide Transitions */
+      .yumia-slide-wrapper.transition-fade.active {
+        animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .yumia-slide-wrapper.transition-push.active {
+        animation: pushIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .yumia-slide-wrapper.transition-wipe.active {
+        animation: wipeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .yumia-slide-wrapper.transition-zoom.active {
+        animation: zoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
 
-    /* Slide Overview Modal */
-    .yumia-overview-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(5, 5, 10, 0.94);
-      backdrop-filter: blur(20px);
-      z-index: 3000;
-      display: none;
-      flex-direction: column;
-      padding: 40px;
-      overflow-y: auto;
-    }
+      @keyframes pushIn {
+        from {
+          opacity: 0;
+          transform: translateX(40px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+      @keyframes wipeIn {
+        from {
+          clip-path: polygon(0 0, 0 0, 0 100%, 0% 100%);
+        }
+        to {
+          clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        }
+      }
+      @keyframes zoomIn {
+        from {
+          opacity: 0;
+          transform: scale(0.92);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
 
-    .yumia-overview-modal.open {
-      display: flex;
-    }
+      /* Code Block Line Highlighting & Numbers */
+      .yumia-code-block {
+        display: block;
+        padding: 0.75rem 0;
+        font-family: var(--yumia-font-code);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        overflow-x: auto;
+        border-radius: var(--yumia-radius-card);
+        background: rgba(10, 15, 30, 0.88);
+        border: 1.5px solid var(--yumia-border);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+        margin: 0.8rem 0;
+      }
+      .yumia-code-block code {
+        display: block;
+        padding: 0;
+        background: transparent;
+        border: none;
+      }
+      .yumia-code-line {
+        display: flex;
+        align-items: center;
+        min-height: 1.6em;
+        padding: 0 1rem;
+        transition:
+          background 0.15s ease,
+          opacity 0.15s ease;
+      }
+      .yumia-code-line.dimmed {
+        opacity: 0.35;
+      }
+      .yumia-code-line.highlighted {
+        background: rgba(0, 240, 255, 0.16);
+        border-left: 3.5px solid var(--yumia-primary);
+        opacity: 1;
+        font-weight: 600;
+      }
+      .yumia-code-line .line-num {
+        user-select: none;
+        width: 28px;
+        margin-right: 14px;
+        color: rgba(255, 255, 255, 0.3);
+        font-size: 0.8rem;
+        text-align: right;
+      }
+      .yumia-code-line .line-text {
+        flex: 1;
+      }
 
-    .yumia-overview-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 30px;
-      color: #fff;
-    }
+      /* Section Divider Card */
+      .yumia-section-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 3rem 2rem;
+        margin: auto 0;
+        background: radial-gradient(
+          circle at center,
+          rgba(0, 240, 255, 0.12) 0%,
+          rgba(15, 23, 42, 0.6) 100%
+        );
+        border: 1.5px solid var(--yumia-primary);
+        border-radius: var(--yumia-radius-card);
+        box-shadow:
+          0 12px 35px rgba(0, 0, 0, 0.5),
+          0 0 20px rgba(0, 240, 255, 0.2);
+        width: 100%;
+      }
+      .yumia-section-pill {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 14px;
+        border-radius: 999px;
+        background: var(--yumia-primary);
+        color: #000;
+        font-weight: 800;
+        font-size: 0.85rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 1.2rem;
+      }
+      .yumia-section-title {
+        font-size: clamp(2rem, 3.5vw, 3rem);
+        font-weight: 800;
+        color: var(--yumia-text);
+        margin-bottom: 0.8rem;
+        line-height: 1.2;
+      }
+      .yumia-section-subtitle {
+        font-size: 1.15rem;
+        color: var(--yumia-muted);
+        max-width: 650px;
+      }
 
-    .yumia-overview-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 24px;
-      width: 100%;
-    }
+      /* Table of Contents Grid */
+      .yumia-toc-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+        width: 100%;
+        margin: 1.2rem 0;
+      }
+      .yumia-toc-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        background: var(--yumia-surface);
+        border: 1.5px solid var(--yumia-border);
+        border-radius: 10px;
+        padding: 14px 18px;
+        transition:
+          transform 0.2s ease,
+          border-color 0.2s ease;
+      }
+      .yumia-toc-item:hover {
+        transform: translateX(4px);
+        border-color: var(--yumia-primary);
+      }
+      .yumia-toc-num {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        background: rgba(0, 240, 255, 0.15);
+        color: var(--yumia-primary);
+        font-weight: 800;
+        font-size: 0.95rem;
+      }
+      .yumia-toc-title {
+        font-weight: 600;
+        font-size: 1.05rem;
+        color: var(--yumia-text);
+      }
 
-    .yumia-overview-card {
-      aspect-ratio: var(--yumia-ratio);
-      background-color: var(--yumia-bg);
-      border: 2px solid rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      padding: 16px;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      transform-origin: center;
-      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-      display: flex;
-      flex-direction: column;
-    }
+      /* Print & Export Media Styles */
+      @media print {
+        @page {
+          size: landscape;
+          margin: 0;
+        }
+        body {
+          background: #0f172a !important;
+          color: #f8fafc !important;
+          overflow: visible !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        #deck-container {
+          display: block !important;
+          width: 100% !important;
+          height: auto !important;
+        }
+        #yumia-deck {
+          display: block !important;
+          position: static !important;
+          width: 100% !important;
+          height: auto !important;
+        }
+        .yumia-slide-wrapper {
+          display: flex !important;
+          page-break-after: always !important;
+          break-after: page !important;
+          page-break-inside: avoid !important;
+          position: relative !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          min-height: 100vh !important;
+          margin: 0 !important;
+          box-shadow: none !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+          transform: none !important;
+        }
+        .yumia-controls,
+        .yumia-notes-drawer,
+        .yumia-overview-modal,
+        .yumia-progress-bar {
+          display: none !important;
+        }
+      }
 
-    .yumia-overview-card:hover {
-      transform: scale(1.04);
-      border-color: var(--yumia-primary);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.8), 0 0 15px var(--yumia-primary);
-    }
+      /* Notes Drawer */
+      .yumia-notes-drawer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        max-height: 260px;
+        background: rgba(10, 10, 18, 0.96);
+        backdrop-filter: blur(16px);
+        border-top: 2px solid var(--yumia-primary);
+        padding: 14px 24px 18px 24px;
+        overflow-y: auto;
+        display: none;
+        z-index: 2000;
+        font-size: 15px;
+        line-height: 1.6;
+        color: #cbd5e1;
+        box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
+      }
 
-    .yumia-overview-card.current {
-      border-color: var(--yumia-accent);
-      box-shadow: 0 0 0 2px var(--yumia-accent);
-    }
+      .yumia-notes-drawer.open {
+        display: block;
+      }
 
-    .yumia-overview-badge {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: rgba(0, 0, 0, 0.6);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 10px;
-    }
+      .yumia-notes-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--yumia-primary);
+      }
 
-    /* Speaker View Layout (When loaded in speaker mode ?speaker=true) */
-    .speaker-layout {
-      display: grid;
-      grid-template-rows: 60px 1fr;
-      width: 100vw;
-      height: 100vh;
-      background: #09090f;
-      color: #f8fafc;
-      overflow: hidden;
-    }
+      .yumia-notes-content {
+        padding-right: 200px;
+      }
 
-    .speaker-topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 24px;
-      background: #11111b;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
+      /* Slide Overview Modal */
+      .yumia-overview-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(5, 5, 10, 0.94);
+        backdrop-filter: blur(20px);
+        z-index: 3000;
+        display: none;
+        flex-direction: column;
+        padding: 40px;
+        overflow-y: auto;
+      }
 
-    .speaker-timer-group {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      font-family: var(--yumia-font-code);
-      font-size: 18px;
-    }
+      .yumia-overview-modal.open {
+        display: flex;
+      }
 
-    .speaker-timer-btn {
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      border: none;
-      padding: 4px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 12px;
-    }
+      .yumia-overview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        color: #fff;
+      }
 
-    .speaker-timer-btn:hover {
-      background: var(--yumia-primary);
-    }
+      .yumia-overview-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+        width: 100%;
+      }
 
-    .speaker-main-grid {
-      display: grid;
-      grid-template-columns: 55% 45%;
-      gap: 20px;
-      padding: 20px;
-      height: calc(100vh - 60px);
-      box-sizing: border-box;
-    }
+      .yumia-overview-card {
+        aspect-ratio: var(--yumia-ratio);
+        background-color: var(--yumia-bg);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 16px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transform-origin: center;
+        transition:
+          transform 0.2s ease,
+          border-color 0.2s ease,
+          box-shadow 0.2s ease;
+        display: flex;
+        flex-direction: column;
+      }
 
-    .speaker-pane {
-      background: #151522;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
+      .yumia-overview-card:hover {
+        transform: scale(1.04);
+        border-color: var(--yumia-primary);
+        box-shadow:
+          0 10px 25px -5px rgba(0, 0, 0, 0.8),
+          0 0 15px var(--yumia-primary);
+      }
 
-    .speaker-pane-title {
-      font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--yumia-muted);
-      margin-bottom: 12px;
-      display: flex;
-      justify-content: space-between;
-    }
+      .yumia-overview-card.current {
+        border-color: var(--yumia-accent);
+        box-shadow: 0 0 0 2px var(--yumia-accent);
+      }
 
-    .speaker-preview-box {
-      flex: 1;
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #000;
-      border-radius: 8px;
-      overflow: hidden;
-    }
+      .yumia-overview-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+      }
 
-    .speaker-preview-box .yumia-slide-wrapper {
-      display: flex !important;
-      transform: scale(0.6);
-      width: 160% !important;
-      height: 160% !important;
-    }
+      /* Speaker View Layout (When loaded in speaker mode ?speaker=true) */
+      .speaker-layout {
+        display: grid;
+        grid-template-rows: 60px 1fr;
+        width: 100vw;
+        height: 100vh;
+        background: #09090f;
+        color: #f8fafc;
+        overflow: hidden;
+      }
 
-    /* Visual Inspector Overlay */
-    body.yumia-inspect-active * {
-      cursor: crosshair !important;
-    }
-    .yumia-inspect-highlight {
-      outline: 2px dashed var(--yumia-accent) !important;
-      outline-offset: 3px !important;
-      box-shadow: 0 0 15px var(--yumia-accent) !important;
-    }
-    .yumia-inspector-popup {
-      position: fixed;
-      bottom: 60px;
-      right: 20px;
-      z-index: 9999;
-      background: rgba(10, 15, 30, 0.95);
-      backdrop-filter: blur(16px);
-      border: 1.5px solid var(--yumia-primary);
-      border-radius: 10px;
-      padding: 12px 18px;
-      color: #fff;
-      font-size: 13px;
-      font-family: var(--yumia-font-code);
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 15px rgba(0, 240, 255, 0.25);
-      display: none;
-      max-width: 380px;
-      line-height: 1.5;
-    }
-    .yumia-inspector-popup.open {
-      display: block;
-    }
-  </style>
-</head>
-<body>
-  <div id="deck-container">
-    <div id="yumia-deck">
-      
-    <div class="yumia-slide-wrapper active transition-fade" id="slide-1" data-notes="Benvenuti a questa presentazione su Yumia.&lt;br&gt;Oggi esploreremo come Yumia ridefinisce la creazione di presentazioni tecniche introducendo il concetto di Design Compiler: un approccio dichiarativo in cui l&#039;autore descrive l&#039;intento comunicativo e il compilatore genera output multipiattaforma garantiti e coerenti.">
-      
-        <div class="yumia-hero" data-align="center" data-yumia-role="hero" style="display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; flex:1; width:100%; margin:auto 0;">
-          <div class="yumia-hero-badge" style="display:inline-flex; align-items:center; padding:4px 14px; border-radius:999px; background:rgba(255,255,255,0.08); border:1px solid var(--yumia-primary); color:var(--yumia-primary); font-size:0.85rem; font-weight:700; margin-bottom:1rem; letter-spacing:0.06em; text-transform:uppercase;">Design Compiler</div>
-          
-          <h1 class="yumia-hero-title" style="font-size:clamp(2.4rem, 4.5vw, 4rem); font-weight:800; line-height:1.1; color:var(--yumia-text); margin-bottom:0.8rem;">Yumia</h1>
-          <p class="yumia-hero-subtitle" style="font-size:clamp(1.1rem, 1.8vw, 1.5rem); color:var(--yumia-muted); max-width:800px; margin-bottom:1.5rem; line-height:1.5;">Un linguaggio dichiarativo per documenti visivi</p>
-          <p class="yumia-hero-tagline-text" style="color:var(--yumia-muted); font-size:0.95rem; margin-top:0.5rem;">[Classe / Corso] • [Data della presentazione]</p>
-          
+      .speaker-topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 24px;
+        background: #11111b;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .speaker-timer-group {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-family: var(--yumia-font-code);
+        font-size: 18px;
+      }
+
+      .speaker-timer-btn {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border: none;
+        padding: 4px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+
+      .speaker-timer-btn:hover {
+        background: var(--yumia-primary);
+      }
+
+      .speaker-main-grid {
+        display: grid;
+        grid-template-columns: 55% 45%;
+        gap: 20px;
+        padding: 20px;
+        height: calc(100vh - 60px);
+        box-sizing: border-box;
+      }
+
+      .speaker-pane {
+        background: #151522;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .speaker-pane-title {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--yumia-muted);
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .speaker-preview-box {
+        flex: 1;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #000;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .speaker-preview-box .yumia-slide-wrapper {
+        display: flex !important;
+        transform: scale(0.6);
+        width: 160% !important;
+        height: 160% !important;
+      }
+
+      /* Visual Inspector Overlay */
+      body.yumia-inspect-active * {
+        cursor: crosshair !important;
+      }
+      .yumia-inspect-highlight {
+        outline: 2px dashed var(--yumia-accent) !important;
+        outline-offset: 3px !important;
+        box-shadow: 0 0 15px var(--yumia-accent) !important;
+      }
+      .yumia-inspector-popup {
+        position: fixed;
+        bottom: 60px;
+        right: 20px;
+        z-index: 9999;
+        background: rgba(10, 15, 30, 0.95);
+        backdrop-filter: blur(16px);
+        border: 1.5px solid var(--yumia-primary);
+        border-radius: 10px;
+        padding: 12px 18px;
+        color: #fff;
+        font-size: 13px;
+        font-family: var(--yumia-font-code);
+        box-shadow:
+          0 10px 30px rgba(0, 0, 0, 0.7),
+          0 0 15px rgba(0, 240, 255, 0.25);
+        display: none;
+        max-width: 380px;
+        line-height: 1.5;
+      }
+      .yumia-inspector-popup.open {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="deck-container">
+      <div id="yumia-deck">
+        <div
+          class="yumia-slide-wrapper active transition-fade"
+          id="slide-1"
+          data-notes="Benvenuti a questa presentazione su Yumia.&lt;br&gt;Oggi esploreremo come Yumia ridefinisce la creazione di presentazioni tecniche introducendo il concetto di Design Compiler: un approccio dichiarativo in cui l&#039;autore descrive l&#039;intento comunicativo e il compilatore genera output multipiattaforma garantiti e coerenti."
+        >
+          <div
+            class="yumia-hero"
+            data-align="center"
+            data-yumia-role="hero"
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              justify-content: center;
+              flex: 1;
+              width: 100%;
+              margin: auto 0;
+            "
+          >
+            <div
+              class="yumia-hero-badge"
+              style="
+                display: inline-flex;
+                align-items: center;
+                padding: 4px 14px;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid var(--yumia-primary);
+                color: var(--yumia-primary);
+                font-size: 0.85rem;
+                font-weight: 700;
+                margin-bottom: 1rem;
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+              "
+            >
+              Design Compiler
+            </div>
+
+            <h1
+              class="yumia-hero-title"
+              style="
+                font-size: clamp(2.4rem, 4.5vw, 4rem);
+                font-weight: 800;
+                line-height: 1.1;
+                color: var(--yumia-text);
+                margin-bottom: 0.8rem;
+              "
+            >
+              Yumia
+            </h1>
+            <p
+              class="yumia-hero-subtitle"
+              style="
+                font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+                color: var(--yumia-muted);
+                max-width: 800px;
+                margin-bottom: 1.5rem;
+                line-height: 1.5;
+              "
+            >
+              Un linguaggio dichiarativo per documenti visivi
+            </p>
+            <p
+              class="yumia-hero-tagline-text"
+              style="color: var(--yumia-muted); font-size: 0.95rem; margin-top: 0.5rem"
+            >
+              [Classe / Corso] • [Data della presentazione]
+            </p>
+          </div>
+          <p>[Nome e Cognome]</p>
+          <div class="yumia-watermark">Yumia • Design Compiler</div>
+          <div class="yumia-progress-bar" style="width: 7%"></div>
         </div>
-<p>[Nome e Cognome]</p>
-      <div class="yumia-watermark">Yumia • Design Compiler</div>
-      <div class="yumia-progress-bar" style="width: 7%;"></div>
-    </div>
 
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-2" data-notes="I tool tradizionali come PowerPoint o Canva costringono gli sviluppatori a gestire manualmente pixel, forme e coordinate. Questo genera file binari pesanti e non versionabili con Git.&lt;br&gt;Inoltre, quando chiediamo a un&#039;intelligenza artificiale di creare una slide in HTML/CSS grezzo, i risultati visivi sono spesso rotti o disallineati perché il modello non controlla la geometria finale.">
-      <h1>Il problema delle presentazioni tecniche</h1>
-<h2>Perché creare slide tecniche è complesso e inefficiente</h2>
+        <div
+          class="yumia-slide-wrapper transition-fade"
+          id="slide-2"
+          data-notes="I tool tradizionali come PowerPoint o Canva costringono gli sviluppatori a gestire manualmente pixel, forme e coordinate. Questo genera file binari pesanti e non versionabili con Git.&lt;br&gt;Inoltre, quando chiediamo a un&#039;intelligenza artificiale di creare una slide in HTML/CSS grezzo, i risultati visivi sono spesso rotti o disallineati perché il modello non controlla la geometria finale."
+        >
+          <h1>Il problema delle presentazioni tecniche</h1>
+          <h2>Perché creare slide tecniche è complesso e inefficiente</h2>
 
-    <div class="yumia-compare">
-      <div class="yumia-compare-col left">
-        <div class="yumia-compare-title">Approccio Tradizionale (WYSIWYG / Manuale)</div>
-        <span class="yumia-badge variant-warning">Tool Visuali &amp; Slide Editor</span>
-<p>• Disposizione manuale di box di testo e forme</p>
-<p>• Formattazione incoerente che degrada nel tempo</p>
-<p>• File binari opachi non versionabili con Git</p>
-<p>• Rischio costante di disallineamenti tra formati</p>
-      </div>
-      <div class="yumia-compare-divider">VS</div>
-      <div class="yumia-compare-col right">
-        <div class="yumia-compare-title">Problemi &amp; Limiti Strutturali</div>
-        <span class="yumia-badge variant-danger">Attriti di Sviluppo &amp; AI</span>
-<p>• Zero riutilizzabilità tra documentazione e slide</p>
-<p>• Frammentazione tra Markdown, HTML e PPTX</p>
-<p>• Gli LLM faticano a generare layout geometrici stabili</p>
-<p>• Nessun test automatico di qualità visiva</p>
-      </div>
-    </div>
-      <div class="yumia-watermark">Yumia • Design Compiler</div>
-      <div class="yumia-progress-bar" style="width: 13%;"></div>
-    </div>
-
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-3" data-notes="Yumia introduce il concetto di Design Intent. Invece di posizionare pixel a mano, usiamo blocchi semantici come hero, card, compare o chart.&lt;br&gt;Il motore di layout si occupa di calcolare spazi, allineamenti e palette cromatiche, garantendo che il risultato finale sia sempre professionale e privo di difetti visivi.">
-      <h1>La soluzione: Il Design Compiler</h1>
-<h2>Dall&#039;intento comunicativo alla composizione automatica</h2>
-<div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16;">
-        <div class="yumia-card" data-variant="primary">
-          <div class="yumia-card-title">Intento vs Geometria</div>
-          <p>Non diciamo al computer &#039;disegna un rettangolo a coordinate (x,y)&#039;, ma &#039;crea una Card per evidenziare una funzionalità&#039;.</p>
+          <div class="yumia-compare">
+            <div class="yumia-compare-col left">
+              <div class="yumia-compare-title">Approccio Tradizionale (WYSIWYG / Manuale)</div>
+              <span class="yumia-badge variant-warning">Tool Visuali &amp; Slide Editor</span>
+              <p>• Disposizione manuale di box di testo e forme</p>
+              <p>• Formattazione incoerente che degrada nel tempo</p>
+              <p>• File binari opachi non versionabili con Git</p>
+              <p>• Rischio costante di disallineamenti tra formati</p>
+            </div>
+            <div class="yumia-compare-divider">VS</div>
+            <div class="yumia-compare-col right">
+              <div class="yumia-compare-title">Problemi &amp; Limiti Strutturali</div>
+              <span class="yumia-badge variant-danger">Attriti di Sviluppo &amp; AI</span>
+              <p>• Zero riutilizzabilità tra documentazione e slide</p>
+              <p>• Frammentazione tra Markdown, HTML e PPTX</p>
+              <p>• Gli LLM faticano a generare layout geometrici stabili</p>
+              <p>• Nessun test automatico di qualità visiva</p>
+            </div>
+          </div>
+          <div class="yumia-watermark">Yumia • Design Compiler</div>
+          <div class="yumia-progress-bar" style="width: 13%"></div>
         </div>
 
-        <div class="yumia-card" data-variant="accent">
-          <div class="yumia-card-title">Componenti Semantici</div>
-          <p>Primitive di alto livello: hero, metric, card, grid, compare, timeline, chart e diagram.</p>
+        <div
+          class="yumia-slide-wrapper transition-fade"
+          id="slide-3"
+          data-notes="Yumia introduce il concetto di Design Intent. Invece di posizionare pixel a mano, usiamo blocchi semantici come hero, card, compare o chart.&lt;br&gt;Il motore di layout si occupa di calcolare spazi, allineamenti e palette cromatiche, garantendo che il risultato finale sia sempre professionale e privo di difetti visivi."
+        >
+          <h1>La soluzione: Il Design Compiler</h1>
+          <h2>Dall&#039;intento comunicativo alla composizione automatica</h2>
+          <div class="yumia-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16">
+            <div class="yumia-card" data-variant="primary">
+              <div class="yumia-card-title">Intento vs Geometria</div>
+              <p>
+                Non diciamo al computer &#039;disegna un rettangolo a coordinate (x,y)&#039;, ma
+                &#039;crea una Card per evidenziare una funzionalità&#039;.
+              </p>
+            </div>
+
+            <div class="yumia-card" data-variant="accent">
+              <div class="yumia-card-title">Componenti Semantici</div>
+              <p>
+                Primitive di alto livello: hero, metric, card, grid, compare, timeline, chart e
+                diagram.
+              </p>
+            </div>
+
+            <div class="yumia-card" data-variant="success">
+              <div class="yumia-card-title">Layout Deterministico</div>
+              <p>
+                Un motore di calcolo automatico distribuisce spazi, gap, contrasti e gerarchie
+                visive senza overflow.
+              </p>
+            </div>
+          </div>
+
+          <div
+            class="yumia-callout"
+            data-severity="info"
+            data-yumia-role="callout"
+            style="
+              background: var(--yumia-surface);
+              border-left: 4px solid var(--yumia-info);
+              border-radius: var(--yumia-radius-card);
+              padding: 1rem 1.4rem;
+              margin: 0.8rem 0;
+              width: 100%;
+              display: flex;
+              flex-direction: column;
+              gap: 6px;
+              box-sizing: border-box;
+            "
+          >
+            <div
+              style="
+                font-weight: 700;
+                font-size: 1.05rem;
+                color: var(--yumia-info);
+                margin-bottom: 4px;
+              "
+            >
+              Cambio di paradigma
+            </div>
+            <div style="font-size: 0.95rem; color: var(--yumia-text); line-height: 1.5">
+              Yumia separa radicalmente il contenuto dal rendering visivo: lo sviluppatore scrive la
+              semantica, il compilatore applica il design system.
+            </div>
+          </div>
+          <div class="yumia-watermark">Yumia • Design Compiler</div>
+          <div class="yumia-progress-bar" style="width: 20%"></div>
         </div>
 
-        <div class="yumia-card" data-variant="success">
-          <div class="yumia-card-title">Layout Deterministico</div>
-          <p>Un motore di calcolo automatico distribuisce spazi, gap, contrasti e gerarchie visive senza overflow.</p>
-        </div></div>
+        <div
+          class="yumia-slide-wrapper transition-fade"
+          id="slide-4"
+          data-notes="Con un solo file sorgente possiamo compilare verso tre formati completamente diversi:&lt;br&gt;1) HTML interattivo con navigazione e speaker view per presentare direttamente da browser;&lt;br&gt;2) PowerPoint con forme native e testo modificabile per i colleghi o clienti;&lt;br&gt;3) PDF vettoriale pronto per la stampa o la condivisione formale.&lt;br&gt;Nessun bisogno di riscrivere o ricreare le slide da zero."
+        >
+          <h1>Un&#039;unica sorgente, più formati</h1>
+          <h2>Compilazione Multi-Target da una Singola Sorgente</h2>
 
-        <div class="yumia-callout" data-severity="info" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-info); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
-          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-info); margin-bottom:4px;">Cambio di paradigma</div>
-          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">Yumia separa radicalmente il contenuto dal rendering visivo: lo sviluppatore scrive la semantica, il compilatore applica il design system.</div>
+          <div class="yumia-diagram-container">
+            <div
+              style="
+                font-weight: 700;
+                font-size: 1.05rem;
+                color: var(--yumia-primary);
+                margin-bottom: 0.4rem;
+                text-align: center;
+              "
+            >
+              Flusso di Trasformazione Multi-Target
+            </div>
+            <svg class="yumia-diagram" viewBox="0 0 945 294" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <marker
+                  id="arrow-jy0tmu"
+                  viewBox="0 0 10 10"
+                  refX="8"
+                  refY="5"
+                  markerWidth="6"
+                  markerHeight="6"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#7B61FF" />
+                </marker>
+              </defs>
+              <path
+                d="M 200 147 C 237.5 147, 237.5 147, 275 147"
+                fill="none"
+                stroke="#7B61FF"
+                stroke-width="2"
+                marker-end="url(#arrow-jy0tmu)"
+              />
+              <path
+                d="M 435 147 C 472.5 147, 472.5 147, 510 147"
+                fill="none"
+                stroke="#7B61FF"
+                stroke-width="2"
+                marker-end="url(#arrow-jy0tmu)"
+              />
+              <path
+                d="M 670 147 C 707.5 147, 707.5 64, 745 64"
+                fill="none"
+                stroke="#7B61FF"
+                stroke-width="2"
+                marker-end="url(#arrow-jy0tmu)"
+              />
+              <path
+                d="M 670 147 C 707.5 147, 707.5 147, 745 147"
+                fill="none"
+                stroke="#7B61FF"
+                stroke-width="2"
+                marker-end="url(#arrow-jy0tmu)"
+              />
+              <path
+                d="M 670 147 C 707.5 147, 707.5 230, 745 230"
+                fill="none"
+                stroke="#7B61FF"
+                stroke-width="2"
+                marker-end="url(#arrow-jy0tmu)"
+              />
+
+              <g class="yumia-diag-node" data-id="sorgente_yumia">
+                <rect
+                  x="40"
+                  y="123"
+                  width="160"
+                  height="48"
+                  rx="10"
+                  fill="#151522"
+                  stroke="#FF2E88"
+                  stroke-width="2"
+                />
+                <text
+                  x="120"
+                  y="151"
+                  text-anchor="middle"
+                  fill="#FFFFFF"
+                  font-size="11.5"
+                  font-weight="700"
+                  font-family="sans-serif"
+                >
+                  Sorgente Yumia
+                </text>
+              </g>
+
+              <g class="yumia-diag-node" data-id="ast_semantico">
+                <rect
+                  x="275"
+                  y="123"
+                  width="160"
+                  height="48"
+                  rx="10"
+                  fill="#151522"
+                  stroke="#7B61FF"
+                  stroke-width="2"
+                />
+                <text
+                  x="355"
+                  y="151"
+                  text-anchor="middle"
+                  fill="#FFFFFF"
+                  font-size="11.5"
+                  font-weight="700"
+                  font-family="sans-serif"
+                >
+                  AST Semantico
+                </text>
+              </g>
+
+              <g class="yumia-diag-node" data-id="design_system">
+                <rect
+                  x="510"
+                  y="123"
+                  width="160"
+                  height="48"
+                  rx="10"
+                  fill="#151522"
+                  stroke="#FFE600"
+                  stroke-width="2"
+                />
+                <text
+                  x="590"
+                  y="151"
+                  text-anchor="middle"
+                  fill="#FFFFFF"
+                  font-size="11.5"
+                  font-weight="700"
+                  font-family="sans-serif"
+                >
+                  Design System
+                </text>
+              </g>
+
+              <g class="yumia-diag-node" data-id="html_interattivo">
+                <rect
+                  x="745"
+                  y="40"
+                  width="160"
+                  height="48"
+                  rx="10"
+                  fill="#151522"
+                  stroke="#00FF9F"
+                  stroke-width="2"
+                />
+                <text
+                  x="825"
+                  y="68"
+                  text-anchor="middle"
+                  fill="#FFFFFF"
+                  font-size="11.5"
+                  font-weight="700"
+                  font-family="sans-serif"
+                >
+                  HTML Interattivo
+                </text>
+              </g>
+
+              <g class="yumia-diag-node" data-id="powerpoint_pptx">
+                <rect
+                  x="745"
+                  y="123"
+                  width="160"
+                  height="48"
+                  rx="10"
+                  fill="#151522"
+                  stroke="#FF2E88"
+                  stroke-width="2"
+                />
+                <text
+                  x="825"
+                  y="151"
+                  text-anchor="middle"
+                  fill="#FFFFFF"
+                  font-size="11.5"
+                  font-weight="700"
+                  font-family="sans-serif"
+                >
+                  PowerPoint PPTX
+                </text>
+              </g>
+
+              <g class="yumia-diag-node" data-id="pdf_vettoriale">
+                <rect
+                  x="745"
+                  y="206"
+                  width="160"
+                  height="48"
+                  rx="10"
+                  fill="#151522"
+                  stroke="#FF0055"
+                  stroke-width="2"
+                />
+                <text
+                  x="825"
+                  y="234"
+                  text-anchor="middle"
+                  fill="#FFFFFF"
+                  font-size="11.5"
+                  font-weight="700"
+                  font-family="sans-serif"
+                >
+                  PDF Vettoriale
+                </text>
+              </g>
+            </svg>
+          </div>
+
+          <div
+            class="yumia-callout"
+            data-severity="success"
+            data-yumia-role="callout"
+            style="
+              background: var(--yumia-surface);
+              border-left: 4px solid var(--yumia-success);
+              border-radius: var(--yumia-radius-card);
+              padding: 1rem 1.4rem;
+              margin: 0.8rem 0;
+              width: 100%;
+              display: flex;
+              flex-direction: column;
+              gap: 6px;
+              box-sizing: border-box;
+            "
+          >
+            <div
+              style="
+                font-weight: 700;
+                font-size: 1.05rem;
+                color: var(--yumia-success);
+                margin-bottom: 4px;
+              "
+            >
+              Principio Single Source of Truth
+            </div>
+            <div style="font-size: 0.95rem; color: var(--yumia-text); line-height: 1.5">
+              Un unico file di testo (.yumia) compilabile istantaneamente per il web, per
+              presentazioni aziendali modificabili e per la stampa/distribuzione fissa.
+            </div>
+          </div>
+          <div class="yumia-watermark">Yumia • Design Compiler</div>
+          <div class="yumia-progress-bar" style="width: 27%"></div>
         </div>
-      <div class="yumia-watermark">Yumia • Design Compiler</div>
-      <div class="yumia-progress-bar" style="width: 20%;"></div>
-    </div>
 
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-4" data-notes="Con un solo file sorgente possiamo compilare verso tre formati completamente diversi:&lt;br&gt;1) HTML interattivo con navigazione e speaker view per presentare direttamente da browser;&lt;br&gt;2) PowerPoint con forme native e testo modificabile per i colleghi o clienti;&lt;br&gt;3) PDF vettoriale pronto per la stampa o la condivisione formale.&lt;br&gt;Nessun bisogno di riscrivere o ricreare le slide da zero.">
-      <h1>Un&#039;unica sorgente, più formati</h1>
-<h2>Compilazione Multi-Target da una Singola Sorgente</h2>
+        <div
+          class="yumia-slide-wrapper transition-fade"
+          id="slide-5"
+          data-notes="La pipeline di Yumia si ispira ai compilatori tradizionali:&lt;br&gt;1. Il Parser analizza il file sorgente e genera l&#039;AST;&lt;br&gt;2. Il Design Linter controlla contrasti, densità e accessibilità;&lt;br&gt;3. Il Theme Engine risolve palette, font e icone;&lt;br&gt;4. Il Layout Engine calcola bounding box e posizioni in coordinate assolute;&lt;br&gt;5. I Renderer emettono il codice nativo per ciascun formato di output."
+        >
+          <h1>Architettura della Pipeline</h1>
+          <h2>Dalla sintassi al rendering finale: la pipeline a 7 stadi</h2>
 
-      <div class="yumia-diagram-container">
-        <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-primary); margin-bottom:0.4rem; text-align:center;">Flusso di Trasformazione Multi-Target</div>
-        <svg class="yumia-diagram" viewBox="0 0 945 294" preserveAspectRatio="xMidYMid meet">
-          <defs>
-            <marker id="arrow-jy0tmu" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#7B61FF" />
-            </marker>
-          </defs>
-          <path d="M 200 147 C 237.5 147, 237.5 147, 275 147" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-jy0tmu)" /><path d="M 435 147 C 472.5 147, 472.5 147, 510 147" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-jy0tmu)" /><path d="M 670 147 C 707.5 147, 707.5 64, 745 64" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-jy0tmu)" /><path d="M 670 147 C 707.5 147, 707.5 147, 745 147" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-jy0tmu)" /><path d="M 670 147 C 707.5 147, 707.5 230, 745 230" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-jy0tmu)" />
-          
-        <g class="yumia-diag-node" data-id="sorgente_yumia">
-          <rect x="40" y="123" width="160" height="48" rx="10" fill="#151522" stroke="#FF2E88" stroke-width="2" />
-          <text x="120" y="151" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Sorgente Yumia</text>
-        </g>
-      
-        <g class="yumia-diag-node" data-id="ast_semantico">
-          <rect x="275" y="123" width="160" height="48" rx="10" fill="#151522" stroke="#7B61FF" stroke-width="2" />
-          <text x="355" y="151" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">AST Semantico</text>
-        </g>
-      
-        <g class="yumia-diag-node" data-id="design_system">
-          <rect x="510" y="123" width="160" height="48" rx="10" fill="#151522" stroke="#FFE600" stroke-width="2" />
-          <text x="590" y="151" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Design System</text>
-        </g>
-      
-        <g class="yumia-diag-node" data-id="html_interattivo">
-          <rect x="745" y="40" width="160" height="48" rx="10" fill="#151522" stroke="#00FF9F" stroke-width="2" />
-          <text x="825" y="68" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">HTML Interattivo</text>
-        </g>
-      
-        <g class="yumia-diag-node" data-id="powerpoint_pptx">
-          <rect x="745" y="123" width="160" height="48" rx="10" fill="#151522" stroke="#FF2E88" stroke-width="2" />
-          <text x="825" y="151" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">PowerPoint PPTX</text>
-        </g>
-      
-        <g class="yumia-diag-node" data-id="pdf_vettoriale">
-          <rect x="745" y="206" width="160" height="48" rx="10" fill="#151522" stroke="#FF0055" stroke-width="2" />
-          <text x="825" y="234" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">PDF Vettoriale</text>
-        </g>
-      
-        </svg>
-      </div>
-    
+          <div class="yumia-diagram-container">
+            <div
+              style="
+                font-weight: 700;
+                font-size: 1.05rem;
+                color: var(--yumia-primary);
+                margin-bottom: 0.4rem;
+                text-align: center;
+              "
+            >
+              Pipeline di Compilazione Deterministica
+            </div>
+            <svg class="yumia-diagram" viewBox="0 0 1415 128" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <marker
+                  id="arrow-s1k5jp"
+                  viewBox="0 0 10 10"
+                  refX="8"
+                  refY="5"
+                  markerWidth="6"
+                  markerHeight="6"
+                  orient="auto-start-reverse"
+                >
+                  <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#7B61FF" />
+                </marker>
+              </defs>
+              <path
+                d="M 200 64 C 237.5 64, 237.5 64, 275 64"
+                fill="none"
+                stroke="#7B61FF"
+                stroke-width="2"
+                marker-end="url(#arrow-s1k5jp)"
+              />
+              <path
+                d="M 435 64 C 472.5 64, 472.5 64, 510 64"
+                fill="none"
+                stroke="#7B61FF"
+                stroke-width="2"
+                marker-end="url(#arrow-s1k5jp)"
+              />
+              <path
+                d="M 670 64 C 707.5 64, 707.5 64, 745 64"
+                fill="none"
+                stroke="#7B61FF"
+                stroke-width="2"
+                marker-end="url(#arrow-s1k5jp)"
+              />
+              <path
+                d="M 905 64 C 942.5 64, 942.5 64, 980 64"
+                fill="none"
+                stroke="#7B61FF"
+                stroke-width="2"
+                marker-end="url(#arrow-s1k5jp)"
+              />
+              <path
+                d="M 1140 64 C 1177.5 64, 1177.5 64, 1215 64"
+                fill="none"
+                stroke="#7B61FF"
+                stroke-width="2"
+                marker-end="url(#arrow-s1k5jp)"
+              />
 
-        <div class="yumia-callout" data-severity="success" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-success); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
-          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-success); margin-bottom:4px;">Principio Single Source of Truth</div>
-          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">Un unico file di testo (.yumia) compilabile istantaneamente per il web, per presentazioni aziendali modificabili e per la stampa/distribuzione fissa.</div>
+              <g class="yumia-diag-node" data-id="sorgente_dsl">
+                <rect
+                  x="40"
+                  y="40"
+                  width="160"
+                  height="48"
+                  rx="10"
+                  fill="#151522"
+                  stroke="#FF2E88"
+                  stroke-width="2"
+                />
+                <text
+                  x="120"
+                  y="68"
+                  text-anchor="middle"
+                  fill="#FFFFFF"
+                  font-size="11.5"
+                  font-weight="700"
+                  font-family="sans-serif"
+                >
+                  Sorgente DSL
+                </text>
+              </g>
+
+              <g class="yumia-diag-node" data-id="parser_ast">
+                <rect
+                  x="275"
+                  y="40"
+                  width="160"
+                  height="48"
+                  rx="10"
+                  fill="#151522"
+                  stroke="#7B61FF"
+                  stroke-width="2"
+                />
+                <text
+                  x="355"
+                  y="68"
+                  text-anchor="middle"
+                  fill="#FFFFFF"
+                  font-size="11.5"
+                  font-weight="700"
+                  font-family="sans-serif"
+                >
+                  Parser AST
+                </text>
+              </g>
+
+              <g class="yumia-diag-node" data-id="design_linter">
+                <rect
+                  x="510"
+                  y="40"
+                  width="160"
+                  height="48"
+                  rx="10"
+                  fill="#151522"
+                  stroke="#FFE600"
+                  stroke-width="2"
+                />
+                <text
+                  x="590"
+                  y="68"
+                  text-anchor="middle"
+                  fill="#FFFFFF"
+                  font-size="11.5"
+                  font-weight="700"
+                  font-family="sans-serif"
+                >
+                  Design Linter
+                </text>
+              </g>
+
+              <g class="yumia-diag-node" data-id="theme_engine">
+                <rect
+                  x="745"
+                  y="40"
+                  width="160"
+                  height="48"
+                  rx="10"
+                  fill="#151522"
+                  stroke="#FF2E88"
+                  stroke-width="2"
+                />
+                <text
+                  x="825"
+                  y="68"
+                  text-anchor="middle"
+                  fill="#FFFFFF"
+                  font-size="11.5"
+                  font-weight="700"
+                  font-family="sans-serif"
+                >
+                  Theme Engine
+                </text>
+              </g>
+
+              <g class="yumia-diag-node" data-id="layout_engine">
+                <rect
+                  x="980"
+                  y="40"
+                  width="160"
+                  height="48"
+                  rx="10"
+                  fill="#151522"
+                  stroke="#FF2E88"
+                  stroke-width="2"
+                />
+                <text
+                  x="1060"
+                  y="68"
+                  text-anchor="middle"
+                  fill="#FFFFFF"
+                  font-size="11.5"
+                  font-weight="700"
+                  font-family="sans-serif"
+                >
+                  Layout Engine
+                </text>
+              </g>
+
+              <g class="yumia-diag-node" data-id="renderer_multipli">
+                <rect
+                  x="1215"
+                  y="40"
+                  width="160"
+                  height="48"
+                  rx="10"
+                  fill="#151522"
+                  stroke="#00FF9F"
+                  stroke-width="2"
+                />
+                <text
+                  x="1295"
+                  y="68"
+                  text-anchor="middle"
+                  fill="#FFFFFF"
+                  font-size="11.5"
+                  font-weight="700"
+                  font-family="sans-serif"
+                >
+                  Renderer Multipli
+                </text>
+              </g>
+            </svg>
+          </div>
+
+          <div
+            class="yumia-callout"
+            data-severity="info"
+            data-yumia-role="callout"
+            style="
+              background: var(--yumia-surface);
+              border-left: 4px solid var(--yumia-info);
+              border-radius: var(--yumia-radius-card);
+              padding: 1rem 1.4rem;
+              margin: 0.8rem 0;
+              width: 100%;
+              display: flex;
+              flex-direction: column;
+              gap: 6px;
+              box-sizing: border-box;
+            "
+          >
+            <div
+              style="
+                font-weight: 700;
+                font-size: 1.05rem;
+                color: var(--yumia-info);
+                margin-bottom: 4px;
+              "
+            >
+              Pipeline deterministica a passate isolate
+            </div>
+            <div style="font-size: 0.95rem; color: var(--yumia-text); line-height: 1.5">
+              Ogni stadio trasforma il modello dati in modo puro: dal parsing sintattico
+              all&#039;AST, dal controllo qualità al calcolo geometrico e all&#039;emissione su DOM,
+              OpenXML o PDFKit.
+            </div>
+          </div>
+          <div class="yumia-watermark">Yumia • Design Compiler</div>
+          <div class="yumia-progress-bar" style="width: 33%"></div>
         </div>
-      <div class="yumia-watermark">Yumia • Design Compiler</div>
-      <div class="yumia-progress-bar" style="width: 27%;"></div>
-    </div>
 
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-5" data-notes="La pipeline di Yumia si ispira ai compilatori tradizionali:&lt;br&gt;1. Il Parser analizza il file sorgente e genera l&#039;AST;&lt;br&gt;2. Il Design Linter controlla contrasti, densità e accessibilità;&lt;br&gt;3. Il Theme Engine risolve palette, font e icone;&lt;br&gt;4. Il Layout Engine calcola bounding box e posizioni in coordinate assolute;&lt;br&gt;5. I Renderer emettono il codice nativo per ciascun formato di output.">
-      <h1>Architettura della Pipeline</h1>
-<h2>Dalla sintassi al rendering finale: la pipeline a 7 stadi</h2>
-
-      <div class="yumia-diagram-container">
-        <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-primary); margin-bottom:0.4rem; text-align:center;">Pipeline di Compilazione Deterministica</div>
-        <svg class="yumia-diagram" viewBox="0 0 1415 128" preserveAspectRatio="xMidYMid meet">
-          <defs>
-            <marker id="arrow-s1k5jp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#7B61FF" />
-            </marker>
-          </defs>
-          <path d="M 200 64 C 237.5 64, 237.5 64, 275 64" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-s1k5jp)" /><path d="M 435 64 C 472.5 64, 472.5 64, 510 64" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-s1k5jp)" /><path d="M 670 64 C 707.5 64, 707.5 64, 745 64" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-s1k5jp)" /><path d="M 905 64 C 942.5 64, 942.5 64, 980 64" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-s1k5jp)" /><path d="M 1140 64 C 1177.5 64, 1177.5 64, 1215 64" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-s1k5jp)" />
-          
-        <g class="yumia-diag-node" data-id="sorgente_dsl">
-          <rect x="40" y="40" width="160" height="48" rx="10" fill="#151522" stroke="#FF2E88" stroke-width="2" />
-          <text x="120" y="68" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Sorgente DSL</text>
-        </g>
-      
-        <g class="yumia-diag-node" data-id="parser_ast">
-          <rect x="275" y="40" width="160" height="48" rx="10" fill="#151522" stroke="#7B61FF" stroke-width="2" />
-          <text x="355" y="68" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Parser AST</text>
-        </g>
-      
-        <g class="yumia-diag-node" data-id="design_linter">
-          <rect x="510" y="40" width="160" height="48" rx="10" fill="#151522" stroke="#FFE600" stroke-width="2" />
-          <text x="590" y="68" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Design Linter</text>
-        </g>
-      
-        <g class="yumia-diag-node" data-id="theme_engine">
-          <rect x="745" y="40" width="160" height="48" rx="10" fill="#151522" stroke="#FF2E88" stroke-width="2" />
-          <text x="825" y="68" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Theme Engine</text>
-        </g>
-      
-        <g class="yumia-diag-node" data-id="layout_engine">
-          <rect x="980" y="40" width="160" height="48" rx="10" fill="#151522" stroke="#FF2E88" stroke-width="2" />
-          <text x="1060" y="68" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Layout Engine</text>
-        </g>
-      
-        <g class="yumia-diag-node" data-id="renderer_multipli">
-          <rect x="1215" y="40" width="160" height="48" rx="10" fill="#151522" stroke="#00FF9F" stroke-width="2" />
-          <text x="1295" y="68" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Renderer Multipli</text>
-        </g>
-      
-        </svg>
-      </div>
-    
-
-        <div class="yumia-callout" data-severity="info" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-info); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
-          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-info); margin-bottom:4px;">Pipeline deterministica a passate isolate</div>
-          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">Ogni stadio trasforma il modello dati in modo puro: dal parsing sintattico all&#039;AST, dal controllo qualità al calcolo geometrico e all&#039;emissione su DOM, OpenXML o PDFKit.</div>
+        <div
+          class="yumia-slide-wrapper transition-fade"
+          id="slide-6"
+          data-notes="L&#039;AST non memorizza &#039;rettangolo blu a x=100 y=200&#039;, ma memorizza &#039;Elemento Card con variante Accent e ruolo primario&#039;.&lt;br&gt;Questo disaccoppiamento permette ai renderer di interpretare lo stesso elemento semantico nel modo più efficace per ogni formato di destinazione."
+        >
+          <h1>L&#039;AST e il Design Intent</h1>
+          <h2>Rappresentazione intermedia del significato e della struttura</h2>
+          <div class="yumia-columns" style="grid-template-columns: 50fr 50fr">
+            <div class="yumia-column">
+              <div class="yumia-card" data-variant="accent">
+                <div class="yumia-card-title">AST: Abstract Syntax Tree</div>
+                <p>
+                  Struttura dati intermedia ad albero che incapsula il contenuto, la gerarchia
+                  logica e i vincoli semantici di presentazione.
+                </p>
+                <span class="yumia-badge variant-primary">emphasis</span>
+                <span class="yumia-badge variant-accent">density</span>
+                <span class="yumia-badge variant-warning">hierarchy</span>
+                <span class="yumia-badge variant-info">align</span>
+              </div>
+            </div>
+            <div class="yumia-column">
+              <div class="yumia-card" data-variant="primary">
+                <div class="yumia-card-title">Componenti Semantici Astratti</div>
+                <p>• Struttura: Hero, Heading, Paragraph, Columns, Grid</p>
+                <p>• Dati &amp; Logica: Metric, Card, Compare, Timeline</p>
+                <p>• Visuali: Diagram, Sequence, Class, Chart, Table</p>
+                <p>• Annotazioni: Badge, Callout, Math, Notes</p>
+              </div>
+            </div>
+          </div>
+          <div class="yumia-watermark">Yumia • Design Compiler</div>
+          <div class="yumia-progress-bar" style="width: 40%"></div>
         </div>
-      <div class="yumia-watermark">Yumia • Design Compiler</div>
-      <div class="yumia-progress-bar" style="width: 33%;"></div>
-    </div>
 
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-6" data-notes="L&#039;AST non memorizza &#039;rettangolo blu a x=100 y=200&#039;, ma memorizza &#039;Elemento Card con variante Accent e ruolo primario&#039;.&lt;br&gt;Questo disaccoppiamento permette ai renderer di interpretare lo stesso elemento semantico nel modo più efficace per ogni formato di destinazione.">
-      <h1>L&#039;AST e il Design Intent</h1>
-<h2>Rappresentazione intermedia del significato e della struttura</h2>
-<div class="yumia-columns" style="grid-template-columns: 50fr 50fr;"><div class="yumia-column">
-        <div class="yumia-card" data-variant="accent">
-          <div class="yumia-card-title">AST: Abstract Syntax Tree</div>
-          <p>Struttura dati intermedia ad albero che incapsula il contenuto, la gerarchia logica e i vincoli semantici di presentazione.</p>
-<span class="yumia-badge variant-primary">emphasis</span>
-<span class="yumia-badge variant-accent">density</span>
-<span class="yumia-badge variant-warning">hierarchy</span>
-<span class="yumia-badge variant-info">align</span>
-        </div></div>
-<div class="yumia-column">
-        <div class="yumia-card" data-variant="primary">
-          <div class="yumia-card-title">Componenti Semantici Astratti</div>
-          <p>• Struttura: Hero, Heading, Paragraph, Columns, Grid</p>
-<p>• Dati &amp; Logica: Metric, Card, Compare, Timeline</p>
-<p>• Visuali: Diagram, Sequence, Class, Chart, Table</p>
-<p>• Annotazioni: Badge, Callout, Math, Notes</p>
-        </div></div></div>
-      <div class="yumia-watermark">Yumia • Design Compiler</div>
-      <div class="yumia-progress-bar" style="width: 40%;"></div>
-    </div>
-
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-7" data-notes="Come potete vedere da questo frammento, il codice Native Yumia è essenziale e intuitivo.&lt;br&gt;Con poche righe dichiariamo il documento, il tema, una slide con titolo hero e una griglia con tre metriche.&lt;br&gt;Non c&#039;è bisogno di scrivere codice CSS, div annidati o coordinate numeriche.">
-      <h1>Esempio di Codice Native Yumia</h1>
-<h2>Sintassi pulita, dichiarativa e basata su indentazione</h2>
-<div class="yumia-columns" style="grid-template-columns: 55fr 45fr;"><div class="yumia-column"><pre><code class="language-yumia">document &quot;Yumia Demo&quot;
+        <div
+          class="yumia-slide-wrapper transition-fade"
+          id="slide-7"
+          data-notes="Come potete vedere da questo frammento, il codice Native Yumia è essenziale e intuitivo.&lt;br&gt;Con poche righe dichiariamo il documento, il tema, una slide con titolo hero e una griglia con tre metriche.&lt;br&gt;Non c&#039;è bisogno di scrivere codice CSS, div annidati o coordinate numeriche."
+        >
+          <h1>Esempio di Codice Native Yumia</h1>
+          <h2>Sintassi pulita, dichiarativa e basata su indentazione</h2>
+          <div class="yumia-columns" style="grid-template-columns: 55fr 45fr">
+            <div class="yumia-column">
+              <pre><code class="language-yumia">document &quot;Yumia Demo&quot;
 theme &quot;cyberpunk&quot;
 aspectRatio &quot;16:9&quot;
 slide &quot;Yumia in azione&quot;
@@ -1454,427 +2109,658 @@ hero title=&quot;Design Compiler&quot; subtitle=&quot;Dall&#039;intento al docum
 grid columns=3 gap=20
 metric &quot;1&quot; label=&quot;Sorgente&quot;
 metric &quot;3&quot; label=&quot;Formati&quot;
-metric &quot;0&quot; label=&quot;Layout manuale&quot;</code></pre></div>
-<div class="yumia-column">
-        <div class="yumia-card" data-variant="primary">
-          <div class="yumia-card-title">Caratteristiche del linguaggio</div>
-          <p>• Struttura gerarchica pulita basata sull&#039;indentazione</p>
-<p>• Componenti semantici senza CSS a basso livello</p>
-<p>• Nessun tag HTML di chiusura o sintassi verbosa</p>
-<p>• Perfettamente leggibile e modificabile in qualsiasi editor</p>
-        </div></div></div>
-      <div class="yumia-watermark">Yumia • Design Compiler</div>
-      <div class="yumia-progress-bar" style="width: 47%;"></div>
-    </div>
-
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-8" data-notes="È fondamentale sottolineare come lavorano i tre renderer:&lt;br&gt;L&#039;HTML offre interattività e speaker view;&lt;br&gt;Il renderer PPTX non incolla immagini, ma genera veri oggetti e forme vettoriali OpenXML modificabili all&#039;interno di Microsoft PowerPoint;&lt;br&gt;Il renderer PDF produce documenti vettoriali perfetti per la stampa e l&#039;archiviazione.">
-      <h1>I Tre Output Principali</h1>
-<h2>Generazione nativa e specializzata per ogni ecosistema</h2>
-<div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16;">
-        <div class="yumia-card" data-variant="primary">
-          <div class="yumia-card-title">HtmlRenderer</div>
-          <p>• Presentazione web interattiva SPA</p>
-<p>• Navigazione da tastiera e fullscreen</p>
-<p>• Modalità Speaker View con note</p>
-<p>• Inspector visuale in tempo reale</p>
+metric &quot;0&quot; label=&quot;Layout manuale&quot;</code></pre>
+            </div>
+            <div class="yumia-column">
+              <div class="yumia-card" data-variant="primary">
+                <div class="yumia-card-title">Caratteristiche del linguaggio</div>
+                <p>• Struttura gerarchica pulita basata sull&#039;indentazione</p>
+                <p>• Componenti semantici senza CSS a basso livello</p>
+                <p>• Nessun tag HTML di chiusura o sintassi verbosa</p>
+                <p>• Perfettamente leggibile e modificabile in qualsiasi editor</p>
+              </div>
+            </div>
+          </div>
+          <div class="yumia-watermark">Yumia • Design Compiler</div>
+          <div class="yumia-progress-bar" style="width: 47%"></div>
         </div>
 
-        <div class="yumia-card" data-variant="accent">
-          <div class="yumia-card-title">PptxRenderer</div>
-          <p>• Forme OpenXML native e testo modificabile</p>
-<p>• Tabelle, card e grafici nativi Office</p>
-<p>• Zero screenshot o immagini statiche</p>
-<p>• Modificabile su PowerPoint / Keynote</p>
+        <div
+          class="yumia-slide-wrapper transition-fade"
+          id="slide-8"
+          data-notes="È fondamentale sottolineare come lavorano i tre renderer:&lt;br&gt;L&#039;HTML offre interattività e speaker view;&lt;br&gt;Il renderer PPTX non incolla immagini, ma genera veri oggetti e forme vettoriali OpenXML modificabili all&#039;interno di Microsoft PowerPoint;&lt;br&gt;Il renderer PDF produce documenti vettoriali perfetti per la stampa e l&#039;archiviazione."
+        >
+          <h1>I Tre Output Principali</h1>
+          <h2>Generazione nativa e specializzata per ogni ecosistema</h2>
+          <div class="yumia-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16">
+            <div class="yumia-card" data-variant="primary">
+              <div class="yumia-card-title">HtmlRenderer</div>
+              <p>• Presentazione web interattiva SPA</p>
+              <p>• Navigazione da tastiera e fullscreen</p>
+              <p>• Modalità Speaker View con note</p>
+              <p>• Inspector visuale in tempo reale</p>
+            </div>
+
+            <div class="yumia-card" data-variant="accent">
+              <div class="yumia-card-title">PptxRenderer</div>
+              <p>• Forme OpenXML native e testo modificabile</p>
+              <p>• Tabelle, card e grafici nativi Office</p>
+              <p>• Zero screenshot o immagini statiche</p>
+              <p>• Modificabile su PowerPoint / Keynote</p>
+            </div>
+
+            <div class="yumia-card" data-variant="success">
+              <div class="yumia-card-title">PdfRenderer</div>
+              <p>• Rendering vettoriale ad alta definizione</p>
+              <p>• Layout e tipografia rigorosamente fissati</p>
+              <p>• Ideale per dispense, esami e stampa</p>
+              <p>• Dimensioni del file ottimizzate</p>
+            </div>
+          </div>
+          <div class="yumia-watermark">Yumia • Design Compiler</div>
+          <div class="yumia-progress-bar" style="width: 53%"></div>
         </div>
 
-        <div class="yumia-card" data-variant="success">
-          <div class="yumia-card-title">PdfRenderer</div>
-          <p>• Rendering vettoriale ad alta definizione</p>
-<p>• Layout e tipografia rigorosamente fissati</p>
-<p>• Ideale per dispense, esami e stampa</p>
-<p>• Dimensioni del file ottimizzate</p>
-        </div></div>
-      <div class="yumia-watermark">Yumia • Design Compiler</div>
-      <div class="yumia-progress-bar" style="width: 53%;"></div>
-    </div>
-
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-9" data-notes="Proprio come usiamo ESLint o i compilatori per trovare errori logici nel codice sorgente, il Design Linter di Yumia analizza le slide per individuare problemi di design: testo troppo denso, scarso contrasto cromatico o sovrapposizioni, restituendo suggerimenti operativi.">
-      <h1>Design Linter e Qualità Visiva</h1>
-<h2>Static Analysis per la leggibilità e l&#039;accessibilità</h2>
-<div class="yumia-columns" style="grid-template-columns: 50fr 50fr;"><div class="yumia-column">
-        <div class="yumia-card" data-variant="primary">
-          <div class="yumia-card-title">Controlli Automatici di Design</div>
-          <p>• Densità informativa e carico cognitivo</p>
-<p>• Verifica slide vuote o incomplete</p>
-<p>• Contrasto testo/sfondo secondo standard WCAG</p>
-<p>• Rispetto della Safe Area e margini</p>
-<p>• Calcolo del Visual Score da 0 a 100</p>
-        </div></div>
-<div class="yumia-column">
-        <div class="yumia-card" data-variant="warning">
-          <div class="yumia-card-title">Esempio di Diagnostica CLI</div>
-          <pre><code class="language-text">[YUM004] Alta densità informativa
+        <div
+          class="yumia-slide-wrapper transition-fade"
+          id="slide-9"
+          data-notes="Proprio come usiamo ESLint o i compilatori per trovare errori logici nel codice sorgente, il Design Linter di Yumia analizza le slide per individuare problemi di design: testo troppo denso, scarso contrasto cromatico o sovrapposizioni, restituendo suggerimenti operativi."
+        >
+          <h1>Design Linter e Qualità Visiva</h1>
+          <h2>Static Analysis per la leggibilità e l&#039;accessibilità</h2>
+          <div class="yumia-columns" style="grid-template-columns: 50fr 50fr">
+            <div class="yumia-column">
+              <div class="yumia-card" data-variant="primary">
+                <div class="yumia-card-title">Controlli Automatici di Design</div>
+                <p>• Densità informativa e carico cognitivo</p>
+                <p>• Verifica slide vuote o incomplete</p>
+                <p>• Contrasto testo/sfondo secondo standard WCAG</p>
+                <p>• Rispetto della Safe Area e margini</p>
+                <p>• Calcolo del Visual Score da 0 a 100</p>
+              </div>
+            </div>
+            <div class="yumia-column">
+              <div class="yumia-card" data-variant="warning">
+                <div class="yumia-card-title">Esempio di Diagnostica CLI</div>
+                <pre><code class="language-text">[YUM004] Alta densità informativa
 La slide contiene troppi elementi complessi.
 Suggerimento: dividere la slide o usare
 una griglia di metriche.</code></pre>
-        </div></div></div>
+              </div>
+            </div>
+          </div>
 
-        <div class="yumia-callout" data-severity="info" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-info); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
-          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-info); margin-bottom:4px;">Prevenzione prima della build</div>
-          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">Il linter intercetta difetti grafici, errori tipografici e problemi di leggibilità prima di distribuire la presentazione.</div>
+          <div
+            class="yumia-callout"
+            data-severity="info"
+            data-yumia-role="callout"
+            style="
+              background: var(--yumia-surface);
+              border-left: 4px solid var(--yumia-info);
+              border-radius: var(--yumia-radius-card);
+              padding: 1rem 1.4rem;
+              margin: 0.8rem 0;
+              width: 100%;
+              display: flex;
+              flex-direction: column;
+              gap: 6px;
+              box-sizing: border-box;
+            "
+          >
+            <div
+              style="
+                font-weight: 700;
+                font-size: 1.05rem;
+                color: var(--yumia-info);
+                margin-bottom: 4px;
+              "
+            >
+              Prevenzione prima della build
+            </div>
+            <div style="font-size: 0.95rem; color: var(--yumia-text); line-height: 1.5">
+              Il linter intercetta difetti grafici, errori tipografici e problemi di leggibilità
+              prima di distribuire la presentazione.
+            </div>
+          </div>
+          <div class="yumia-watermark">Yumia • Design Compiler</div>
+          <div class="yumia-progress-bar" style="width: 60%"></div>
         </div>
-      <div class="yumia-watermark">Yumia • Design Compiler</div>
-      <div class="yumia-progress-bar" style="width: 60%;"></div>
-    </div>
 
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-10" data-notes="La CLI di Yumia offre un set completo di comandi:&lt;br&gt;- validate ed explain per analizzare sintassi e ritmo visivo;&lt;br&gt;- dev per avere un server locale con hot-reload e inspector;&lt;br&gt;- check per eseguire l&#039;audit di contrasto e densità;&lt;br&gt;- build e deploy per compilare e pubblicare in automatico nei pipeline CI/CD.">
-      <h1>CLI e Workflow di Sviluppo</h1>
-<h2>L&#039;esperienza di sviluppo pensata per sviluppatori e CI/CD</h2>
-<div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16;">
-        <div class="yumia-card" data-variant="primary">
-          <div class="yumia-card-title">1. Scrittura &amp; Validazione</div>
-          <pre><code class="language-bash">yumia validate pres.yumia
+        <div
+          class="yumia-slide-wrapper transition-fade"
+          id="slide-10"
+          data-notes="La CLI di Yumia offre un set completo di comandi:&lt;br&gt;- validate ed explain per analizzare sintassi e ritmo visivo;&lt;br&gt;- dev per avere un server locale con hot-reload e inspector;&lt;br&gt;- check per eseguire l&#039;audit di contrasto e densità;&lt;br&gt;- build e deploy per compilare e pubblicare in automatico nei pipeline CI/CD."
+        >
+          <h1>CLI e Workflow di Sviluppo</h1>
+          <h2>L&#039;esperienza di sviluppo pensata per sviluppatori e CI/CD</h2>
+          <div class="yumia-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16">
+            <div class="yumia-card" data-variant="primary">
+              <div class="yumia-card-title">1. Scrittura &amp; Validazione</div>
+              <pre><code class="language-bash">yumia validate pres.yumia
 yumia explain pres.yumia</code></pre>
-        </div>
+            </div>
 
-        <div class="yumia-card" data-variant="accent">
-          <div class="yumia-card-title">2. Live Dev &amp; Audit</div>
-          <pre><code class="language-bash">yumia dev pres.yumia --open
+            <div class="yumia-card" data-variant="accent">
+              <div class="yumia-card-title">2. Live Dev &amp; Audit</div>
+              <pre><code class="language-bash">yumia dev pres.yumia --open
 yumia check --optimize</code></pre>
-        </div>
+            </div>
 
-        <div class="yumia-card" data-variant="success">
-          <div class="yumia-card-title">3. Build &amp; Deploy</div>
-          <pre><code class="language-bash">yumia build --format pptx
+            <div class="yumia-card" data-variant="success">
+              <div class="yumia-card-title">3. Build &amp; Deploy</div>
+              <pre><code class="language-bash">yumia build --format pptx
 yumia deploy --provider gh-pages</code></pre>
-        </div></div>
+            </div>
+          </div>
 
-        <div class="yumia-callout" data-severity="success" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-success); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
-          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-success); margin-bottom:4px;">Workflow integrabile in CI/CD</div>
-          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">Ogni commit su Git può validare le slide, generare la documentazione HTML e pubblicare la versione aggiornata su GitHub Pages.</div>
+          <div
+            class="yumia-callout"
+            data-severity="success"
+            data-yumia-role="callout"
+            style="
+              background: var(--yumia-surface);
+              border-left: 4px solid var(--yumia-success);
+              border-radius: var(--yumia-radius-card);
+              padding: 1rem 1.4rem;
+              margin: 0.8rem 0;
+              width: 100%;
+              display: flex;
+              flex-direction: column;
+              gap: 6px;
+              box-sizing: border-box;
+            "
+          >
+            <div
+              style="
+                font-weight: 700;
+                font-size: 1.05rem;
+                color: var(--yumia-success);
+                margin-bottom: 4px;
+              "
+            >
+              Workflow integrabile in CI/CD
+            </div>
+            <div style="font-size: 0.95rem; color: var(--yumia-text); line-height: 1.5">
+              Ogni commit su Git può validare le slide, generare la documentazione HTML e pubblicare
+              la versione aggiornata su GitHub Pages.
+            </div>
+          </div>
+          <div class="yumia-watermark">Yumia • Design Compiler</div>
+          <div class="yumia-progress-bar" style="width: 67%"></div>
         </div>
-      <div class="yumia-watermark">Yumia • Design Compiler</div>
-      <div class="yumia-progress-bar" style="width: 67%;"></div>
-    </div>
 
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-11" data-notes="Gli LLM hanno difficoltà a calcolare geometrie esatte e layout CSS complessi. Con Yumia, il modello di AI deve solo generare blocchi semantici concisi come card o compare.&lt;br&gt;Il compilatore si fa carico di renderizzare tutto alla perfezione, riducendo drasticamente il tasso di allucinazioni e codice malformato.">
-      <h1>Yumia e Intelligenza Artificiale</h1>
-<h2>Perché i linguaggi dichiarativi semantici superano l&#039;HTML grezzo</h2>
+        <div
+          class="yumia-slide-wrapper transition-fade"
+          id="slide-11"
+          data-notes="Gli LLM hanno difficoltà a calcolare geometrie esatte e layout CSS complessi. Con Yumia, il modello di AI deve solo generare blocchi semantici concisi come card o compare.&lt;br&gt;Il compilatore si fa carico di renderizzare tutto alla perfezione, riducendo drasticamente il tasso di allucinazioni e codice malformato."
+        >
+          <h1>Yumia e Intelligenza Artificiale</h1>
+          <h2>Perché i linguaggi dichiarativi semantici superano l&#039;HTML grezzo</h2>
 
-    <div class="yumia-compare">
-      <div class="yumia-compare-col left">
-        <div class="yumia-compare-title">AI con HTML / CSS Grezzo</div>
-        <span class="yumia-badge variant-danger">Fragile &amp; Imprevedibile</span>
-<p>• Allucinazioni di coordinate pixel e layout rotti</p>
-<p>• Codice verboso con rischio di sintassi non valida</p>
-<p>• Difficile da vincolare a un design system coerente</p>
-<p>• Revisione manuale complessa per l&#039;utente</p>
+          <div class="yumia-compare">
+            <div class="yumia-compare-col left">
+              <div class="yumia-compare-title">AI con HTML / CSS Grezzo</div>
+              <span class="yumia-badge variant-danger">Fragile &amp; Imprevedibile</span>
+              <p>• Allucinazioni di coordinate pixel e layout rotti</p>
+              <p>• Codice verboso con rischio di sintassi non valida</p>
+              <p>• Difficile da vincolare a un design system coerente</p>
+              <p>• Revisione manuale complessa per l&#039;utente</p>
+            </div>
+            <div class="yumia-compare-divider">VS</div>
+            <div class="yumia-compare-col right">
+              <div class="yumia-compare-title">AI con Yumia DSL</div>
+              <span class="yumia-badge variant-success">Robusto &amp; Strutturato</span>
+              <p>• Generazione guidata da JSON Schema (yumia schema)</p>
+              <p>• Sintassi concisa focalizzata sul contenuto semantico</p>
+              <p>• Il motore garantisce allineamenti e layout perfetti</p>
+              <p>• Validazione deterministica automatica post-generazione</p>
+            </div>
+          </div>
+          <div class="yumia-watermark">Yumia • Design Compiler</div>
+          <div class="yumia-progress-bar" style="width: 73%"></div>
+        </div>
+
+        <div
+          class="yumia-slide-wrapper transition-fade"
+          id="slide-12"
+          data-notes="Yumia integra direttamente nella sintassi diagrammi di flusso, diagrammi di sequenza, grafici di dati, timeline e formule matematiche LaTeX.&lt;br&gt;Questo elimina la necessità di fare screenshot da tool esterni o incollare immagini a bassa risoluzione."
+        >
+          <h1>Funzionalità e Componenti Avanzati</h1>
+          <h2>Un ricco ecosistema integrato senza dipendenze esterne</h2>
+          <div class="yumia-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16">
+            <div class="yumia-card" data-variant="primary">
+              <div class="yumia-card-title">Icon Provider Multipli</div>
+              <p>Supporto nativo a oltre 10.000 icone da Lucide, Material, Tabler e FontAwesome.</p>
+            </div>
+
+            <div class="yumia-card" data-variant="accent">
+              <div class="yumia-card-title">Diagrammi Integrati</div>
+              <p>
+                Flowchart direzionali, Sequence diagram, architetture e diagrammi di classi UML.
+              </p>
+            </div>
+
+            <div class="yumia-card" data-variant="warning">
+              <div class="yumia-card-title">Grafici &amp; Timeline</div>
+              <p>
+                Grafici a barre, ciambella, radar, gauge e timeline storiche generate nativamente.
+              </p>
+            </div>
+
+            <div class="yumia-card" data-variant="info">
+              <div class="yumia-card-title">Componenti &amp; Macro</div>
+              <p>Creazione di blocchi riutilizzabili parametrici con la direttiva component.</p>
+            </div>
+
+            <div class="yumia-card" data-variant="success">
+              <div class="yumia-card-title">Data Binding</div>
+              <p>Iterazione dinamica su dataset JSON o CSV per reportistica automatica.</p>
+            </div>
+
+            <div class="yumia-card" data-variant="danger">
+              <div class="yumia-card-title">Formule Matematiche</div>
+              <p>Rendering di formule scientifiche complesse in sintassi LaTeX / KaTeX.</p>
+            </div>
+          </div>
+          <div class="yumia-watermark">Yumia • Design Compiler</div>
+          <div class="yumia-progress-bar" style="width: 80%"></div>
+        </div>
+
+        <div
+          class="yumia-slide-wrapper transition-fade"
+          id="slide-13"
+          data-notes="Yumia offre una doppia compatibilità:&lt;br&gt;supporta sia file Markdown standard con blocchi di direttive, sia la nuova sintassi Native Yumia, più concisa e priva di boilerplate.&lt;br&gt;Un tool di migrazione integrato consente di convertire i file in modo completamente trasparente."
+        >
+          <h1>Compatibilità e Percorso di Migrazione</h1>
+          <h2>Continuità garantita tra ecosistema Markdown e Native DSL</h2>
+          <div class="yumia-columns" style="grid-template-columns: 50fr 50fr">
+            <div class="yumia-column">
+              <div class="yumia-card" data-variant="primary">
+                <div class="yumia-card-title">Markdown Yumia (.yumia.md)</div>
+                <pre><code class="language-markdown">:::metric value=&quot;99%&quot; label=&quot;Uptime&quot; change=&quot;+1%&quot; :::</code></pre>
+              </div>
+              <p>Compatibile con lettori Markdown standard, esteso tramite direttive semantiche.</p>
+            </div>
+            <div class="yumia-column">
+              <div class="yumia-card" data-variant="success">
+                <div class="yumia-card-title">Native Yumia (.yumia)</div>
+                <pre><code class="language-yumia">metric &quot;99%&quot; label=&quot;Uptime&quot; diff=&quot;+1%&quot;</code></pre>
+              </div>
+              <p>Sintassi nativa più concisa, pulita e ottimizzata per i Design Compiler.</p>
+            </div>
+          </div>
+
+          <div
+            class="yumia-callout"
+            data-severity="info"
+            data-yumia-role="callout"
+            style="
+              background: var(--yumia-surface);
+              border-left: 4px solid var(--yumia-info);
+              border-radius: var(--yumia-radius-card);
+              padding: 1rem 1.4rem;
+              margin: 0.8rem 0;
+              width: 100%;
+              display: flex;
+              flex-direction: column;
+              gap: 6px;
+              box-sizing: border-box;
+            "
+          >
+            <div
+              style="
+                font-weight: 700;
+                font-size: 1.05rem;
+                color: var(--yumia-info);
+                margin-bottom: 4px;
+              "
+            >
+              Utility di Migrazione Automatica
+            </div>
+            <div style="font-size: 0.95rem; color: var(--yumia-text); line-height: 1.5">
+              Il compilatore include tool di migrazione bidirezionale per consentire un passaggio
+              progressivo senza perdere i contenuti esistenti.
+            </div>
+          </div>
+          <div class="yumia-watermark">Yumia • Design Compiler</div>
+          <div class="yumia-progress-bar" style="width: 87%"></div>
+        </div>
+
+        <div
+          class="yumia-slide-wrapper transition-fade"
+          id="slide-14"
+          data-notes="È importante mantenere uno sguardo critico e trasparente sullo stato del progetto:&lt;br&gt;Yumia ha già solidi punti di forza nella versionabilità e nella compilazione multi-target.&lt;br&gt;I prossimi passi si concentreranno sull&#039;affinamento dei casi limite nei renderer e sullo sviluppo di estensioni IDE e funzionalità di collaborazione in tempo reale."
+        >
+          <h1>Vantaggi, Limiti e Sviluppi Futuri</h1>
+          <h2>Valutazione dello stato attuale e roadmap del progetto</h2>
+          <div class="yumia-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16">
+            <div class="yumia-card" data-variant="success">
+              <div class="yumia-card-title">Vantaggi Attuali</div>
+              <p>• Sorgente 100% versionabile con Git</p>
+              <p>• Tre output compilati da un unico file</p>
+              <p>• Layout e gerarchia visiva garantiti</p>
+              <p>• Linter automatico per design e WCAG</p>
+              <p>• Integrazione nativa con workflow AI</p>
+            </div>
+
+            <div class="yumia-card" data-variant="warning">
+              <div class="yumia-card-title">Aspetti da Consolidare</div>
+              <p>• Parità totale di rendering su edge case</p>
+              <p>• Estensione della copertura dei test</p>
+              <p>• Supporto a font e asset esterni complessi</p>
+              <p>• Documentazione di scenari avanzati</p>
+            </div>
+
+            <div class="yumia-card" data-variant="primary">
+              <div class="yumia-card-title">Sviluppi Futuri</div>
+              <p>• Editor visuale WYSIWYG bidirezionale</p>
+              <p>• Collaborazione in tempo reale su browser</p>
+              <p>• Integrazione con modelli LLM in locale</p>
+              <p>• Plugin per VS Code ed estensioni IDE</p>
+            </div>
+          </div>
+          <div class="yumia-watermark">Yumia • Design Compiler</div>
+          <div class="yumia-progress-bar" style="width: 93%"></div>
+        </div>
+
+        <div
+          class="yumia-slide-wrapper transition-fade"
+          id="slide-15"
+          data-notes="In conclusione, Yumia dimostra come i principi dell&#039;ingegneria del software — compilatori, AST, linter e separazione delle responsabilità — possano essere applicati con successo alla comunicazione visiva.&lt;br&gt;Grazie per l&#039;attenzione: sono a vostra completa disposizione per domande e approfondimenti tecnici."
+        >
+          <div
+            class="yumia-hero"
+            data-align="center"
+            data-yumia-role="hero"
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              text-align: center;
+              justify-content: center;
+              flex: 1;
+              width: 100%;
+              margin: auto 0;
+            "
+          >
+            <div
+              class="yumia-hero-badge"
+              style="
+                display: inline-flex;
+                align-items: center;
+                padding: 4px 14px;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.08);
+                border: 1px solid var(--yumia-primary);
+                color: var(--yumia-primary);
+                font-size: 0.85rem;
+                font-weight: 700;
+                margin-bottom: 1rem;
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+              "
+            >
+              Design as Code
+            </div>
+
+            <h1
+              class="yumia-hero-title"
+              style="
+                font-size: clamp(2.4rem, 4.5vw, 4rem);
+                font-weight: 800;
+                line-height: 1.1;
+                color: var(--yumia-text);
+                margin-bottom: 0.8rem;
+              "
+            >
+              Descrivere ciò che si vuole comunicare,
+            </h1>
+            <p
+              class="yumia-hero-subtitle"
+              style="
+                font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+                color: var(--yumia-muted);
+                max-width: 800px;
+                margin-bottom: 1.5rem;
+                line-height: 1.5;
+              "
+            >
+              lasciare al compilatore il compito di comporlo.
+            </p>
+          </div>
+          <div class="yumia-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16">
+            <div class="yumia-card" data-variant="primary">
+              <div class="yumia-card-title">1. Separazione</div>
+              <p>Il contenuto è completamente disaccoppiato dalle coordinate grafiche.</p>
+            </div>
+
+            <div class="yumia-card" data-variant="accent">
+              <div class="yumia-card-title">2. Flessibilità</div>
+              <p>Un singolo sorgente produce Web interattivo, PowerPoint nativo e PDF.</p>
+            </div>
+
+            <div class="yumia-card" data-variant="success">
+              <div class="yumia-card-title">3. Futuro</div>
+              <p>Un ponte naturale tra sviluppatori, designer e intelligenza artificiale.</p>
+            </div>
+          </div>
+
+          <div
+            class="yumia-callout"
+            data-severity="info"
+            data-yumia-role="callout"
+            style="
+              background: var(--yumia-surface);
+              border-left: 4px solid var(--yumia-info);
+              border-radius: var(--yumia-radius-card);
+              padding: 1rem 1.4rem;
+              margin: 0.8rem 0;
+              width: 100%;
+              display: flex;
+              flex-direction: column;
+              gap: 6px;
+              box-sizing: border-box;
+            "
+          >
+            <div
+              style="
+                font-weight: 700;
+                font-size: 1.05rem;
+                color: var(--yumia-info);
+                margin-bottom: 4px;
+              "
+            >
+              Sessione Q&amp;A
+            </div>
+            <div style="font-size: 0.95rem; color: var(--yumia-text); line-height: 1.5">
+              Grazie per l&#039;attenzione. Spazio per domande, chiarimenti e feedback della
+              commissione.
+            </div>
+          </div>
+          <div class="yumia-watermark">Yumia • Design Compiler</div>
+          <div class="yumia-progress-bar" style="width: 100%"></div>
+        </div>
       </div>
-      <div class="yumia-compare-divider">VS</div>
-      <div class="yumia-compare-col right">
-        <div class="yumia-compare-title">AI con Yumia DSL</div>
-        <span class="yumia-badge variant-success">Robusto &amp; Strutturato</span>
-<p>• Generazione guidata da JSON Schema (yumia schema)</p>
-<p>• Sintassi concisa focalizzata sul contenuto semantico</p>
-<p>• Il motore garantisce allineamenti e layout perfetti</p>
-<p>• Validazione deterministica automatica post-generazione</p>
+
+      <div class="yumia-controls" id="deck-controls">
+        <button class="yumia-btn" id="btn-prev" title="Previous Slide (←)">◀</button>
+        <span id="slide-indicator">1 / 15</span>
+        <button class="yumia-btn" id="btn-next" title="Next Slide (→)">▶</button>
+        <button class="yumia-btn" id="btn-overview" title="Slide Overview (ESC / O)">▦</button>
+        <button class="yumia-btn" id="btn-speaker" title="Speaker View (S)">🎤</button>
+        <button class="yumia-btn" id="btn-inspect" title="Visual Inspector (I / Alt+Click)">
+          🔍
+        </button>
+        <button class="yumia-btn" id="btn-print" title="Stampa / Salva PDF (Ctrl+P)">🖨️</button>
+        <button class="yumia-btn" id="btn-notes" title="Toggle Notes (N)">📝</button>
+        <button class="yumia-btn" id="btn-fs" title="Fullscreen (F)">⛶</button>
+      </div>
+      <div id="inspector-popup" class="yumia-inspector-popup"></div>
+
+      <div id="notes-drawer" class="yumia-notes-drawer">
+        <div class="yumia-notes-header">
+          <span>📝 Speaker Notes</span>
+          <button
+            class="yumia-btn"
+            id="btn-close-notes"
+            title="Close Notes (N / ESC)"
+            style="font-size: 13px; padding: 2px 8px; border: 1px solid rgba(255, 255, 255, 0.2)"
+          >
+            ✕ Close
+          </button>
+        </div>
+        <div id="notes-drawer-content" class="yumia-notes-content"></div>
+      </div>
+
+      <div id="overview-modal" class="yumia-overview-modal">
+        <div class="yumia-overview-header">
+          <h2>Slide Overview</h2>
+          <button class="yumia-btn" id="btn-close-overview" style="font-size: 18px">
+            ✕ Close (ESC)
+          </button>
+        </div>
+        <div class="yumia-overview-grid" id="overview-grid"></div>
       </div>
     </div>
-      <div class="yumia-watermark">Yumia • Design Compiler</div>
-      <div class="yumia-progress-bar" style="width: 73%;"></div>
-    </div>
 
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-12" data-notes="Yumia integra direttamente nella sintassi diagrammi di flusso, diagrammi di sequenza, grafici di dati, timeline e formule matematiche LaTeX.&lt;br&gt;Questo elimina la necessità di fare screenshot da tool esterni o incollare immagini a bassa risoluzione.">
-      <h1>Funzionalità e Componenti Avanzati</h1>
-<h2>Un ricco ecosistema integrato senza dipendenze esterne</h2>
-<div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16;">
-        <div class="yumia-card" data-variant="primary">
-          <div class="yumia-card-title">Icon Provider Multipli</div>
-          <p>Supporto nativo a oltre 10.000 icone da Lucide, Material, Tabler e FontAwesome.</p>
-        </div>
+    <script>
+      (function () {
+        const isSpeakerMode = new URLSearchParams(window.location.search).get('speaker') === 'true';
+        const slides = Array.from(document.querySelectorAll('.yumia-slide-wrapper'));
+        const indicator = document.getElementById('slide-indicator');
+        const notesDrawer = document.getElementById('notes-drawer');
+        const overviewModal = document.getElementById('overview-modal');
+        const overviewGrid = document.getElementById('overview-grid');
+        let currentIdx = 0;
 
-        <div class="yumia-card" data-variant="accent">
-          <div class="yumia-card-title">Diagrammi Integrati</div>
-          <p>Flowchart direzionali, Sequence diagram, architetture e diagrammi di classi UML.</p>
-        </div>
-
-        <div class="yumia-card" data-variant="warning">
-          <div class="yumia-card-title">Grafici &amp; Timeline</div>
-          <p>Grafici a barre, ciambella, radar, gauge e timeline storiche generate nativamente.</p>
-        </div>
-
-        <div class="yumia-card" data-variant="info">
-          <div class="yumia-card-title">Componenti &amp; Macro</div>
-          <p>Creazione di blocchi riutilizzabili parametrici con la direttiva component.</p>
-        </div>
-
-        <div class="yumia-card" data-variant="success">
-          <div class="yumia-card-title">Data Binding </div>
-          <p>Iterazione dinamica su dataset JSON o CSV per reportistica automatica.</p>
-        </div>
-
-        <div class="yumia-card" data-variant="danger">
-          <div class="yumia-card-title">Formule Matematiche</div>
-          <p>Rendering di formule scientifiche complesse in sintassi LaTeX / KaTeX.</p>
-        </div></div>
-      <div class="yumia-watermark">Yumia • Design Compiler</div>
-      <div class="yumia-progress-bar" style="width: 80%;"></div>
-    </div>
-
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-13" data-notes="Yumia offre una doppia compatibilità:&lt;br&gt;supporta sia file Markdown standard con blocchi di direttive, sia la nuova sintassi Native Yumia, più concisa e priva di boilerplate.&lt;br&gt;Un tool di migrazione integrato consente di convertire i file in modo completamente trasparente.">
-      <h1>Compatibilità e Percorso di Migrazione</h1>
-<h2>Continuità garantita tra ecosistema Markdown e Native DSL</h2>
-<div class="yumia-columns" style="grid-template-columns: 50fr 50fr;"><div class="yumia-column">
-        <div class="yumia-card" data-variant="primary">
-          <div class="yumia-card-title">Markdown Yumia (.yumia.md)</div>
-          <pre><code class="language-markdown">:::metric value=&quot;99%&quot; label=&quot;Uptime&quot; change=&quot;+1%&quot; :::</code></pre>
-        </div>
-<p>Compatibile con lettori Markdown standard, esteso tramite direttive semantiche.</p></div>
-<div class="yumia-column">
-        <div class="yumia-card" data-variant="success">
-          <div class="yumia-card-title">Native Yumia (.yumia)</div>
-          <pre><code class="language-yumia">metric &quot;99%&quot; label=&quot;Uptime&quot; diff=&quot;+1%&quot;</code></pre>
-        </div>
-<p>Sintassi nativa più concisa, pulita e ottimizzata per i Design Compiler.</p></div></div>
-
-        <div class="yumia-callout" data-severity="info" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-info); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
-          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-info); margin-bottom:4px;">Utility di Migrazione Automatica</div>
-          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">Il compilatore include tool di migrazione bidirezionale per consentire un passaggio progressivo senza perdere i contenuti esistenti.</div>
-        </div>
-      <div class="yumia-watermark">Yumia • Design Compiler</div>
-      <div class="yumia-progress-bar" style="width: 87%;"></div>
-    </div>
-
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-14" data-notes="È importante mantenere uno sguardo critico e trasparente sullo stato del progetto:&lt;br&gt;Yumia ha già solidi punti di forza nella versionabilità e nella compilazione multi-target.&lt;br&gt;I prossimi passi si concentreranno sull&#039;affinamento dei casi limite nei renderer e sullo sviluppo di estensioni IDE e funzionalità di collaborazione in tempo reale.">
-      <h1>Vantaggi, Limiti e Sviluppi Futuri</h1>
-<h2>Valutazione dello stato attuale e roadmap del progetto</h2>
-<div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16;">
-        <div class="yumia-card" data-variant="success">
-          <div class="yumia-card-title">Vantaggi Attuali</div>
-          <p>• Sorgente 100% versionabile con Git</p>
-<p>• Tre output compilati da un unico file</p>
-<p>• Layout e gerarchia visiva garantiti</p>
-<p>• Linter automatico per design e WCAG</p>
-<p>• Integrazione nativa con workflow AI</p>
-        </div>
-
-        <div class="yumia-card" data-variant="warning">
-          <div class="yumia-card-title">Aspetti da Consolidare</div>
-          <p>• Parità totale di rendering su edge case</p>
-<p>• Estensione della copertura dei test</p>
-<p>• Supporto a font e asset esterni complessi</p>
-<p>• Documentazione di scenari avanzati</p>
-        </div>
-
-        <div class="yumia-card" data-variant="primary">
-          <div class="yumia-card-title">Sviluppi Futuri</div>
-          <p>• Editor visuale WYSIWYG bidirezionale</p>
-<p>• Collaborazione in tempo reale su browser</p>
-<p>• Integrazione con modelli LLM in locale</p>
-<p>• Plugin per VS Code ed estensioni IDE</p>
-        </div></div>
-      <div class="yumia-watermark">Yumia • Design Compiler</div>
-      <div class="yumia-progress-bar" style="width: 93%;"></div>
-    </div>
-
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-15" data-notes="In conclusione, Yumia dimostra come i principi dell&#039;ingegneria del software — compilatori, AST, linter e separazione delle responsabilità — possano essere applicati con successo alla comunicazione visiva.&lt;br&gt;Grazie per l&#039;attenzione: sono a vostra completa disposizione per domande e approfondimenti tecnici.">
-      
-        <div class="yumia-hero" data-align="center" data-yumia-role="hero" style="display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; flex:1; width:100%; margin:auto 0;">
-          <div class="yumia-hero-badge" style="display:inline-flex; align-items:center; padding:4px 14px; border-radius:999px; background:rgba(255,255,255,0.08); border:1px solid var(--yumia-primary); color:var(--yumia-primary); font-size:0.85rem; font-weight:700; margin-bottom:1rem; letter-spacing:0.06em; text-transform:uppercase;">Design as Code</div>
-          
-          <h1 class="yumia-hero-title" style="font-size:clamp(2.4rem, 4.5vw, 4rem); font-weight:800; line-height:1.1; color:var(--yumia-text); margin-bottom:0.8rem;">Descrivere ciò che si vuole comunicare,</h1>
-          <p class="yumia-hero-subtitle" style="font-size:clamp(1.1rem, 1.8vw, 1.5rem); color:var(--yumia-muted); max-width:800px; margin-bottom:1.5rem; line-height:1.5;">lasciare al compilatore il compito di comporlo.</p>
-          
-          
-        </div>
-<div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16;">
-        <div class="yumia-card" data-variant="primary">
-          <div class="yumia-card-title">1. Separazione</div>
-          <p>Il contenuto è completamente disaccoppiato dalle coordinate grafiche.</p>
-        </div>
-
-        <div class="yumia-card" data-variant="accent">
-          <div class="yumia-card-title">2. Flessibilità</div>
-          <p>Un singolo sorgente produce Web interattivo, PowerPoint nativo e PDF.</p>
-        </div>
-
-        <div class="yumia-card" data-variant="success">
-          <div class="yumia-card-title">3. Futuro</div>
-          <p>Un ponte naturale tra sviluppatori, designer e intelligenza artificiale.</p>
-        </div></div>
-
-        <div class="yumia-callout" data-severity="info" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-info); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
-          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-info); margin-bottom:4px;">Sessione Q&amp;A</div>
-          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">Grazie per l&#039;attenzione. Spazio per domande, chiarimenti e feedback della commissione.</div>
-        </div>
-      <div class="yumia-watermark">Yumia • Design Compiler</div>
-      <div class="yumia-progress-bar" style="width: 100%;"></div>
-    </div>
-    </div>
-
-    <div class="yumia-controls" id="deck-controls">
-      <button class="yumia-btn" id="btn-prev" title="Previous Slide (←)">◀</button>
-      <span id="slide-indicator">1 / 15</span>
-      <button class="yumia-btn" id="btn-next" title="Next Slide (→)">▶</button>
-      <button class="yumia-btn" id="btn-overview" title="Slide Overview (ESC / O)">▦</button>
-      <button class="yumia-btn" id="btn-speaker" title="Speaker View (S)">🎤</button>
-      <button class="yumia-btn" id="btn-inspect" title="Visual Inspector (I / Alt+Click)">🔍</button>
-      <button class="yumia-btn" id="btn-print" title="Stampa / Salva PDF (Ctrl+P)">🖨️</button>
-      <button class="yumia-btn" id="btn-notes" title="Toggle Notes (N)">📝</button>
-      <button class="yumia-btn" id="btn-fs" title="Fullscreen (F)">⛶</button>
-    </div>
-    <div id="inspector-popup" class="yumia-inspector-popup"></div>
-
-    <div id="notes-drawer" class="yumia-notes-drawer">
-      <div class="yumia-notes-header">
-        <span>📝 Speaker Notes</span>
-        <button class="yumia-btn" id="btn-close-notes" title="Close Notes (N / ESC)" style="font-size: 13px; padding: 2px 8px; border: 1px solid rgba(255,255,255,0.2);">✕ Close</button>
-      </div>
-      <div id="notes-drawer-content" class="yumia-notes-content"></div>
-    </div>
-
-    <div id="overview-modal" class="yumia-overview-modal">
-      <div class="yumia-overview-header">
-        <h2>Slide Overview</h2>
-        <button class="yumia-btn" id="btn-close-overview" style="font-size: 18px;">✕ Close (ESC)</button>
-      </div>
-      <div class="yumia-overview-grid" id="overview-grid"></div>
-    </div>
-  </div>
-
-  <script>
-    (function() {
-      const isSpeakerMode = new URLSearchParams(window.location.search).get('speaker') === 'true';
-      const slides = Array.from(document.querySelectorAll('.yumia-slide-wrapper'));
-      const indicator = document.getElementById('slide-indicator');
-      const notesDrawer = document.getElementById('notes-drawer');
-      const overviewModal = document.getElementById('overview-modal');
-      const overviewGrid = document.getElementById('overview-grid');
-      let currentIdx = 0;
-
-      // Real-time synchronization channel
-      let syncChannel = null;
-      try {
-        syncChannel = new BroadcastChannel('yumia_presentation_sync');
-        syncChannel.onmessage = function(e) {
-          if (e.data && typeof e.data.index === 'number') {
-            goToSlide(e.data.index, false);
-          }
-        };
-      } catch (err) {
-        // Fallback if BroadcastChannel unavailable
-      }
-
-      function buildOverviewGrid() {
-        if (!overviewGrid) return;
-        overviewGrid.innerHTML = '';
-        slides.forEach((slide, idx) => {
-          const card = document.createElement('div');
-          card.className = 'yumia-overview-card' + (idx === currentIdx ? ' current' : '');
-          const badge = document.createElement('span');
-          badge.className = 'yumia-overview-badge';
-          badge.textContent = (idx + 1);
-          
-          const heading = slide.querySelector('h1, h2, h3');
-          const titleText = heading ? heading.textContent : 'Slide ' + (idx + 1);
-          
-          const titleDiv = document.createElement('div');
-          titleDiv.style.fontWeight = '600';
-          titleDiv.style.fontSize = '14px';
-          titleDiv.style.color = 'var(--yumia-primary)';
-          titleDiv.textContent = titleText;
-
-          card.appendChild(badge);
-          card.appendChild(titleDiv);
-
-          card.addEventListener('click', () => {
-            goToSlide(idx);
-            toggleOverview(false);
-          });
-          overviewGrid.appendChild(card);
-        });
-      }
-
-      function toggleOverview(force) {
-        if (!overviewModal) return;
-        const isOpen = force !== undefined ? force : !overviewModal.classList.contains('open');
-        if (isOpen) {
-          buildOverviewGrid();
-          overviewModal.classList.add('open');
-        } else {
-          overviewModal.classList.remove('open');
-        }
-      }
-
-      function goToSlide(newIdx, broadcast = true) {
-        if (newIdx < 0 || newIdx >= slides.length) return;
-        slides[currentIdx]?.classList.remove('active');
-        currentIdx = newIdx;
-        slides[currentIdx]?.classList.add('active');
-
-        if (indicator) {
-          indicator.textContent = (currentIdx + 1) + ' / ' + slides.length;
-        }
-
-        const currentSlide = slides[currentIdx];
-        const notes = currentSlide ? currentSlide.getAttribute('data-notes') : '';
-        const notesContent = document.getElementById('notes-drawer-content');
-        if (notesContent) {
-          notesContent.innerHTML = notes ? notes : '<em>No speaker notes for this slide.</em>';
-        }
-
-        window.location.hash = '#' + (currentIdx + 1);
-
-        if (broadcast && syncChannel) {
-          syncChannel.postMessage({ index: currentIdx });
-        }
-
-        setTimeout(() => {
-          if (window.renderMermaidInSlide && slides[currentIdx]) {
-            window.renderMermaidInSlide(slides[currentIdx]);
-          }
-          if (slides[currentIdx]) {
-            renderMathInSlide(slides[currentIdx]);
-          }
-        }, 50);
-      }
-
-      function renderMathInSlide(slideEl) {
-        if (!slideEl) return;
-        if (window.renderMathInElement) {
-          try {
-            window.renderMathInElement(slideEl, {
-              delimiters: [
-                { left: '$$', right: '$$', display: true }
-              ],
-              throwOnError: false
-            });
-          } catch (e) {
-            console.warn('KaTeX auto-render notice:', e);
-          }
-        }
-        if (window.katex) {
-          slideEl.querySelectorAll('.yumia-math-equation:not([data-katex="true"])').forEach(function(el) {
-            try {
-              const rawExpr =
-                el.getAttribute('data-expr') || el.textContent.replace(/^[$]{2}|[$]{2}$/g, '').trim();
-              window.katex.render(rawExpr, el, { displayMode: true, throwOnError: false });
-              el.setAttribute('data-katex', 'true');
-            } catch (err) {
-              console.warn('KaTeX equation render notice:', err);
+        // Real-time synchronization channel
+        let syncChannel = null;
+        try {
+          syncChannel = new BroadcastChannel('yumia_presentation_sync');
+          syncChannel.onmessage = function (e) {
+            if (e.data && typeof e.data.index === 'number') {
+              goToSlide(e.data.index, false);
             }
+          };
+        } catch (err) {
+          // Fallback if BroadcastChannel unavailable
+        }
+
+        function buildOverviewGrid() {
+          if (!overviewGrid) return;
+          overviewGrid.innerHTML = '';
+          slides.forEach((slide, idx) => {
+            const card = document.createElement('div');
+            card.className = 'yumia-overview-card' + (idx === currentIdx ? ' current' : '');
+            const badge = document.createElement('span');
+            badge.className = 'yumia-overview-badge';
+            badge.textContent = idx + 1;
+
+            const heading = slide.querySelector('h1, h2, h3');
+            const titleText = heading ? heading.textContent : 'Slide ' + (idx + 1);
+
+            const titleDiv = document.createElement('div');
+            titleDiv.style.fontWeight = '600';
+            titleDiv.style.fontSize = '14px';
+            titleDiv.style.color = 'var(--yumia-primary)';
+            titleDiv.textContent = titleText;
+
+            card.appendChild(badge);
+            card.appendChild(titleDiv);
+
+            card.addEventListener('click', () => {
+              goToSlide(idx);
+              toggleOverview(false);
+            });
+            overviewGrid.appendChild(card);
           });
         }
-      }
 
-      function openSpeakerWindow() {
-        const url = new URL(window.location.href);
-        url.searchParams.set('speaker', 'true');
-        window.open(url.toString(), 'yumia_speaker_' + Date.now(), 'width=1180,height=760,menubar=no,toolbar=no');
-      }
+        function toggleOverview(force) {
+          if (!overviewModal) return;
+          const isOpen = force !== undefined ? force : !overviewModal.classList.contains('open');
+          if (isOpen) {
+            buildOverviewGrid();
+            overviewModal.classList.add('open');
+          } else {
+            overviewModal.classList.remove('open');
+          }
+        }
 
-      function initSpeakerLayout() {
-        document.body.innerHTML = `
+        function goToSlide(newIdx, broadcast = true) {
+          if (newIdx < 0 || newIdx >= slides.length) return;
+          slides[currentIdx]?.classList.remove('active');
+          currentIdx = newIdx;
+          slides[currentIdx]?.classList.add('active');
+
+          if (indicator) {
+            indicator.textContent = currentIdx + 1 + ' / ' + slides.length;
+          }
+
+          const currentSlide = slides[currentIdx];
+          const notes = currentSlide ? currentSlide.getAttribute('data-notes') : '';
+          const notesContent = document.getElementById('notes-drawer-content');
+          if (notesContent) {
+            notesContent.innerHTML = notes ? notes : '<em>No speaker notes for this slide.</em>';
+          }
+
+          window.location.hash = '#' + (currentIdx + 1);
+
+          if (broadcast && syncChannel) {
+            syncChannel.postMessage({ index: currentIdx });
+          }
+
+          setTimeout(() => {
+            if (window.renderMermaidInSlide && slides[currentIdx]) {
+              window.renderMermaidInSlide(slides[currentIdx]);
+            }
+            if (slides[currentIdx]) {
+              renderMathInSlide(slides[currentIdx]);
+            }
+          }, 50);
+        }
+
+        function renderMathInSlide(slideEl) {
+          if (!slideEl) return;
+          if (window.renderMathInElement) {
+            try {
+              window.renderMathInElement(slideEl, {
+                delimiters: [{ left: '$$', right: '$$', display: true }],
+                throwOnError: false,
+              });
+            } catch (e) {
+              console.warn('KaTeX auto-render notice:', e);
+            }
+          }
+          if (window.katex) {
+            slideEl
+              .querySelectorAll('.yumia-math-equation:not([data-katex="true"])')
+              .forEach(function (el) {
+                try {
+                  const rawExpr =
+                    el.getAttribute('data-expr') ||
+                    el.textContent.replace(/^[$]{2}|[$]{2}$/g, '').trim();
+                  window.katex.render(rawExpr, el, { displayMode: true, throwOnError: false });
+                  el.setAttribute('data-katex', 'true');
+                } catch (err) {
+                  console.warn('KaTeX equation render notice:', err);
+                }
+              });
+          }
+        }
+
+        function openSpeakerWindow() {
+          const url = new URL(window.location.href);
+          url.searchParams.set('speaker', 'true');
+          window.open(
+            url.toString(),
+            'yumia_speaker_' + Date.now(),
+            'width=1180,height=760,menubar=no,toolbar=no'
+          );
+        }
+
+        function initSpeakerLayout() {
+          document.body.innerHTML = `
           <div class="speaker-layout">
             <div class="speaker-topbar">
               <div style="font-weight:700; color:var(--yumia-primary); display:flex; align-items:center; gap:8px;">
@@ -1910,237 +2796,283 @@ yumia deploy --provider gh-pages</code></pre>
           </div>
         `;
 
-        // Live Clock
-        setInterval(() => {
-          const now = new Date();
-          const clockEl = document.getElementById('speaker-clock');
-          if (clockEl) clockEl.textContent = now.toLocaleTimeString();
-        }, 1000);
+          // Live Clock
+          setInterval(() => {
+            const now = new Date();
+            const clockEl = document.getElementById('speaker-clock');
+            if (clockEl) clockEl.textContent = now.toLocaleTimeString();
+          }, 1000);
 
-        // Elapsed Timer
-        let elapsedSeconds = 0;
-        let timerRunning = true;
-        let timerInterval = setInterval(() => {
-          if (!timerRunning) return;
-          elapsedSeconds++;
-          const mins = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
-          const secs = String(elapsedSeconds % 60).padStart(2, '0');
-          const timerEl = document.getElementById('speaker-timer');
-          if (timerEl) timerEl.textContent = `${mins}:${secs}`;
-        }, 1000);
+          // Elapsed Timer
+          let elapsedSeconds = 0;
+          let timerRunning = true;
+          let timerInterval = setInterval(() => {
+            if (!timerRunning) return;
+            elapsedSeconds++;
+            const mins = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+            const secs = String(elapsedSeconds % 60).padStart(2, '0');
+            const timerEl = document.getElementById('speaker-timer');
+            if (timerEl) timerEl.textContent = `${mins}:${secs}`;
+          }, 1000);
 
-        document.getElementById('btn-timer-toggle')?.addEventListener('click', (e) => {
-          timerRunning = !timerRunning;
-          e.target.textContent = timerRunning ? 'Pause' : 'Start';
-        });
+          document.getElementById('btn-timer-toggle')?.addEventListener('click', (e) => {
+            timerRunning = !timerRunning;
+            e.target.textContent = timerRunning ? 'Pause' : 'Start';
+          });
 
-        document.getElementById('btn-timer-reset')?.addEventListener('click', () => {
-          elapsedSeconds = 0;
-          const timerEl = document.getElementById('speaker-timer');
-          if (timerEl) timerEl.textContent = '00:00';
-        });
+          document.getElementById('btn-timer-reset')?.addEventListener('click', () => {
+            elapsedSeconds = 0;
+            const timerEl = document.getElementById('speaker-timer');
+            if (timerEl) timerEl.textContent = '00:00';
+          });
 
-        function updateSpeakerView(idx) {
-          currentIdx = idx;
-          const numEl = document.getElementById('speaker-slide-num');
-          if (numEl) numEl.textContent = (currentIdx + 1) + ' / ' + slides.length;
+          function updateSpeakerView(idx) {
+            currentIdx = idx;
+            const numEl = document.getElementById('speaker-slide-num');
+            if (numEl) numEl.textContent = currentIdx + 1 + ' / ' + slides.length;
 
-          // Render current slide
-          const curBox = document.getElementById('speaker-current-box');
-          if (curBox && slides[currentIdx]) {
-            curBox.innerHTML = slides[currentIdx].outerHTML;
-            curBox.firstElementChild?.classList.add('active');
-          }
-
-          // Render next slide
-          const nextBox = document.getElementById('speaker-next-box');
-          if (nextBox) {
-            if (slides[currentIdx + 1]) {
-              nextBox.innerHTML = slides[currentIdx + 1].outerHTML;
-              nextBox.firstElementChild?.classList.add('active');
-            } else {
-              nextBox.innerHTML = '<div style="color:var(--yumia-muted); font-size:14px;">End of presentation</div>';
+            // Render current slide
+            const curBox = document.getElementById('speaker-current-box');
+            if (curBox && slides[currentIdx]) {
+              curBox.innerHTML = slides[currentIdx].outerHTML;
+              curBox.firstElementChild?.classList.add('active');
             }
+
+            // Render next slide
+            const nextBox = document.getElementById('speaker-next-box');
+            if (nextBox) {
+              if (slides[currentIdx + 1]) {
+                nextBox.innerHTML = slides[currentIdx + 1].outerHTML;
+                nextBox.firstElementChild?.classList.add('active');
+              } else {
+                nextBox.innerHTML =
+                  '<div style="color:var(--yumia-muted); font-size:14px;">End of presentation</div>';
+              }
+            }
+
+            // Render notes
+            const notesBox = document.getElementById('speaker-notes-content');
+            if (notesBox && slides[currentIdx]) {
+              const rawNotes = slides[currentIdx].getAttribute('data-notes');
+              notesBox.innerHTML = rawNotes
+                ? rawNotes
+                : '<em style="color:var(--yumia-muted);">No notes provided for this slide.</em>';
+            }
+
+            setTimeout(() => {
+              if (window.renderMermaidInSlide) {
+                if (curBox) window.renderMermaidInSlide(curBox);
+                if (nextBox) window.renderMermaidInSlide(nextBox);
+              }
+            }, 50);
           }
 
-          // Render notes
-          const notesBox = document.getElementById('speaker-notes-content');
-          if (notesBox && slides[currentIdx]) {
-            const rawNotes = slides[currentIdx].getAttribute('data-notes');
-            notesBox.innerHTML = rawNotes ? rawNotes : '<em style="color:var(--yumia-muted);">No notes provided for this slide.</em>';
+          window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+              e.preventDefault();
+              if (currentIdx < slides.length - 1) {
+                goToSlide(currentIdx + 1);
+                updateSpeakerView(currentIdx);
+              }
+            } else if (e.key === 'ArrowLeft' || e.key === 'Backspace' || e.key === 'PageUp') {
+              e.preventDefault();
+              if (currentIdx > 0) {
+                goToSlide(currentIdx - 1);
+                updateSpeakerView(currentIdx);
+              }
+            }
+          });
+
+          if (syncChannel) {
+            syncChannel.onmessage = (e) => {
+              if (e.data && typeof e.data.index === 'number') {
+                updateSpeakerView(e.data.index);
+              }
+            };
           }
 
+          const initialHash = parseInt(window.location.hash.replace('#', ''), 10) - 1;
+          updateSpeakerView(isNaN(initialHash) ? 0 : initialHash);
+        }
+
+        function init() {
+          if (isSpeakerMode) {
+            initSpeakerLayout();
+            return;
+          }
+
+          const hash = window.location.hash.replace('#', '');
+          const initialIdx = parseInt(hash, 10) - 1;
+          goToSlide(isNaN(initialIdx) ? 0 : initialIdx, false);
           setTimeout(() => {
-            if (window.renderMermaidInSlide) {
-              if (curBox) window.renderMermaidInSlide(curBox);
-              if (nextBox) window.renderMermaidInSlide(nextBox);
-            }
-          }, 50);
+            slides.forEach(renderMathInSlide);
+          }, 100);
         }
 
-        window.addEventListener('keydown', (e) => {
-          if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
-            e.preventDefault();
-            if (currentIdx < slides.length - 1) {
-              goToSlide(currentIdx + 1);
-              updateSpeakerView(currentIdx);
-            }
-          } else if (e.key === 'ArrowLeft' || e.key === 'Backspace' || e.key === 'PageUp') {
-            e.preventDefault();
-            if (currentIdx > 0) {
-              goToSlide(currentIdx - 1);
-              updateSpeakerView(currentIdx);
-            }
-          }
+        window.addEventListener('load', () => {
+          slides.forEach(renderMathInSlide);
         });
 
-        if (syncChannel) {
-          syncChannel.onmessage = (e) => {
-            if (e.data && typeof e.data.index === 'number') {
-              updateSpeakerView(e.data.index);
+        window.deckController = {
+          init: init,
+          next: function () {
+            goToSlide(currentIdx + 1);
+          },
+          prev: function () {
+            goToSlide(currentIdx - 1);
+          },
+          toggleNotes: function () {
+            notesDrawer?.classList.toggle('open');
+          },
+          toggleOverview: function () {
+            toggleOverview();
+          },
+          toggleInspect: function () {
+            const isActive = document.body.classList.toggle('yumia-inspect-active');
+            const popup = document.getElementById('inspector-popup');
+            if (!isActive && popup) {
+              popup.classList.remove('open');
+              document
+                .querySelectorAll('.yumia-inspect-highlight')
+                .forEach((el) => el.classList.remove('yumia-inspect-highlight'));
             }
-          };
-        }
+          },
+          openSpeaker: openSpeakerWindow,
+          print: function () {
+            window.print();
+          },
+          toggleFs: function () {
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+              document.exitFullscreen().catch(() => {});
+            }
+          },
+        };
 
-        const initialHash = parseInt(window.location.hash.replace('#', ''), 10) - 1;
-        updateSpeakerView(isNaN(initialHash) ? 0 : initialHash);
-      }
+        document.getElementById('btn-next')?.addEventListener('click', window.deckController.next);
+        document.getElementById('btn-prev')?.addEventListener('click', window.deckController.prev);
+        document
+          .getElementById('btn-notes')
+          ?.addEventListener('click', window.deckController.toggleNotes);
+        document
+          .getElementById('btn-inspect')
+          ?.addEventListener('click', window.deckController.toggleInspect);
+        document.getElementById('btn-close-notes')?.addEventListener('click', () => {
+          notesDrawer?.classList.remove('open');
+        });
+        document
+          .getElementById('btn-overview')
+          ?.addEventListener('click', window.deckController.toggleOverview);
+        document
+          .getElementById('btn-close-overview')
+          ?.addEventListener('click', () => toggleOverview(false));
+        document
+          .getElementById('btn-speaker')
+          ?.addEventListener('click', window.deckController.openSpeaker);
+        document
+          .getElementById('btn-print')
+          ?.addEventListener('click', window.deckController.print);
+        document
+          .getElementById('btn-fs')
+          ?.addEventListener('click', window.deckController.toggleFs);
 
-      function init() {
-        if (isSpeakerMode) {
-          initSpeakerLayout();
-          return;
-        }
+        // Interactive Element Inspector Hover & Click
+        document.addEventListener('mouseover', function (e) {
+          if (!document.body.classList.contains('yumia-inspect-active')) return;
+          const target = e.target.closest(
+            '[data-yumia-role], .yumia-card, .yumia-metric, .yumia-hero, .yumia-callout, .yumia-grid, .yumia-stack, h1, h2, h3, p, img, pre'
+          );
+          if (!target || target.closest('#deck-controls') || target.closest('#inspector-popup'))
+            return;
 
-        const hash = window.location.hash.replace('#', '');
-        const initialIdx = parseInt(hash, 10) - 1;
-        goToSlide(isNaN(initialIdx) ? 0 : initialIdx, false);
-        setTimeout(() => {
-          slides.forEach(renderMathInSlide);
-        }, 100);
-      }
+          document
+            .querySelectorAll('.yumia-inspect-highlight')
+            .forEach((el) => el.classList.remove('yumia-inspect-highlight'));
+          target.classList.add('yumia-inspect-highlight');
 
-      window.addEventListener('load', () => {
-        slides.forEach(renderMathInSlide);
-      });
-
-      window.deckController = {
-        init: init,
-        next: function() { goToSlide(currentIdx + 1); },
-        prev: function() { goToSlide(currentIdx - 1); },
-        toggleNotes: function() { notesDrawer?.classList.toggle('open'); },
-        toggleOverview: function() { toggleOverview(); },
-        toggleInspect: function() {
-          const isActive = document.body.classList.toggle('yumia-inspect-active');
           const popup = document.getElementById('inspector-popup');
-          if (!isActive && popup) {
-            popup.classList.remove('open');
-            document.querySelectorAll('.yumia-inspect-highlight').forEach((el) => el.classList.remove('yumia-inspect-highlight'));
-          }
-        },
-        openSpeaker: openSpeakerWindow,
-        print: function() { window.print(); },
-        toggleFs: function() {
-          if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(() => {});
-          } else {
-            document.exitFullscreen().catch(() => {});
-          }
-        }
-      };
-
-      document.getElementById('btn-next')?.addEventListener('click', window.deckController.next);
-      document.getElementById('btn-prev')?.addEventListener('click', window.deckController.prev);
-      document.getElementById('btn-notes')?.addEventListener('click', window.deckController.toggleNotes);
-      document.getElementById('btn-inspect')?.addEventListener('click', window.deckController.toggleInspect);
-      document.getElementById('btn-close-notes')?.addEventListener('click', () => {
-        notesDrawer?.classList.remove('open');
-      });
-      document.getElementById('btn-overview')?.addEventListener('click', window.deckController.toggleOverview);
-      document.getElementById('btn-close-overview')?.addEventListener('click', () => toggleOverview(false));
-      document.getElementById('btn-speaker')?.addEventListener('click', window.deckController.openSpeaker);
-      document.getElementById('btn-print')?.addEventListener('click', window.deckController.print);
-      document.getElementById('btn-fs')?.addEventListener('click', window.deckController.toggleFs);
-
-      // Interactive Element Inspector Hover & Click
-      document.addEventListener('mouseover', function(e) {
-        if (!document.body.classList.contains('yumia-inspect-active')) return;
-        const target = e.target.closest('[data-yumia-role], .yumia-card, .yumia-metric, .yumia-hero, .yumia-callout, .yumia-grid, .yumia-stack, h1, h2, h3, p, img, pre');
-        if (!target || target.closest('#deck-controls') || target.closest('#inspector-popup')) return;
-
-        document.querySelectorAll('.yumia-inspect-highlight').forEach((el) => el.classList.remove('yumia-inspect-highlight'));
-        target.classList.add('yumia-inspect-highlight');
-
-        const popup = document.getElementById('inspector-popup');
-        if (popup) {
-          const role = target.getAttribute('data-yumia-role') || target.tagName.toLowerCase();
-          const variant = target.getAttribute('data-variant') || target.getAttribute('data-severity') || 'default';
-          const loc = target.getAttribute('data-yumia-loc') || 'slide ' + (currentIdx + 1);
-          popup.innerHTML = `
+          if (popup) {
+            const role = target.getAttribute('data-yumia-role') || target.tagName.toLowerCase();
+            const variant =
+              target.getAttribute('data-variant') ||
+              target.getAttribute('data-severity') ||
+              'default';
+            const loc = target.getAttribute('data-yumia-loc') || 'slide ' + (currentIdx + 1);
+            popup.innerHTML = `
             <div style="color:var(--yumia-primary); font-weight:800; font-size:14px; margin-bottom:4px;">🔍 ${role.toUpperCase()}</div>
             <div><strong>Variant:</strong> <span style="color:var(--yumia-accent);">${variant}</span></div>
             <div><strong>Location:</strong> ${loc}</div>
             <div style="margin-top:6px; font-size:11px; color:var(--yumia-muted);">Press 'I' to exit inspector</div>
           `;
-          popup.classList.add('open');
-        }
-      });
-
-      window.addEventListener('keydown', function(e) {
-        if (overviewModal && overviewModal.classList.contains('open')) {
-          if (e.key === 'Escape' || e.key.toLowerCase() === 'o') {
-            toggleOverview(false);
+            popup.classList.add('open');
           }
-          return;
-        }
+        });
 
-        if (e.key === 'Escape') {
-          if (notesDrawer && notesDrawer.classList.contains('open')) {
-            notesDrawer.classList.remove('open');
+        window.addEventListener('keydown', function (e) {
+          if (overviewModal && overviewModal.classList.contains('open')) {
+            if (e.key === 'Escape' || e.key.toLowerCase() === 'o') {
+              toggleOverview(false);
+            }
             return;
           }
-        }
 
-        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
-          // let default browser print work or call print explicitly
-          return;
-        }
+          if (e.key === 'Escape') {
+            if (notesDrawer && notesDrawer.classList.contains('open')) {
+              notesDrawer.classList.remove('open');
+              return;
+            }
+          }
 
-        if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown' || e.key.toLowerCase() === 'l') {
-          e.preventDefault();
-          window.deckController.next();
-        } else if (e.key === 'ArrowLeft' || e.key === 'Backspace' || e.key === 'PageUp' || e.key.toLowerCase() === 'h') {
-          e.preventDefault();
-          window.deckController.prev();
-        } else if (e.key.toLowerCase() === 'f') {
-          window.deckController.toggleFs();
-        } else if (e.key.toLowerCase() === 's') {
-          window.deckController.openSpeaker();
-        } else if (e.key.toLowerCase() === 'p') {
-          window.deckController.print();
-        } else if (e.key.toLowerCase() === 'n') {
-          window.deckController.toggleNotes();
-        } else if (e.key.toLowerCase() === 'i') {
-          window.deckController.toggleInspect();
-        } else if (e.key === 'Escape' || e.key.toLowerCase() === 'o') {
-          window.deckController.toggleOverview();
-        }
-      });
+          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+            // let default browser print work or call print explicitly
+            return;
+          }
 
-      // Touch swipe support
-      let touchStartX = 0;
-      window.addEventListener('touchstart', function(e) {
-        touchStartX = e.changedTouches[0]?.screenX || 0;
-      });
-      window.addEventListener('touchend', function(e) {
-        const touchEndX = e.changedTouches[0]?.screenX || 0;
-        if (touchStartX - touchEndX > 50) window.deckController.next();
-        if (touchEndX - touchStartX > 50) window.deckController.prev();
-      });
+          if (
+            e.key === 'ArrowRight' ||
+            e.key === ' ' ||
+            e.key === 'PageDown' ||
+            e.key.toLowerCase() === 'l'
+          ) {
+            e.preventDefault();
+            window.deckController.next();
+          } else if (
+            e.key === 'ArrowLeft' ||
+            e.key === 'Backspace' ||
+            e.key === 'PageUp' ||
+            e.key.toLowerCase() === 'h'
+          ) {
+            e.preventDefault();
+            window.deckController.prev();
+          } else if (e.key.toLowerCase() === 'f') {
+            window.deckController.toggleFs();
+          } else if (e.key.toLowerCase() === 's') {
+            window.deckController.openSpeaker();
+          } else if (e.key.toLowerCase() === 'p') {
+            window.deckController.print();
+          } else if (e.key.toLowerCase() === 'n') {
+            window.deckController.toggleNotes();
+          } else if (e.key.toLowerCase() === 'i') {
+            window.deckController.toggleInspect();
+          } else if (e.key === 'Escape' || e.key.toLowerCase() === 'o') {
+            window.deckController.toggleOverview();
+          }
+        });
 
-      init();
-    })();
-  </script>
-  
-</body>
+        // Touch swipe support
+        let touchStartX = 0;
+        window.addEventListener('touchstart', function (e) {
+          touchStartX = e.changedTouches[0]?.screenX || 0;
+        });
+        window.addEventListener('touchend', function (e) {
+          const touchEndX = e.changedTouches[0]?.screenX || 0;
+          if (touchStartX - touchEndX > 50) window.deckController.next();
+          if (touchEndX - touchStartX > 50) window.deckController.prev();
+        });
+
+        init();
+      })();
+    </script>
+  </body>
 </html>
