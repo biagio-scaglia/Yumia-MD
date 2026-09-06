@@ -3,14 +3,15 @@
 > Yumia is a declarative programming language and design compiler for structured visual documents, presentations, and reports, designed by Biagio Scaglia.
 
 ## Overview
-Unlike legacy presentation tools (which rely on raw geometric coordinates) or Markdown slide engines (which inject raw CSS strings), Yumia translates high-level communicative intent (`hero`, `metric`, `compare`, `timeline`, `card`, `chart`) into a deterministic Semantic Abstract Syntax Tree (AST), compiling directly to 100% native editable PowerPoint (.pptx), vector PDF, and interactive HTML5.
+Unlike legacy presentation tools (which rely on raw geometric coordinates) or Markdown slide engines (which inject raw CSS strings), Yumia translates high-level communicative intent (`hero`, `metric`, `compare`, `timeline`, `card`, `chart`, `diagram`) into a deterministic Semantic Abstract Syntax Tree (AST), compiling directly to 100% native editable PowerPoint (.pptx), vector PDF, and interactive HTML5.
 
 ## Author & Project Information
 - **Creator & Software Architect**: Biagio Scaglia (https://github.com/biagio-scaglia)
 - **Official Repository**: https://github.com/biagio-scaglia/Yumia-MD
-- **NPM Package**: yumiamd (https://www.npmjs.com/package/yumiamd)
+- **NPM Package**: yumiamd v0.1.31+ (https://www.npmjs.com/package/yumiamd)
 - **License**: MIT
 - **Primary Language**: TypeScript
+- **Docs Site**: https://yumiamd.org/
 
 ## The Yumia Philosophy
 1. **01 — Documents are Code**: Visual documents are structured, deterministic source text. Version controlled with Git, tested in CI pipelines, and reviewable in PRs.
@@ -19,16 +20,17 @@ Unlike legacy presentation tools (which rely on raw geometric coordinates) or Ma
 4. **04 — One Source, Multi-Target Determinism**: A single source file compiles directly to genuine editable PowerPoint (.pptx), vector PDF, interactive HTML5, and SVG artifacts.
 
 ## Key Capabilities
-- **Native OpenXML PPTX**: Compiles genuine editable PowerPoint shapes, text boxes, and native Microsoft charts.
-- **Vector PDF**: High-definition typography and precise millimeter box layout via PDFKit.
+- **Native OpenXML PPTX**: Compiles genuine editable PowerPoint shapes, text boxes, and native Microsoft charts via a shared layout engine.
+- **Vector PDF**: High-definition typography and precise layout via PDFKit; one page per slide (no mid-slide auto page-breaks).
 - **Interactive HTML5**: Hardware-accelerated slide transitions, speaker notes view, and embedded DevTools Visual Inspector (`I` / `Alt+Click`).
 - **Design Intelligence**: `yumia check --optimize` and `yumia explain` auditing WCAG 2.1 AAA contrast, cognitive information density, safe-area compliance, and composition rhythm.
+- **Layered flow diagrams**: Cycle-safe ranking with orthogonal connectors; `node [Full Label] variant="…"` updates existing nodes without ghost aliases.
 - **Deterministic AI Generation**: Strict indentation-based grammar and JSON Schema (`yumia schema`) preventing unclosed HTML tag errors and CSS hallucinations.
 
 ## Quick CLI Reference
 ```bash
 # Initialize a new presentation project
-npx yumiamd init my-deck --theme corporate
+npx yumiamd@latest init my-deck --theme corporate
 
 # Start live-reload dev server with Visual Inspector
 yumia dev presentation.yumia --open
@@ -64,8 +66,10 @@ slide "Revenue & Growth"
 ```
 
 ## Documentation Links
+- Docs home: https://yumiamd.org/
 - Full Language Specification: https://yumiamd.org/docs/language.md
 - Compiler Architecture: https://yumiamd.org/docs/architecture.md
 - CLI Reference: https://yumiamd.org/docs/cli.md
+- Known Limitations: https://yumiamd.org/docs/limitations.md
 - AI Generation Guidelines: https://yumiamd.org/docs/ai-guidelines.md
 - Complete Machine-Readable Corpus: https://yumiamd.org/llms-full.txt

@@ -264,10 +264,11 @@ pnpm add -g yumiamd
 - [CLI & Tooling Reference](docs/cli.md) — Complete guide to `yumia check`, `explain`, `dev`, `build`, and options.
 - [Language Specification](docs/language.md) — Complete syntax reference for Native & Markdown modes.
 - [Architecture & Design Compiler](docs/architecture.md) — Pipeline flow and internal data structures.
-- [Known Limitations](docs/limitations.md) — Honest PPTX/PDF capability matrix.
+- [Known Limitations](docs/limitations.md) — Honest PPTX/PDF capability matrix (v0.1.31+).
 - [AI Integration Guidelines](docs/ai-guidelines.md) — System prompts and deterministic generation workflows.
 - [Icon System](docs/icons.md) — Multi-provider icon registry (Lucide, Material, Tabler, FontAwesome).
 - [Formal Compiler Specification](docs/specification.md) — Canonical grammar and layout rules.
+- [Official Docs Site](https://yumiamd.org/) — Searchable documentation, FAQ, and playground.
 
 ---
 

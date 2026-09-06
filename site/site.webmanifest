@@ -1,11 +1,13 @@
 {
-  "name": "Yumia Documentation",
+  "name": "Yumia — Design Compiler Docs",
   "short_name": "Yumia",
-  "description": "A Programming Language and Design Compiler for Visual Documents by Biagio Scaglia",
+  "description": "Declarative design compiler for native PPTX, vector PDF, and HTML5 presentations by Biagio Scaglia",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0B0B12",
   "theme_color": "#FF2E88",
+  "lang": "en",
+  "categories": ["developer", "productivity", "utilities"],
   "icons": [
     {
       "src": "favicon.svg",

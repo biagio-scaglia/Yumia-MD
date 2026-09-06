@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="Yumia  A Programming Language for Visual Documents">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0B0B12"/>
+      <stop offset="55%" stop-color="#151522"/>
+      <stop offset="100%" stop-color="#1D1020"/>
+    </linearGradient>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFF4D0"/>
+      <stop offset="45%" stop-color="#FF2E88"/>
+      <stop offset="100%" stop-color="#00F0FF"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="70%" cy="30%" r="50%">
+      <stop offset="0%" stop-color="#FF2E88" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#FF2E88" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <circle cx="980" cy="120" r="180" fill="#00F0FF" opacity="0.08"/>
+  <circle cx="160" cy="520" r="140" fill="#7B61FF" opacity="0.12"/>
+  <text x="80" y="160" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="42" font-weight="800" fill="url(#brand)">Yumia</text>
+  <text x="80" y="250" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="54" font-weight="800" fill="#FFFFFF">A Programming Language</text>
+  <text x="80" y="320" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="54" font-weight="800" fill="#FFFFFF">for Visual Documents</text>
+  <text x="80" y="400" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="26" font-weight="500" fill="#A7A7B5">Compile intent ’ native PPTX · vector PDF · interactive HTML5</text>
+  <text x="80" y="540" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22" font-weight="600" fill="#FF2E88">yumiamd.org</text>
+  <text x="80" y="580" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="18" font-weight="500" fill="#64748b">Created by Biagio Scaglia · MIT · v0.1.31</text>
+</svg>

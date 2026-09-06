@@ -1,16 +1,17 @@
 # Yumia — Complete Technical Specification & Language Reference (llms-full.txt)
 
 Author: Biagio Scaglia (https://github.com/biagio-scaglia)
-Package: yumiamd (v0.1.24)
+Package: yumiamd (v0.1.31)
 Website: https://yumiamd.org
 Repository: https://github.com/biagio-scaglia/Yumia-MD
+Last-Updated: 2026-09-07
 
 ---
 
 ## 1. Abstract & Philosophy
 Yumia is a declarative visual language and design compiler that transforms human or machine-authored documents into professional visual artifacts across PowerPoint (.pptx), PDF (.pdf), and HTML5 (.html).
 
-The core thesis of Yumia is that visual documents should not be authored as raw coordinate shapes (PowerPoint) or unmaintainable CSS strings (Markdown + HTML). Instead, content is expressed as high-level communicative intent (`hero`, `metric`, `compare`, `timeline`, `card`, `chart`), parsed into a pure semantic Abstract Syntax Tree (AST), resolved against design tokens, laid out via a deterministic 2D box engine, and compiled to genuine target native objects.
+The core thesis of Yumia is that visual documents should not be authored as raw coordinate shapes (PowerPoint) or unmaintainable CSS strings (Markdown + HTML). Instead, content is expressed as high-level communicative intent (`hero`, `metric`, `compare`, `timeline`, `card`, `chart`, `diagram`), parsed into a pure semantic Abstract Syntax Tree (AST), resolved against design tokens, laid out via a deterministic 2D box engine, and compiled to genuine target native objects.
 
 ---
 
@@ -26,11 +27,12 @@ The core thesis of Yumia is that visual documents should not be authored as raw 
   - `metric "<Value>" label="<Label>" diff="<Change>" variant="<Variant>" trend="<up|down>"`
   - `compare left="<LeftTitle>" right="<RightTitle>"`
   - `timeline layout="<horizontal|vertical>"`
-  - `chart type="<bar|line|pie|doughnut>" title="<Title>" labels="<L1,L2>" data="<D1,D2>"`
+  - `chart type="<bar|line|pie|doughnut|radar|area|gauge>" title="<Title>" labels="<L1,L2>" data="<D1,D2>"`
   - `card title="<Title>" variant="<Variant>"`
   - `image src="<Path>" fit="<cover|contain>" radius="<md|lg|full>" shadow="<md|glow>"`
   - `grid columns=<1..6> gap=<number>`
   - `stack direction="<horizontal|vertical>" gap=<number>`
+  - `diagram type="flow" direction="<LR|TB>" title="<Title>"` with `[A] -> [B]`, optional `node [Full Label] variant="…"`, and shapes `[(db)]`, `((circle))`, `{diamond}`
 
 ### 2.2 Markdown Directives (.yumia.md)
 Extended CommonMark with triple-colon semantic block containers:
@@ -79,6 +81,7 @@ aspectRatio: "16:9"
 
 4. `yumia build <file> [--format pptx|pdf|html] [--out <path>]`:
    - Compiles AST to 100% native editable PowerPoint (OpenXML), vector PDF, or standalone HTML5.
+   - Prefer `npx yumiamd@latest` or a current install; stale global CLIs can emit outdated binaries.
 
 5. `yumia schema`:
    - Exports the machine-readable JSON Schema for LLM system prompt integration.
@@ -90,6 +93,27 @@ aspectRatio: "16:9"
 
 ## 4. Multi-Target Rendering Principles
 
-- **PowerPoint (`PptxRenderer`)**: Uses PptxGenJS to produce real OpenXML vector shapes, editable font-matched text boxes, and genuine Microsoft charts.
-- **PDF (`PdfRenderer`)**: Uses PDFKit to draw vector paths, embed icons, and maintain millimeter typographic precision.
-- **HTML5 (`HtmlRenderer`)**: Emits accessible single-page application with CSS custom property design tokens and hardware-accelerated CSS3 animations.
+- **PowerPoint (`PptxRenderer`)**: Shared `@yumiamd/layout` for roots and nested containers; OpenXML shapes/charts; icons via `@resvg/resvg-js`; orthogonal diagram connectors.
+- **PDF (`PdfRenderer`)**: PDFKit vector drawing; one page per slide (auto mid-slide breaks blocked); nested layout paint; local image embed; icon rasterization.
+- **HTML5 (`HtmlRenderer`)**: Accessible SPA with CSS design tokens and hardware-accelerated transitions.
+
+---
+
+## 5. Known Limitations (honest)
+- Remote `http(s)` images are not fetched into PPTX/PDF (placeholders).
+- Mermaid remains a source box in PPTX/PDF (client-rendered in HTML only).
+- `embedFonts` and POTX `--template` are not implemented yet.
+- Dense slides may clip; renderers do not auto-split overflowing content.
+- Full matrix: https://yumiamd.org/docs/limitations.md
+
+---
+
+## 6. Primary Links
+- Docs: https://yumiamd.org/
+- Language: https://yumiamd.org/docs/language.md
+- Architecture: https://yumiamd.org/docs/architecture.md
+- CLI: https://yumiamd.org/docs/cli.md
+- Limitations: https://yumiamd.org/docs/limitations.md
+- Short LLM feed: https://yumiamd.org/llms.txt
+- npm: https://www.npmjs.com/package/yumiamd
+- GitHub: https://github.com/biagio-scaglia/Yumia-MD
