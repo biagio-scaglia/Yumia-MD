@@ -40,7 +40,7 @@ import {
   resolveSlideGeometry,
   themeSizeToPdfPoints,
 } from '@yumiamd/renderer';
-import { DefaultLayoutEngine, computeDiagramLayout, fitDiagramLabel } from '@yumiamd/layout';
+import { DefaultLayoutEngine, LayoutNode, computeDiagramLayout, fitDiagramLabel, orthogonalEdgePoints } from '@yumiamd/layout';
 import { defaultTheme, resolveTheme, ThemeOverrides, YumiaTheme } from '@yumiamd/theme';
 
 export interface PdfOutput {
@@ -235,13 +235,9 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       gap: 24,
     });
 
-    // 3. Paint each root layout node at absolute coordinates
+    // 3. Paint layout tree (roots + nested children for parity with PPTX)
     for (const node of slideLayout.nodes) {
-      const x = node.bounds.x * scaleX;
-      const y = node.bounds.y * scaleY;
-      const w = node.bounds.width * scaleX;
-      if (y >= contentBottom - 8) continue;
-      this.renderElement(doc, node.element, x, y, w, theme, presentation);
+      this.paintLayoutNode(doc, node, scaleX, scaleY, theme, presentation, contentBottom);
     }
 
     // 4. Slide Footer, Watermark & Progress bar
@@ -271,6 +267,229 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         width: 60,
         align: 'right',
       });
+  }
+
+  private paintLayoutNode(
+    doc: PDFKit.PDFDocument,
+    node: LayoutNode,
+    scaleX: number,
+    scaleY: number,
+    theme: YumiaTheme,
+    presentation: Presentation | undefined,
+    contentBottom: number
+  ): void {
+    const el = node.element;
+    const x = node.bounds.x * scaleX;
+    const y = node.bounds.y * scaleY;
+    const w = node.bounds.width * scaleX;
+    const h = node.bounds.height * scaleY;
+    if (y >= contentBottom - 8) return;
+
+    const hasChildren = !!(node.children && node.children.length > 0);
+    if (
+      hasChildren &&
+      (el.type === 'grid' ||
+        el.type === 'stack' ||
+        el.type === 'columns' ||
+        el.type === 'column')
+    ) {
+      for (const child of node.children!) {
+        this.paintLayoutNode(doc, child, scaleX, scaleY, theme, presentation, contentBottom);
+      }
+      return;
+    }
+
+    if (hasChildren && el.type === 'card') {
+      this.paintCardFrame(doc, el as CardElement, x, y, w, h, theme);
+      for (const child of node.children!) {
+        this.paintLayoutNode(doc, child, scaleX, scaleY, theme, presentation, contentBottom);
+      }
+      return;
+    }
+
+    if (hasChildren && el.type === 'compare') {
+      this.paintCompareFrame(doc, el as CompareElement, x, y, w, h, theme);
+      for (const child of node.children!) {
+        this.paintLayoutNode(doc, child, scaleX, scaleY, theme, presentation, contentBottom);
+      }
+      return;
+    }
+
+    if (el.type === 'hero') {
+      this.paintHeroInBounds(doc, el as HeroElement, x, y, w, h, theme);
+      if (hasChildren) {
+        for (const child of node.children!) {
+          this.paintLayoutNode(doc, child, scaleX, scaleY, theme, presentation, contentBottom);
+        }
+      }
+      return;
+    }
+
+    this.renderElement(doc, el, x, y, w, theme, presentation);
+  }
+
+  private paintCardFrame(
+    doc: PDFKit.PDFDocument,
+    card: CardElement,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    theme: YumiaTheme
+  ): void {
+    const variantColor = this.getVariantColor(card.variant, theme);
+    doc.save();
+    doc
+      .roundedRect(x, y, width, height, 8)
+      .fill(theme.colors.surface || 'rgba(255,255,255,0.06)');
+    doc.roundedRect(x, y, width, height, 8).lineWidth(1.5).strokeColor(variantColor).stroke();
+    doc.restore();
+    if (card.title) {
+      doc
+        .font(this.getPdfFont(theme, 'bold'))
+        .fontSize(13)
+        .fillColor(variantColor)
+        .text(this.stripFormatting(card.title), x + 12, y + 10, {
+          width: width - 24,
+          height: 22,
+          ellipsis: true,
+        });
+    }
+  }
+
+  private paintCompareFrame(
+    doc: PDFKit.PDFDocument,
+    compare: CompareElement,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    theme: YumiaTheme
+  ): void {
+    const gap = 16;
+    const colW = (width - gap) / 2;
+    const leftColor = theme.colors.primary;
+    const rightColor = theme.colors.accent || theme.colors.secondary || theme.colors.primary;
+    doc.save();
+    doc.roundedRect(x, y, colW, height, 8).fill(theme.colors.surface || '#151522');
+    doc
+      .roundedRect(x, y, colW, height, 8)
+      .lineWidth(1.4)
+      .strokeColor(theme.colors.border || 'rgba(255,255,255,0.15)')
+      .stroke();
+    doc
+      .roundedRect(x + colW + gap, y, colW, height, 8)
+      .fill(theme.colors.surface || '#151522');
+    doc
+      .roundedRect(x + colW + gap, y, colW, height, 8)
+      .lineWidth(1.4)
+      .strokeColor(theme.colors.border || 'rgba(255,255,255,0.15)')
+      .stroke();
+    doc.restore();
+
+    const midX = x + colW + gap / 2;
+    const midY = y + height / 2;
+    doc.circle(midX, midY, 14).fill(theme.colors.surface || '#151522');
+    doc.circle(midX, midY, 14).lineWidth(1.2).strokeColor(theme.colors.primary).stroke();
+    doc
+      .font(this.getPdfFont(theme, 'bold'))
+      .fontSize(9)
+      .fillColor(theme.colors.text)
+      .text('VS', midX - 12, midY - 4, { width: 24, align: 'center' });
+
+    if (compare.leftTitle) {
+      doc
+        .font(this.getPdfFont(theme, 'bold'))
+        .fontSize(11)
+        .fillColor(leftColor)
+        .text(this.stripFormatting(compare.leftTitle), x + 10, y + 10, {
+          width: colW - 20,
+          height: 28,
+          ellipsis: true,
+        });
+    }
+    if (compare.rightTitle) {
+      doc
+        .font(this.getPdfFont(theme, 'bold'))
+        .fontSize(11)
+        .fillColor(rightColor)
+        .text(this.stripFormatting(compare.rightTitle), x + colW + gap + 10, y + 10, {
+          width: colW - 20,
+          height: 28,
+          ellipsis: true,
+        });
+    }
+  }
+
+  private paintHeroInBounds(
+    doc: PDFKit.PDFDocument,
+    hero: HeroElement,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    theme: YumiaTheme
+  ): void {
+    const align = (hero.align as 'left' | 'center' | 'right') || 'center';
+    const compact = height < 140;
+    let curY = y;
+    const maxY = y + height - 4;
+
+    if (hero.badge && curY < maxY) {
+      const label = this.stripFormatting(hero.badge).toUpperCase();
+      doc.font(this.getPdfFont(theme, 'bold')).fontSize(compact ? 8 : 9);
+      const labelW = Math.min(width, Math.max(70, doc.widthOfString(label) + 24));
+      const badgeX =
+        align === 'left' ? x : align === 'right' ? x + width - labelW : x + (width - labelW) / 2;
+      doc
+        .roundedRect(badgeX, curY, labelW, compact ? 16 : 18, 9)
+        .lineWidth(1.2)
+        .strokeColor(theme.colors.primary)
+        .fillColor(theme.colors.surface || '#f8fafc')
+        .fillAndStroke();
+      doc
+        .font(this.getPdfFont(theme, 'bold'))
+        .fontSize(compact ? 8 : 9)
+        .fillColor(theme.colors.primary)
+        .text(label, badgeX, curY + 3, { width: labelW, align: 'center' });
+      curY += compact ? 22 : 28;
+    } else if (hero.tagline && curY < maxY) {
+      doc.font(this.getPdfFont(theme, 'bold')).fontSize(compact ? 10 : 11).fillColor(theme.colors.primary);
+      doc.text(this.stripFormatting(hero.tagline).toUpperCase(), x, curY, { width, align });
+      curY += 20;
+    }
+
+    if (curY < maxY) {
+      const titleSize = compact
+        ? themeSizeToPdfPoints(theme.typography.sizes?.h1, 44)
+        : themeSizeToPdfPoints(theme.typography.sizes?.display, 56);
+      doc.font(this.getPdfFont(theme, 'bold')).fontSize(titleSize).fillColor(theme.colors.text);
+      doc.text(this.stripFormatting(hero.title), x, curY, {
+        width,
+        height: Math.max(20, maxY - curY - (hero.subtitle ? 28 : 4)),
+        lineGap: 4,
+        align,
+        ellipsis: true,
+      });
+      curY += Math.min(
+        maxY - curY,
+        doc.heightOfString(this.stripFormatting(hero.title), { width }) + 8
+      );
+    }
+
+    if (hero.subtitle && curY < maxY) {
+      const subSize = themeSizeToPdfPoints(theme.typography.sizes?.body, 18);
+      doc
+        .font(this.getPdfFont(theme, 'regular'))
+        .fontSize(compact ? subSize - 1 : subSize + 1)
+        .fillColor(theme.colors.muted || '#888888');
+      doc.text(this.stripFormatting(hero.subtitle), x, curY, {
+        width,
+        height: Math.max(16, maxY - curY),
+        align,
+        ellipsis: true,
+      });
+    }
   }
 
   private renderElement(
@@ -1604,37 +1823,40 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       const p2 = positions[e.to];
       if (!p1 || !p2) return;
 
-      const x1 = isLR ? p1.x + nodeW : p1.x + nodeW / 2;
-      const y1 = isLR ? p1.y + nodeH / 2 : p1.y + nodeH;
-      const x2 = isLR ? p2.x : p2.x + nodeW / 2;
-      const y2 = isLR ? p2.y + nodeH / 2 : p2.y;
+      const pts = orthogonalEdgePoints(isLR, p1, p2, nodeW, nodeH);
+      if (pts.length < 2) return;
+      const last = pts[pts.length - 1]!;
+      const prev = pts[pts.length - 2]!;
 
       doc.save();
       doc.lineWidth(1.5).strokeColor(arrowColor);
       if (e.style === 'dashed') doc.dash(4, { space: 3 });
-      doc.moveTo(x1, y1).lineTo(x2, y2).stroke();
+      doc.moveTo(pts[0]!.x, pts[0]!.y);
+      for (let i = 1; i < pts.length; i++) doc.lineTo(pts[i]!.x, pts[i]!.y);
+      doc.stroke();
       doc.restore();
 
-      const angle = Math.atan2(y2 - y1, x2 - x1);
+      const angle = Math.atan2(last.y - prev.y, last.x - prev.x);
       const headLen = 6;
       doc.save();
       doc.fillColor(arrowColor);
       doc
-        .moveTo(x2, y2)
+        .moveTo(last.x, last.y)
         .lineTo(
-          x2 - headLen * Math.cos(angle - Math.PI / 6),
-          y2 - headLen * Math.sin(angle - Math.PI / 6)
+          last.x - headLen * Math.cos(angle - Math.PI / 6),
+          last.y - headLen * Math.sin(angle - Math.PI / 6)
         )
         .lineTo(
-          x2 - headLen * Math.cos(angle + Math.PI / 6),
-          y2 - headLen * Math.sin(angle + Math.PI / 6)
+          last.x - headLen * Math.cos(angle + Math.PI / 6),
+          last.y - headLen * Math.sin(angle + Math.PI / 6)
         )
         .fill();
       doc.restore();
 
       if (e.label) {
-        const midX = (x1 + x2) / 2;
-        const midY = (y1 + y2) / 2;
+        const mid = pts[Math.floor(pts.length / 2)]!;
+        const midX = mid.x;
+        const midY = mid.y;
         const labelText = this.stripFormatting(e.label);
         const labelW = Math.min(90, Math.max(45, labelText.length * 5.5 + 16));
         doc.save();

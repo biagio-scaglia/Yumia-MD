@@ -25,7 +25,7 @@ import {
   TimelineElement,
   TocElement,
 } from '@yumiamd/ast';
-import { DefaultLayoutEngine, LayoutNode, Rect, Size, SlideLayoutResult, computeDiagramLayout, fitDiagramLabel } from '@yumiamd/layout';
+import { DefaultLayoutEngine, LayoutNode, Rect, Size, SlideLayoutResult, computeDiagramLayout, fitDiagramLabel, orthogonalEdgePoints } from '@yumiamd/layout';
 import { RenderContext, YumiaRenderer, resolveSlideGeometry, themeSizeToPptxPoints, resolveLocalAsset, rasterizeIcon } from '@yumiamd/renderer';
 import { resolveTheme, YumiaTheme } from '@yumiamd/theme';
 
@@ -575,6 +575,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         y: rect.y,
         w: rect.w,
         h: rect.h,
+        sizing: { type: 'contain', w: rect.w, h: rect.h },
       });
     } catch {
       drawPlaceholder();
@@ -1021,7 +1022,8 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     };
 
     const align = (hero.align as 'left' | 'center' | 'right') || 'center';
-    let curY = rect.y + 0.3;
+    const compact = rect.h < 2.4;
+    let curY = rect.y + (compact ? 0.12 : 0.3);
     if (hero.badge) {
       const badgeW = Math.min(3.2, Math.max(1.4, hero.badge.length * 0.11 + 0.6));
       const badgeX =
@@ -1034,7 +1036,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         x: badgeX,
         y: curY,
         w: badgeW,
-        h: 0.32,
+        h: compact ? 0.26 : 0.32,
         fill: { color: this.cleanHexColor(theme.colors.surface) },
         line: { color: this.cleanHexColor(theme.colors.primary), width: 1.5 },
         rectRadius: 0.16,
@@ -1043,34 +1045,42 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         x: badgeX,
         y: curY,
         w: badgeW,
-        h: 0.32,
-        fontSize: 10,
+        h: compact ? 0.26 : 0.32,
+        fontSize: compact ? 9 : 10,
         bold: true,
         color: this.cleanHexColor(theme.colors.primary),
         fontFace: cleanFontFace(theme.typography.headingFont),
         align: 'center',
         valign: 'middle',
       });
-      curY += 0.48;
+      curY += compact ? 0.36 : 0.48;
     } else if (hero.tagline) {
       pptxSlide.addText(hero.tagline.toUpperCase(), {
         x: rect.x,
         y: curY,
         w: rect.w,
         h: 0.32,
-        fontSize: 11,
+        fontSize: compact ? 10 : 11,
         bold: true,
         color: this.cleanHexColor(theme.colors.primary),
         fontFace: cleanFontFace(theme.typography.headingFont),
         align,
       });
-      curY += 0.42;
+      curY += compact ? 0.34 : 0.42;
     }
 
-    const titleLines = Math.max(1, Math.ceil(hero.title.length / 38));
-    const titleH = Math.max(0.7, titleLines * 0.55 + 0.1);
+    const titleLines = Math.max(1, Math.ceil(hero.title.length / (compact ? 48 : 38)));
+    const titleH = Math.max(compact ? 0.42 : 0.7, titleLines * (compact ? 0.36 : 0.55) + 0.08);
     const displaySize = themeSizeToPptxPoints(theme.typography.sizes?.display, 56);
-    const titleFontSize = titleLines > 2 ? displaySize - 10 : titleLines > 1 ? displaySize - 6 : displaySize;
+    const titleFontSize = compact
+      ? titleLines > 1
+        ? Math.min(22, displaySize - 14)
+        : Math.min(26, displaySize - 10)
+      : titleLines > 2
+        ? displaySize - 10
+        : titleLines > 1
+          ? displaySize - 6
+          : displaySize;
 
     pptxSlide.addText(hero.title, {
       x: rect.x,
@@ -1083,13 +1093,13 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       fontFace: cleanFontFace(theme.typography.headingFont),
       align,
     });
-    curY += titleH + 0.08;
+    curY += titleH + (compact ? 0.04 : 0.08);
 
     if (hero.subtitle) {
-      const subLines = Math.max(1, Math.ceil(hero.subtitle.length / 56));
-      const subH = Math.max(0.38, subLines * 0.3 + 0.08);
+      const subLines = Math.max(1, Math.ceil(hero.subtitle.length / (compact ? 64 : 56)));
+      const subH = Math.max(compact ? 0.28 : 0.38, subLines * 0.28 + 0.06);
       const bodySize = themeSizeToPptxPoints(theme.typography.sizes?.body, 18);
-      const subFontSize = subLines > 2 ? bodySize - 1 : bodySize + 1;
+      const subFontSize = compact ? bodySize - 1 : subLines > 2 ? bodySize - 1 : bodySize + 1;
       pptxSlide.addText(hero.subtitle, {
         x: rect.x,
         y: curY,
@@ -1100,7 +1110,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         fontFace: cleanFontFace(theme.typography.bodyFont),
         align,
       });
-      curY += subH + 0.12;
+      curY += subH + (compact ? 0.06 : 0.12);
     }
 
     if (hero.tagline && hero.badge) {
@@ -1866,42 +1876,42 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     const arrowColor = this.cleanHexColor(theme.colors.accent || theme.colors.primary);
     const surfaceColor = this.cleanHexColor(theme.colors.surface || theme.colors.background);
 
-    // Draw connecting edges
+    // Draw connecting edges (orthogonal elbows to reduce crossings)
     diagram.edges.forEach((e) => {
       const p1 = positions[e.from];
       const p2 = positions[e.to];
       if (!p1 || !p2) return;
 
-      const x1 = isLR ? p1.x + nodeW : p1.x + nodeW / 2;
-      const y1 = isLR ? p1.y + nodeH / 2 : p1.y + nodeH;
-      const x2 = isLR ? p2.x : p2.x + nodeW / 2;
-      const y2 = isLR ? p2.y + nodeH / 2 : p2.y;
-
-      const minX = Math.min(x1, x2);
-      const minY = Math.min(y1, y2);
-      const lineW = Math.max(0.01, Math.abs(x2 - x1));
-      const lineH = Math.max(0.01, Math.abs(y2 - y1));
-      const flipH = x2 < x1;
-      const flipV = y2 < y1;
-
-      pptxSlide.addShape(pptx.ShapeType.line, {
-        x: minX,
-        y: minY,
-        w: lineW,
-        h: lineH,
-        flipH,
-        flipV,
-        line: {
-          color: arrowColor,
-          width: 2,
-          endArrowType: 'triangle',
-          dashType: e.style === 'dashed' ? 'dash' : 'solid',
-        },
-      });
+      const pts = orthogonalEdgePoints(isLR, p1, p2, nodeW, nodeH);
+      if (pts.length < 2) return;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const a = pts[i]!;
+        const b = pts[i + 1]!;
+        const segMinX = Math.min(a.x, b.x);
+        const segMinY = Math.min(a.y, b.y);
+        const lineW = Math.max(0.01, Math.abs(b.x - a.x));
+        const lineH = Math.max(0.01, Math.abs(b.y - a.y));
+        const isLast = i === pts.length - 2;
+        pptxSlide.addShape(pptx.ShapeType.line, {
+          x: segMinX,
+          y: segMinY,
+          w: lineW,
+          h: lineH,
+          flipH: b.x < a.x,
+          flipV: b.y < a.y,
+          line: {
+            color: arrowColor,
+            width: 2,
+            endArrowType: isLast ? 'triangle' : undefined,
+            dashType: e.style === 'dashed' ? 'dash' : 'solid',
+          },
+        });
+      }
 
       if (e.label) {
-        const midX = (x1 + x2) / 2;
-        const midY = (y1 + y2) / 2;
+        const mid = pts[Math.floor(pts.length / 2)]!;
+        const midX = mid.x;
+        const midY = mid.y;
         const pillW = Math.min(1.4, Math.max(0.7, e.label.length * 0.08 + 0.25));
         pptxSlide.addShape(pptx.ShapeType.roundRect, {
           x: midX - pillW / 2,

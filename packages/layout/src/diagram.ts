@@ -192,6 +192,38 @@ export function computeDiagramLayout(
   };
 }
 
+/** Orthogonal connector waypoints between two node boxes (avoids diagonal crossings). */
+export function orthogonalEdgePoints(
+  isLR: boolean,
+  p1: { x: number; y: number },
+  p2: { x: number; y: number },
+  nodeW: number,
+  nodeH: number
+): Array<{ x: number; y: number }> {
+  const x1 = isLR ? p1.x + nodeW : p1.x + nodeW / 2;
+  const y1 = isLR ? p1.y + nodeH / 2 : p1.y + nodeH;
+  const x2 = isLR ? p2.x : p2.x + nodeW / 2;
+  const y2 = isLR ? p2.y + nodeH / 2 : p2.y;
+
+  // Same-rank / back edges: keep a short elbow so lines don't slice through nodes.
+  if (isLR) {
+    const midX = (x1 + x2) / 2;
+    return [
+      { x: x1, y: y1 },
+      { x: midX, y: y1 },
+      { x: midX, y: y2 },
+      { x: x2, y: y2 },
+    ];
+  }
+  const midY = (y1 + y2) / 2;
+  return [
+    { x: x1, y: y1 },
+    { x: x1, y: midY },
+    { x: x2, y: midY },
+    { x: x2, y: y2 },
+  ];
+}
+
 /** Fit a label into a node box with ellipsis when needed. */
 export function fitDiagramLabel(label: string, maxChars: number): string {
   const clean = label.replace(/\s+/g, ' ').trim();
