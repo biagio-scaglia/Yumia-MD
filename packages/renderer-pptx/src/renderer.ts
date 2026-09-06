@@ -25,8 +25,8 @@ import {
   TimelineElement,
   TocElement,
 } from '@yumiamd/ast';
-import { DefaultLayoutEngine, LayoutNode, Rect, Size, SlideLayoutResult } from '@yumiamd/layout';
-import { RenderContext, YumiaRenderer, resolveSlideGeometry, themeSizeToPptxPoints, resolveLocalAsset } from '@yumiamd/renderer';
+import { DefaultLayoutEngine, LayoutNode, Rect, Size, SlideLayoutResult, computeDiagramLayout, fitDiagramLabel } from '@yumiamd/layout';
+import { RenderContext, YumiaRenderer, resolveSlideGeometry, themeSizeToPptxPoints, resolveLocalAsset, rasterizeIcon } from '@yumiamd/renderer';
 import { resolveTheme, YumiaTheme } from '@yumiamd/theme';
 
 export interface PptxRenderOptions {
@@ -331,17 +331,32 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         break;
       case 'icon': {
         const ic = element as IconElement;
-        const iconName = ic.name.replace(/^[^:]+:/, '').toUpperCase();
-        pptxSlide.addText(`★ ${iconName}`, {
-          x: rect.x,
-          y: rect.y,
-          w: Math.max(rect.w, 1.5),
-          h: Math.max(rect.h, 0.4),
-          fontSize: 14,
-          bold: true,
-          color: this.cleanHexColor(theme.colors.primary),
-          valign: 'middle',
-        });
+        const rawSize = typeof ic.size === 'number' ? ic.size : parseInt(String(ic.size || 32), 10);
+        const px = Number.isFinite(rawSize) && rawSize > 0 ? Math.min(128, rawSize) : 32;
+        const color = '#' + this.cleanHexColor(ic.color || theme.colors.primary);
+        try {
+          const raster = rasterizeIcon(ic.name, px, color);
+          const inches = Math.max(0.25, Math.min(rect.w, rect.h, px / 96));
+          pptxSlide.addImage({
+            data: `image/png;base64,${raster.png.toString('base64')}`,
+            x: rect.x,
+            y: rect.y,
+            w: inches,
+            h: inches,
+          });
+        } catch {
+          const iconName = ic.name.replace(/^[^:]+:/, '').toUpperCase();
+          pptxSlide.addText(`★ ${iconName}`, {
+            x: rect.x,
+            y: rect.y,
+            w: Math.max(rect.w, 1.5),
+            h: Math.max(rect.h, 0.4),
+            fontSize: 14,
+            bold: true,
+            color: this.cleanHexColor(theme.colors.primary),
+            valign: 'middle',
+          });
+        }
         break;
       }
       case 'grid':
@@ -1798,120 +1813,58 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     theme: YumiaTheme
   ): void {
     const isLR = (diagram.direction || 'LR').toUpperCase() === 'LR';
-    const nodeIds = diagram.nodes.map((n) => n.id);
-    if (nodeIds.length === 0) return;
+    if (diagram.nodes.length === 0) return;
 
-    // Calculate ranks
-    const inDegree: Record<string, number> = {};
-    const adj: Record<string, string[]> = {};
-    nodeIds.forEach((id) => {
-      inDegree[id] = 0;
-      adj[id] = [];
-    });
-
-    diagram.edges.forEach((e) => {
-      if (adj[e.from]) adj[e.from]!.push(e.to);
-      if (inDegree[e.to] !== undefined) inDegree[e.to]!++;
-    });
-
-    const ranks: Record<string, number> = {};
-    const queue: string[] = [];
-    nodeIds.forEach((id) => {
-      if (inDegree[id] === 0) {
-        ranks[id] = 0;
-        queue.push(id);
-      }
-    });
-
-    if (queue.length === 0) {
-      ranks[nodeIds[0]!] = 0;
-      queue.push(nodeIds[0]!);
+    if (diagram.title) {
+      pptxSlide.addText(diagram.title, {
+        x: rect.x,
+        y: rect.y,
+        w: rect.w,
+        h: 0.28,
+        fontSize: 12,
+        bold: true,
+        color: this.cleanHexColor(theme.colors.primary),
+        fontFace: cleanFontFace(theme.typography.headingFont),
+        align: 'center',
+      });
     }
 
-    while (queue.length > 0) {
-      const u = queue.shift()!;
-      const r = ranks[u] ?? 0;
-      const neighbors = adj[u] || [];
-      for (const v of neighbors) {
-        const nextR = r + 1;
-        if (ranks[v] === undefined || ranks[v]! < nextR) {
-          ranks[v] = nextR;
-          queue.push(v);
-        }
-      }
+    const layout = computeDiagramLayout(diagram, 1000, isLR, {
+      originX: 0,
+      originY: diagram.title ? 30 : 0,
+      titleHeight: diagram.title ? 30 : 0,
+    });
+
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = 0;
+    let maxY = 0;
+    for (const p of Object.values(layout.positions)) {
+      minX = Math.min(minX, p.x);
+      minY = Math.min(minY, p.y);
+      maxX = Math.max(maxX, p.x + layout.nodeWidth);
+      maxY = Math.max(maxY, p.y + layout.nodeHeight);
     }
-
-    nodeIds.forEach((id, idx) => {
-      if (ranks[id] === undefined) ranks[id] = idx;
-    });
-
-    const rankGroups: Record<number, string[]> = {};
-    nodeIds.forEach((id) => {
-      const r = ranks[id] ?? 0;
-      if (!rankGroups[r]) rankGroups[r] = [];
-      rankGroups[r]!.push(id);
-    });
-
-    const sortedRanks = Object.keys(rankGroups)
-      .map(Number)
-      .sort((a, b) => a - b);
-    const numRanks = Math.max(1, sortedRanks.length);
-    let maxLane = 1;
-    sortedRanks.forEach((r) => {
-      maxLane = Math.max(maxLane, rankGroups[r]!.length);
-    });
-
-    const nodeW = isLR
-      ? Math.min(1.8, (rect.w - 0.5) / (numRanks * 1.5))
-      : Math.min(2.0, (rect.w - 0.5) / maxLane);
-    const nodeH = isLR
-      ? Math.min(0.65, (rect.h - 0.5) / maxLane)
-      : Math.min(0.6, (rect.h - 0.5) / (numRanks * 1.4));
-
-    const gapX = isLR
-      ? numRanks > 1
-        ? (rect.w - numRanks * nodeW) / (numRanks - 1)
-        : 0
-      : maxLane > 1
-        ? (rect.w - maxLane * nodeW) / (maxLane - 1)
-        : 0;
-    const gapY = isLR
-      ? maxLane > 1
-        ? (rect.h - maxLane * nodeH) / (maxLane - 1)
-        : 0
-      : numRanks > 1
-        ? (rect.h - numRanks * nodeH) / (numRanks - 1)
-        : 0;
-
-    const maxLaneHeight = isLR ? maxLane * (nodeH + gapY) - gapY : numRanks * (nodeH + gapY) - gapY;
-    const maxRankWidth = isLR ? numRanks * (nodeW + gapX) - gapX : maxLane * (nodeW + gapX) - gapX;
+    const contentW = Math.max(1, maxX - minX);
+    const contentH = Math.max(1, maxY - minY);
+    const drawY = diagram.title ? rect.y + 0.32 : rect.y;
+    const drawH = diagram.title ? Math.max(0.4, rect.h - 0.32) : rect.h;
+    const s = Math.min(rect.w / contentW, drawH / contentH);
+    const nodeW = layout.nodeWidth * s;
+    const nodeH = layout.nodeHeight * s;
+    const offsetX = rect.x + (rect.w - contentW * s) / 2;
+    const offsetY = drawY + (drawH - contentH * s) / 2;
 
     const positions: Record<string, { x: number; y: number }> = {};
-    sortedRanks.forEach((r, rIdx) => {
-      const ids = rankGroups[r]!;
-      if (isLR) {
-        const colHeight = ids.length * (nodeH + gapY) - gapY;
-        const offsetY = (maxLaneHeight - colHeight) / 2;
-        ids.forEach((id, lIdx) => {
-          positions[id] = {
-            x: rect.x + rIdx * (nodeW + gapX),
-            y: rect.y + offsetY + lIdx * (nodeH + gapY),
-          };
-        });
-      } else {
-        const rowWidth = ids.length * (nodeW + gapX) - gapX;
-        const offsetX = (maxRankWidth - rowWidth) / 2;
-        ids.forEach((id, lIdx) => {
-          positions[id] = {
-            x: rect.x + offsetX + lIdx * (nodeW + gapX),
-            y: rect.y + rIdx * (nodeH + gapY),
-          };
-        });
-      }
-    });
+    for (const [id, p] of Object.entries(layout.positions)) {
+      positions[id] = {
+        x: offsetX + (p.x - minX) * s,
+        y: offsetY + (p.y - minY) * s,
+      };
+    }
 
-    const surfaceColor = this.cleanHexColor(theme.colors.surface || '1e293b');
     const arrowColor = this.cleanHexColor(theme.colors.accent || theme.colors.primary);
+    const surfaceColor = this.cleanHexColor(theme.colors.surface || theme.colors.background);
 
     // Draw connecting edges
     diagram.edges.forEach((e) => {
@@ -2018,7 +1971,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         });
       }
 
-      pptxSlide.addText(n.label, {
+      pptxSlide.addText(fitDiagramLabel(n.label, Math.max(8, Math.floor(nodeW * 12))), {
         x: p.x + 0.06,
         y: p.y + 0.06,
         w: Math.max(0.1, nodeW - 0.12),

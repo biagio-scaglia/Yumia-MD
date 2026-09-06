@@ -63,7 +63,7 @@ slide "Key Metrics"
     expect(customIcon.viewBox).toBe('0 0 24 24');
 
     const svgOutput = defaultIconResolver.toSvg('lucide:rocket', 28, '#00f0ff');
-    expect(svgOutput).toContain('<svg class="yumia-icon"');
+    expect(svgOutput).toContain('class="yumia-icon"');
     expect(svgOutput).toContain('width="28"');
     expect(svgOutput).toContain('#00f0ff');
   });

@@ -7,18 +7,19 @@ Features listed as limited below are intentionally not claimed as production-com
 
 | Capability | HTML | PPTX | PDF |
 | --- | --- | --- | --- |
-| Shared layout engine geometry | CSS flex | Yes (`@yumiamd/layout`) | **Independent cursor layout** |
+| Shared layout engine geometry | CSS flex | Yes (`@yumiamd/layout`) | Yes (root nodes via shared layout; nested painters still local) |
 | Theme colors | Yes | Yes | Yes |
 | Theme typography scale | CSS tokens | Scaled to PPTX points (`×0.72`) | Scaled to PDF points (`×0.55`) |
 | Local raster images (PNG/JPEG) | Yes | Yes | Yes (fit, aspect preserved) |
 | Remote image URLs | Browser fetch | **Not embedded** (placeholder) | **Not embedded** (placeholder) |
-| SVG diagrams / icons | Yes (`IconResolver`) | Text stub (`★ NAME`) | Text stub (`★ NAME`) |
+| SVG diagrams / icons | Yes (`IconResolver`) | Rasterized PNG via `@resvg/resvg-js` | Rasterized PNG via `@resvg/resvg-js` |
 | Mermaid | Client-rendered | Source box | Source box |
 | Speaker notes | Speaker view | Native notes | Not shown on page |
 | `16:9` / `4:3` / `16:10` | CSS aspect | Shared geometry helper | Shared geometry helper |
 | Font embedding (`embedFonts`) | N/A (web fonts) | **Not implemented** | System TTF when found (Segoe/Arial/DejaVu); else PDF core fonts |
 | POTX templates (`--template`) | N/A | **Not implemented** | N/A |
 | Emoji / broad Unicode | Yes | Depends on Office fonts | Preserved when system Unicode TTF registers; otherwise stripped for WinAnsi safety |
+| Cyclic flow diagrams | Guarded | Guarded (visit budget) | Guarded (visit budget) |
 
 ## Layout & overflow
 
@@ -26,8 +27,9 @@ Features listed as limited below are intentionally not claimed as production-com
 - Renderers do **not** auto-split overflowing slides or shrink-to-fit content.
 - PDF disables PDFKit mid-slide auto page-breaks so page count always equals slide count; dense content may clip at the footer band instead of spawning extra pages.
 - PPTX may visually overflow text boxes when layout height heuristics underestimate wrapped text.
-- Flow diagrams with branching (`A -> B`, `B -> C`, `B -> D`) can leave cramped or truncated node labels in PDF/PPTX when many nodes share a rank — layout is heuristic, not a full graph engine.
-- PDF/PPTX still use independent paint paths; pixel parity is not guaranteed.
+- Flow diagrams with branching can still produce crossings on reverse-rank edges; layout is heuristic, not a full graph engine.
+- PDF/PPTX nested container children still use local painters (roots share `@yumiamd/layout`).
+- Mermaid remains a source box in PPTX/PDF.
 ## Security
 
 - Local asset paths are resolved under the process working directory.

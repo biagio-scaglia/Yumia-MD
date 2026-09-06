@@ -205,11 +205,11 @@ export class IconResolver {
     className: string = 'yumia-icon'
   ): string {
     const icon = this.resolve(rawName);
-    const fill = color ? `color="${color}"` : '';
+    const fill = color ? `stroke="${color}"` : 'stroke="currentColor"';
     const style = color
-      ? `style="color:${color}; fill:none; stroke:currentColor;"`
+      ? `style="fill:none; stroke:${color};"`
       : 'style="fill:none; stroke:currentColor;"';
-    return `<svg class="${className}" width="${size}" height="${size}" viewBox="${icon.viewBox}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${fill} ${style}>${icon.path}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" class="${className}" width="${size}" height="${size}" viewBox="${icon.viewBox}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${fill} ${style}>${icon.path}</svg>`;
   }
 }
 

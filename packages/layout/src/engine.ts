@@ -7,9 +7,11 @@ import {
   ColumnElement,
   ColumnsElement,
   CompareElement,
+  DiagramElement,
   GridElement,
   HeadingElement,
   HeroElement,
+  IconElement,
   ImageElement,
   ListElement,
   MetricElement,
@@ -22,6 +24,7 @@ import {
   StackElement,
   TableElement,
 } from '@yumiamd/ast';
+import { estimateDiagramHeight } from './diagram.js';
 import {
   LayoutEngine,
   LayoutNode,
@@ -188,8 +191,15 @@ export class DefaultLayoutEngine implements LayoutEngine {
         return { element, bounds: { x, y, width, height } };
       }
       case 'diagram': {
-        const height = 320;
+        const d = element as DiagramElement;
+        const height = Math.max(200, Math.min(520, estimateDiagramHeight(d, width)));
         return { element, bounds: { x, y, width, height } };
+      }
+      case 'icon': {
+        const ic = element as IconElement;
+        const rawSize = typeof ic.size === 'number' ? ic.size : parseInt(String(ic.size || 48), 10);
+        const size = Number.isFinite(rawSize) && rawSize > 0 ? rawSize : 48;
+        return { element, bounds: { x, y, width: Math.max(size, 64), height: size + 8 } };
       }
       case 'sequence': {
         const seq = element as SequenceElement;

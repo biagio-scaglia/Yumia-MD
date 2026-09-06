@@ -2262,11 +2262,18 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       const r = ranks[u] ?? 0;
       const neighbors = adj[u] || [];
       for (const v of neighbors) {
-        const nextR = r + 1;
+        const nextR = Math.min(nodeIds.length - 1, r + 1);
         if (ranks[v] === undefined || ranks[v]! < nextR) {
           ranks[v] = nextR;
-          queue.push(v);
+          // Cycle guard: never enqueue more times than O(n)
+          if ((ranks[v] ?? 0) < nodeIds.length) {
+            queue.push(v);
+          }
         }
+      }
+      // Hard stop against cyclic longest-path inflation
+      if (queue.length > nodeIds.length * nodeIds.length) {
+        break;
       }
     }
 
