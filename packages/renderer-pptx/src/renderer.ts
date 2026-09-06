@@ -711,19 +711,46 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     theme: YumiaTheme
   ): void {
     const codeTheme = theme.components?.code;
-    const bgColor = this.cleanHexColor(codeTheme?.background || '#0a0f1d');
+    const bgColor = this.cleanHexColor(codeTheme?.background || '#0f172a');
     const textColor = this.cleanHexColor(codeTheme?.textColor || '#f8fafc');
     const primaryColor = this.cleanHexColor(theme.colors.primary || '#00F0FF');
     const mutedColor = this.cleanHexColor(theme.colors.muted || '#64748b');
 
+    // Terminal Container
     pptxSlide.addShape(pptx.ShapeType.roundRect, {
       x: rect.x,
       y: rect.y,
       w: rect.w,
       h: rect.h,
       fill: { color: bgColor },
-      line: { color: this.cleanHexColor(theme.colors.border || '#1e293b'), width: 1 },
-      rectRadius: 0.05,
+      line: { color: this.cleanHexColor(theme.colors.border || '#334155'), width: 1.5 },
+      rectRadius: 0.08,
+    });
+
+    // 3 mac-style terminal dots
+    pptxSlide.addShape(pptx.ShapeType.ellipse || 'ellipse', {
+      x: rect.x + 0.15,
+      y: rect.y + 0.12,
+      w: 0.1,
+      h: 0.1,
+      fill: { color: 'ef4444' },
+      line: { color: 'ef4444', width: 0 },
+    });
+    pptxSlide.addShape(pptx.ShapeType.ellipse || 'ellipse', {
+      x: rect.x + 0.3,
+      y: rect.y + 0.12,
+      w: 0.1,
+      h: 0.1,
+      fill: { color: 'f59e0b' },
+      line: { color: 'f59e0b', width: 0 },
+    });
+    pptxSlide.addShape(pptx.ShapeType.ellipse || 'ellipse', {
+      x: rect.x + 0.45,
+      y: rect.y + 0.12,
+      w: 0.1,
+      h: 0.1,
+      fill: { color: '10b981' },
+      line: { color: '10b981', width: 0 },
     });
 
     const lines = code.code.split('\n');
@@ -752,12 +779,12 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         const isHl = highlightSet.has(lineNum);
         const lineNumPad = String(lineNum).padStart(2, '0');
         const numColor = isHl ? primaryColor : mutedColor;
-        const contentColor = isHl ? primaryColor : mutedColor;
+        const contentColor = isHl ? primaryColor : textColor;
 
         chunks.push({
           text: `${lineNumPad}  `,
           options: {
-            fontSize: 12,
+            fontSize: 11,
             fontFace: 'Consolas',
             color: numColor,
             bold: isHl,
@@ -767,7 +794,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         chunks.push({
           text: line || ' ',
           options: {
-            fontSize: 12,
+            fontSize: 11,
             fontFace: 'Consolas',
             color: contentColor,
             bold: isHl,
@@ -778,19 +805,19 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
 
       pptxSlide.addText(chunks, {
         x: rect.x + 0.2,
-        y: rect.y + 0.15,
+        y: rect.y + 0.32,
         w: rect.w - 0.4,
-        h: rect.h - 0.3,
+        h: rect.h - 0.4,
         valign: 'top',
         margin: 0,
       });
     } else {
       pptxSlide.addText(code.code, {
         x: rect.x + 0.2,
-        y: rect.y + 0.15,
+        y: rect.y + 0.32,
         w: rect.w - 0.4,
-        h: rect.h - 0.3,
-        fontSize: 13,
+        h: rect.h - 0.4,
+        fontSize: 11.5,
         fontFace: 'Consolas',
         color: textColor,
         valign: 'top',
@@ -1713,13 +1740,25 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       if (e.label) {
         const midX = (x1 + x2) / 2;
         const midY = (y1 + y2) / 2;
+        const pillW = Math.min(1.4, Math.max(0.7, e.label.length * 0.08 + 0.25));
+        pptxSlide.addShape(pptx.ShapeType.roundRect, {
+          x: midX - pillW / 2,
+          y: midY - 0.13,
+          w: pillW,
+          h: 0.26,
+          fill: { color: surfaceColor },
+          line: { color: this.cleanHexColor(theme.colors.border || 'cbd5e1'), width: 1 },
+          rectRadius: 0.06,
+        });
         pptxSlide.addText(e.label, {
-          x: Math.max(0, midX - 0.4),
-          y: Math.max(0, midY - 0.15),
-          w: 0.8,
-          h: 0.3,
+          x: midX - pillW / 2,
+          y: midY - 0.13,
+          w: pillW,
+          h: 0.26,
           fontSize: 9,
-          color: this.cleanHexColor(theme.colors.muted || '94a3b8'),
+          bold: true,
+          color: this.cleanHexColor(theme.colors.muted || '64748b'),
+          fontFace: cleanFontFace(theme.typography.headingFont),
           align: 'center',
           valign: 'middle',
         });
@@ -1747,7 +1786,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       let shapeType = pptx.ShapeType.roundRect;
       if (n.shape === 'diamond') shapeType = pptx.ShapeType.diamond;
       else if (n.shape === 'database') shapeType = pptx.ShapeType.can;
-      else if (n.shape === 'circle') shapeType = pptx.ShapeType.oval;
+      else if (n.shape === 'circle') shapeType = pptx.ShapeType.ellipse || 'ellipse';
 
       pptxSlide.addShape(shapeType, {
         x: p.x,
@@ -1759,14 +1798,25 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         rectRadius: 0.08,
       });
 
+      if (n.shape === 'database') {
+        pptxSlide.addShape(pptx.ShapeType.rect, {
+          x: p.x + 0.15,
+          y: p.y + 0.1,
+          w: Math.max(0.1, nodeW - 0.3),
+          h: 0.02,
+          fill: { color: nodeBorderColor },
+          line: { color: nodeBorderColor, width: 1 },
+        });
+      }
+
       pptxSlide.addText(n.label, {
-        x: p.x + 0.05,
-        y: p.y + 0.05,
-        w: Math.max(0.1, nodeW - 0.1),
-        h: Math.max(0.1, nodeH - 0.1),
+        x: p.x + 0.06,
+        y: p.y + 0.06,
+        w: Math.max(0.1, nodeW - 0.12),
+        h: Math.max(0.1, nodeH - 0.12),
         align: 'center',
         valign: 'middle',
-        fontSize: 11,
+        fontSize: n.label.length > 18 ? 10 : 11,
         bold: true,
         color: this.cleanHexColor(theme.colors.text || 'ffffff'),
         fontFace: cleanFontFace(theme.typography.headingFont),
