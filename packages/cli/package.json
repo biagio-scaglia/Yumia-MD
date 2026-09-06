@@ -1,6 +1,6 @@
 {
   "name": "yumiamd",
-  "version": "0.1.26",
+  "version": "0.1.27",
   "description": "Command line interface and compiler for YumiaMD presentations",
   "type": "module",
   "main": "./dist/index.js",
