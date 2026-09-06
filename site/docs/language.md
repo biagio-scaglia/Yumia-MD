@@ -27,14 +27,14 @@ document "Title of Presentation"
   watermark "CONFIDENTIAL"
 ```
 
-| Command                 | Arguments                        | Description                                                                                                                                                             |
-| :---------------------- | :------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `document` / `title`    | `"<title>"`                      | The document or presentation title.                                                                                                                                     |
-| `theme`                 | `"<name>"`                       | Base visual theme: `default`, `cyberpunk`, `minimal`, `corporate`, `terminal`, `academic`, `neo-brutalist`, `luxury`, `monokai`, `solarized-dark`, `nebula`.          |
-| `author`                | `"<author>"`                     | Presentation author or organization.                                                                                                                                    |
-| `aspectRatio` / `ratio` | `"16:9"` \| `"4:3"` \| `"16:10"` | Target aspect ratio for slides and PDF pages.                                                                                                                           |
-| `transition`            | `"<type>"`                       | Default slide transition (`push`, `fade`, `wipe`, `zoom`, `split`).                                                                                                     |
-| `watermark`             | `"<text>"`                       | Watermark text displayed in the slide footer.                                                                                                                           |
+| Command                 | Arguments                        | Description                                                                                                                                                  |
+| :---------------------- | :------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `document` / `title`    | `"<title>"`                      | The document or presentation title.                                                                                                                          |
+| `theme`                 | `"<name>"`                       | Base visual theme: `default`, `cyberpunk`, `minimal`, `corporate`, `terminal`, `academic`, `neo-brutalist`, `luxury`, `monokai`, `solarized-dark`, `nebula`. |
+| `author`                | `"<author>"`                     | Presentation author or organization.                                                                                                                         |
+| `aspectRatio` / `ratio` | `"16:9"` \| `"4:3"` \| `"16:10"` | Target aspect ratio for slides and PDF pages.                                                                                                                |
+| `transition`            | `"<type>"`                       | Default slide transition (`push`, `fade`, `wipe`, `zoom`, `split`).                                                                                          |
+| `watermark`             | `"<text>"`                       | Watermark text displayed in the slide footer.                                                                                                                |
 
 ---
 

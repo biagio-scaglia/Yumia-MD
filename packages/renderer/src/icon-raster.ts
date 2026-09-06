@@ -24,9 +24,7 @@ export function rasterizeIcon(
 
   const svg = defaultIconResolver.toSvg(name, px, color, 'yumia-icon-raster');
   // Ensure stroke/fill use an absolute color (currentColor can fail in headless SVG).
-  const absoluteSvg = svg
-    .replace(/currentColor/g, color)
-    .replace(/\scolor="[^"]*"/g, '');
+  const absoluteSvg = svg.replace(/currentColor/g, color).replace(/\scolor="[^"]*"/g, '');
 
   try {
     const resvg = new Resvg(absoluteSvg, {

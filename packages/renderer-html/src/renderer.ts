@@ -2527,7 +2527,12 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
         const noteY = startY + 54 + nIdx * stepY + 8;
         const noteW = 120;
         const noteH = 32;
-        const noteX = note.position === 'right' ? cx + 12 : note.position === 'left' ? cx - noteW - 12 : cx - noteW / 2;
+        const noteX =
+          note.position === 'right'
+            ? cx + 12
+            : note.position === 'left'
+              ? cx - noteW - 12
+              : cx - noteW / 2;
         notesSvg += `
           <g class="yumia-seq-note">
             <rect x="${noteX}" y="${noteY}" width="${noteW}" height="${noteH}" rx="6" fill="${theme.colors.elevatedSurface || '#1e293b'}" stroke="${accentColor}" stroke-width="1.2" stroke-dasharray="3,3" />

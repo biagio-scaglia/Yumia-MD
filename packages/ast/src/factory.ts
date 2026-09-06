@@ -451,4 +451,3 @@ export function createClassDiagram(
     ...(options.title ? { title: options.title } : {}),
   };
 }
-

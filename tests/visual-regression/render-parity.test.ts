@@ -61,9 +61,15 @@ slide "Title Slide"
   });
 
   it('should correctly preserve distinct typography identity across Academic, Terminal, and Default themes in PDF and PPTX', async () => {
-    const academicDoc = parseYumia(`document "Academic"\n  theme "academic"\nslide "Abstract"\n  text "Serif body test"`);
-    const terminalDoc = parseYumia(`document "Terminal"\n  theme "terminal"\nslide "Terminal"\n  text "Mono body test"`);
-    const defaultDoc = parseYumia(`document "Default"\n  theme "default"\nslide "Default"\n  text "Sans body test"`);
+    const academicDoc = parseYumia(
+      `document "Academic"\n  theme "academic"\nslide "Abstract"\n  text "Serif body test"`
+    );
+    const terminalDoc = parseYumia(
+      `document "Terminal"\n  theme "terminal"\nslide "Terminal"\n  text "Mono body test"`
+    );
+    const defaultDoc = parseYumia(
+      `document "Default"\n  theme "default"\nslide "Default"\n  text "Sans body test"`
+    );
 
     const pdfRenderer = new PdfRenderer();
     const academicPdf = await pdfRenderer.render(academicDoc);

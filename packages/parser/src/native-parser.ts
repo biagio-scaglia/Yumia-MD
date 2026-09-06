@@ -792,7 +792,10 @@ export class NativeYumiaParser {
           type: SequenceParticipant['type'] = 'participant',
           explicitName?: string
         ): SequenceParticipant => {
-          const cleanId = rawId.trim().replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+          const cleanId = rawId
+            .trim()
+            .replace(/[^a-zA-Z0-9_-]/g, '_')
+            .toLowerCase();
           let p = participantMap.get(cleanId);
           if (!p) {
             p = {
@@ -920,7 +923,10 @@ export class NativeYumiaParser {
         const relationships: ClassRelationship[] = [];
 
         const ensureClass = (name: string): ClassItem => {
-          const cleanId = name.trim().replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+          const cleanId = name
+            .trim()
+            .replace(/[^a-zA-Z0-9_-]/g, '_')
+            .toLowerCase();
           let c = classMap.get(cleanId);
           if (!c) {
             c = {

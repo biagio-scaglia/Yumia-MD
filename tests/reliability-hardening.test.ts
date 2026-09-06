@@ -119,16 +119,16 @@ describe('Reliability: diagrams, layout, icons', () => {
     expect(ptsLR[0]!.x).toBe(100);
     expect(ptsLR[0]!.y).toBe(20);
     expect(ptsLR[3]!.x).toBe(200);
-    expect(ptsLR.every((p, i, arr) => i === 0 || p.x === arr[i - 1]!.x || p.y === arr[i - 1]!.y)).toBe(
-      true
-    );
+    expect(
+      ptsLR.every((p, i, arr) => i === 0 || p.x === arr[i - 1]!.x || p.y === arr[i - 1]!.y)
+    ).toBe(true);
 
     const ptsTB = orthogonalEdgePoints(false, { x: 10, y: 10 }, { x: 50, y: 120 }, 80, 36);
     expect(ptsTB.length).toBe(4);
     expect(ptsTB[0]!.y).toBe(46);
-    expect(ptsTB.every((p, i, arr) => i === 0 || p.x === arr[i - 1]!.x || p.y === arr[i - 1]!.y)).toBe(
-      true
-    );
+    expect(
+      ptsTB.every((p, i, arr) => i === 0 || p.x === arr[i - 1]!.x || p.y === arr[i - 1]!.y)
+    ).toBe(true);
   });
 
   it('does not spawn ghost diagram nodes from node [Label] variant lines', () => {

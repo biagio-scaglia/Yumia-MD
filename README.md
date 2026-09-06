@@ -146,7 +146,7 @@ Yumia provides purpose-built intent primitives that adapt across themes and aspe
 | `metric`    | Key performance indicator with value, delta, and directional trend | `value`, `label`, `diff`/`change`, `variant`, `trend` (`up`/`down`)                 |
 | `compare`   | Structured side-by-side comparison with automatic visual contrast  | `left`, `right`, `leftVariant`, `rightVariant`                                      |
 | `timeline`  | Chronological event milestones                                     | `layout` (`horizontal`, `vertical`), `variant`                                      |
-| `chart`     | Native data visualization (Bar, Line, Pie, Radar, Area, Gauge)     | `type` (`bar`, `line`, `pie`, `doughnut`, `radar`, `area`, `gauge`), `labels`      |
+| `chart`     | Native data visualization (Bar, Line, Pie, Radar, Area, Gauge)     | `type` (`bar`, `line`, `pie`, `doughnut`, `radar`, `area`, `gauge`), `labels`       |
 | `sequence`  | PlantUML-style sequence diagrams (lifelines, actors, messages)     | `title`, actors, participants, message arrows (`->`, `-->`, `->>`), notes           |
 | `class`     | PlantUML-style class diagrams (interfaces, members, relationships) | `title`, classes, interfaces, members (`+`, `-`, `#`, `~`), relationships (`<\|--`) |
 | `diagram`   | Sugiyama-layered vector architecture & flowcharts                  | `type` (`flow`), `direction` (`LR`, `TB`), `title`                                  |
