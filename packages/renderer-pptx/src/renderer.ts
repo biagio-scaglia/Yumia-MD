@@ -79,6 +79,8 @@ export function cleanFontFace(fontString?: string): string {
     'Courier',
     'Georgia',
     'Times New Roman',
+    'Cambria',
+    'Garamond',
   ];
 
   for (const font of fonts) {
@@ -87,11 +89,32 @@ export function cleanFontFace(fontString?: string): string {
     }
   }
 
-  if (fontString.toLowerCase().includes('mono') || fontString.toLowerCase().includes('code')) {
+  const lower = fontString.toLowerCase();
+  if (
+    lower.includes('mono') ||
+    lower.includes('code') ||
+    lower.includes('jetbrains') ||
+    lower.includes('fira')
+  ) {
     return 'Consolas';
   }
-  if (fontString.toLowerCase().includes('serif') && !fontString.toLowerCase().includes('sans')) {
+  if (
+    (lower.includes('serif') ||
+      lower.includes('times') ||
+      lower.includes('georgia') ||
+      lower.includes('cinzel') ||
+      lower.includes('playfair')) &&
+    !lower.includes('sans')
+  ) {
     return 'Georgia';
+  }
+  if (
+    lower.includes('outfit') ||
+    lower.includes('grotesk') ||
+    lower.includes('orbitron') ||
+    lower.includes('trebuchet')
+  ) {
+    return 'Trebuchet MS';
   }
   return 'Segoe UI';
 }
@@ -868,11 +891,12 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     const colorKey = (badge.variant || 'primary') as keyof typeof theme.colors;
     const badgeColor = this.cleanHexColor(theme.colors[colorKey] || theme.colors.primary);
     const badgeText = badge.text;
-    const badgeW = Math.min(2.5, Math.max(1.0, badgeText.length * 0.12 + 0.4));
-    const badgeH = Math.min(0.38, rect.h);
+    const badgeW = Math.min(3.5, Math.max(1.2, badgeText.length * 0.11 + 0.6));
+    const badgeH = Math.min(0.38, Math.max(0.3, rect.h));
+    const badgeX = rect.w > 4.0 ? rect.x + (rect.w - badgeW) / 2 : rect.x;
 
     pptxSlide.addShape(pptx.ShapeType.roundRect, {
-      x: rect.x,
+      x: badgeX,
       y: rect.y,
       w: badgeW,
       h: badgeH,
@@ -882,7 +906,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     });
 
     pptxSlide.addText(badgeText.toUpperCase(), {
-      x: rect.x,
+      x: badgeX,
       y: rect.y,
       w: badgeW,
       h: badgeH,
@@ -978,34 +1002,41 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         fontFace: cleanFontFace(theme.typography.headingFont),
         align: (hero.align as 'left' | 'center' | 'right') || 'center',
       });
-      curY += 0.4;
+      curY += 0.42;
     }
+
+    const titleLines = Math.max(1, Math.ceil(hero.title.length / 38));
+    const titleH = Math.max(0.7, titleLines * 0.52 + 0.12);
+    const titleFontSize = titleLines > 2 ? 26 : titleLines > 1 ? 29 : 33;
 
     pptxSlide.addText(hero.title, {
       x: rect.x,
       y: curY,
       w: rect.w,
-      h: 0.9,
-      fontSize: 32,
+      h: titleH,
+      fontSize: titleFontSize,
       bold: true,
       color: this.cleanHexColor(theme.colors.text),
       fontFace: cleanFontFace(theme.typography.headingFont),
       align: (hero.align as 'left' | 'center' | 'right') || 'center',
     });
-    curY += 0.95;
+    curY += titleH + 0.08;
 
     if (hero.subtitle) {
+      const subLines = Math.max(1, Math.ceil(hero.subtitle.length / 56));
+      const subH = Math.max(0.38, subLines * 0.3 + 0.1);
+      const subFontSize = subLines > 2 ? 14 : 16;
       pptxSlide.addText(hero.subtitle, {
         x: rect.x,
         y: curY,
         w: rect.w,
-        h: 0.6,
-        fontSize: 16,
+        h: subH,
+        fontSize: subFontSize,
         color: this.cleanHexColor(theme.colors.muted || theme.colors.text),
         fontFace: cleanFontFace(theme.typography.bodyFont),
         align: (hero.align as 'left' | 'center' | 'right') || 'center',
       });
-      curY += 0.65;
+      curY += subH + 0.12;
     }
 
     if (node.children) {

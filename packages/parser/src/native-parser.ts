@@ -84,7 +84,12 @@ export class NativeYumiaParser {
 
     const flushSlide = () => {
       if (currentSlide) {
-        currentSlide.elements = [...currentSlideElements];
+        let elements = [...currentSlideElements];
+        const hasHero = elements.some((el) => el.type === 'hero');
+        if (hasHero && elements.length > 1 && elements[0]?.type === 'heading') {
+          elements = elements.slice(1);
+        }
+        currentSlide.elements = elements;
         slides.push(currentSlide);
         currentSlideElements = [];
         currentSlide = null;

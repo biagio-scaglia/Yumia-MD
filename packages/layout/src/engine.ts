@@ -225,9 +225,21 @@ export class DefaultLayoutEngine implements LayoutEngine {
     gap: number
   ): LayoutNode {
     let curY = y;
-    if (element.tagline) curY += 35;
-    curY += 85;
-    if (element.subtitle) curY += 65;
+    if (element.tagline) {
+      curY += 45;
+    }
+    const charsPerLineTitle = Math.max(15, Math.floor(width / 34));
+    const titleLines = Math.max(1, Math.ceil(element.title.length / charsPerLineTitle));
+    const titleHeight = Math.max(85, titleLines * 65 + 20);
+    curY += titleHeight;
+
+    if (element.subtitle) {
+      const charsPerLineSub = Math.max(25, Math.floor(width / 20));
+      const subLines = Math.max(1, Math.ceil(element.subtitle.length / charsPerLineSub));
+      const subHeight = Math.max(50, subLines * 34 + 16);
+      curY += subHeight;
+    }
+
     const children: LayoutNode[] = [];
     if (element.elements) {
       for (const child of element.elements) {
@@ -236,7 +248,7 @@ export class DefaultLayoutEngine implements LayoutEngine {
         curY += node.bounds.height + gap;
       }
     }
-    return { element, bounds: { x, y, width, height: curY - y }, children };
+    return { element, bounds: { x, y, width, height: Math.max(curY - y, 160) }, children };
   }
 
   private layoutGrid(

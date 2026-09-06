@@ -678,16 +678,21 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     .yumia-badge {
       display: inline-flex;
       align-items: center;
-      padding: 3px 10px;
+      justify-content: center;
+      padding: 4px 16px;
       border-radius: 999px;
       font-size: 0.8rem;
       font-weight: 700;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.08);
       color: var(--yumia-text);
-      border: 1px solid var(--yumia-border);
-      margin-bottom: 0.5rem;
+      border: 1.5px solid var(--yumia-border);
+      margin: 0.4rem auto;
+      align-self: center;
+      width: fit-content;
+      max-width: fit-content;
+      box-sizing: border-box;
     }
     .yumia-badge.variant-primary { background: rgba(0, 240, 255, 0.15); color: var(--yumia-primary); border-color: var(--yumia-primary); }
     .yumia-badge.variant-success { background: rgba(16, 185, 129, 0.15); color: var(--yumia-success); border-color: var(--yumia-success); }
@@ -2202,10 +2207,10 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
 
   private renderDiagram(d: DiagramElement, theme: YumiaTheme): string {
     const isLR = (d.direction || 'LR').toUpperCase() === 'LR';
-    const nodeW = 155;
+    const nodeW = 160;
     const nodeH = 48;
-    const gapX = isLR ? 60 : 35;
-    const gapY = isLR ? 30 : 50;
+    const gapX = isLR ? 75 : 40;
+    const gapY = isLR ? 35 : 55;
 
     // Build graph and calculate ranks
     const nodeIds = d.nodes.map((n) => n.id);
@@ -2345,9 +2350,11 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
 
       edgesSvg += `<path d="M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}" fill="none" stroke="${arrowColor}" stroke-width="2" ${dash} marker-end="url(#${markerId})" />`;
       if (e.label) {
+        const labelText = this.escapeHtml(e.label);
+        const pillWidth = Math.max(54, labelText.length * 6.5 + 16);
         edgesSvg += `<g transform="translate(${midX}, ${midY})">
-          <rect x="-42" y="-11" width="84" height="22" rx="6" fill="${surfaceFill}" stroke="${borderColor}" stroke-width="1.2"/>
-          <text x="0" y="4" text-anchor="middle" fill="${mutedColor}" font-size="10.5" font-weight="600" font-family="sans-serif">${this.escapeHtml(e.label)}</text>
+          <rect x="-${pillWidth / 2}" y="-11" width="${pillWidth}" height="22" rx="6" fill="${surfaceFill}" stroke="${borderColor}" stroke-width="1.2"/>
+          <text x="0" y="4" text-anchor="middle" fill="${mutedColor}" font-size="10" font-weight="600" font-family="sans-serif">${labelText}</text>
         </g>`;
       }
     });

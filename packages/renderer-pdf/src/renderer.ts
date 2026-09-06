@@ -42,6 +42,41 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
   readonly name = 'PdfRenderer';
   readonly targetFormat = 'pdf';
 
+  private getPdfFont(
+    theme: YumiaTheme,
+    weight: 'regular' | 'bold' | 'italic' | 'boldItalic' | 'code' = 'regular'
+  ): string {
+    const headingFont = (theme.typography?.headingFont || '').toLowerCase();
+    const isSerif =
+      headingFont.includes('serif') ||
+      headingFont.includes('times') ||
+      headingFont.includes('georgia') ||
+      theme.name === 'academic';
+    const isMono =
+      headingFont.includes('mono') ||
+      headingFont.includes('courier') ||
+      headingFont.includes('code') ||
+      theme.name === 'terminal';
+
+    if (weight === 'code' || isMono) {
+      if (weight === 'bold' || weight === 'boldItalic') return 'Courier-Bold';
+      if (weight === 'italic') return 'Courier-Oblique';
+      return 'Courier';
+    }
+
+    if (isSerif) {
+      if (weight === 'bold') return 'Times-Bold';
+      if (weight === 'italic') return 'Times-Italic';
+      if (weight === 'boldItalic') return 'Times-BoldItalic';
+      return 'Times-Roman';
+    }
+
+    if (weight === 'bold') return 'Helvetica-Bold';
+    if (weight === 'italic') return 'Helvetica-Oblique';
+    if (weight === 'boldItalic') return 'Helvetica-BoldOblique';
+    return 'Helvetica';
+  }
+
   async render(presentation: Presentation, context: RenderContext = {}): Promise<PdfOutput> {
     const colorOverrides = presentation.metadata.colors
       ? ({ colors: presentation.metadata.colors } as ThemeOverrides)
@@ -140,7 +175,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           ? presentation.metadata.watermark
           : 'CONFIDENTIAL';
       doc
-        .font('Helvetica-Bold')
+        .font(this.getPdfFont(theme, 'bold'))
         .fontSize(9)
         .fillColor(theme.colors.muted || '#888888')
         .text(watermarkText.toUpperCase(), padX, pageHeight - 22, {
@@ -150,7 +185,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
     }
 
     doc
-      .font('Helvetica')
+      .font(this.getPdfFont(theme, 'regular'))
       .fontSize(10)
       .fillColor(theme.colors.muted || '#888888')
       .text(`${slideNum} / ${totalSlides}`, pageWidth - padX - 60, pageHeight - 22, {
@@ -174,24 +209,24 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         const align = (hero.align as 'left' | 'center' | 'right') || 'center';
         let curY = y;
         if (hero.tagline) {
-          doc.font('Helvetica-Bold').fontSize(11).fillColor(theme.colors.primary);
+          doc.font(this.getPdfFont(theme, 'bold')).fontSize(11).fillColor(theme.colors.primary);
           doc.text(this.stripFormatting(hero.tagline).toUpperCase(), x, curY, { width, align });
-          curY += 20;
+          curY += 22;
         }
-        doc.font('Helvetica-Bold').fontSize(34).fillColor(theme.colors.text);
+        doc.font(this.getPdfFont(theme, 'bold')).fontSize(32).fillColor(theme.colors.text);
         doc.text(this.stripFormatting(hero.title), x, curY, { width, lineGap: 6, align });
-        curY += doc.heightOfString(this.stripFormatting(hero.title), { width }) + 8;
+        curY += doc.heightOfString(this.stripFormatting(hero.title), { width }) + 10;
         if (hero.subtitle) {
           doc
-            .font('Helvetica')
-            .fontSize(16)
+            .font(this.getPdfFont(theme, 'regular'))
+            .fontSize(15)
             .fillColor(theme.colors.muted || '#888888');
           doc.text(this.stripFormatting(hero.subtitle), x, curY, { width, lineGap: 4, align });
-          curY += doc.heightOfString(this.stripFormatting(hero.subtitle), { width }) + 12;
+          curY += doc.heightOfString(this.stripFormatting(hero.subtitle), { width }) + 14;
         }
         if (hero.elements) {
           for (const child of hero.elements) {
-            curY = this.renderElement(doc, child, x, curY, width, theme, presentation) + 10;
+            curY = this.renderElement(doc, child, x, curY, width, theme, presentation) + 8;
           }
         }
         return curY;
@@ -208,7 +243,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
                 ? theme.colors.success || '#10b981'
                 : theme.colors.info || theme.colors.primary;
 
-        doc.font('Helvetica').fontSize(12);
+        doc.font(this.getPdfFont(theme, 'regular')).fontSize(12);
         const textH = doc.heightOfString(this.stripFormatting(c.text), { width: width - 30 });
         const titleH = c.title ? 20 : 0;
         const totalH = textH + titleH + 16;
@@ -218,11 +253,11 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
         let curY = y + 8;
         if (c.title) {
-          doc.font('Helvetica-Bold').fontSize(12).fillColor(sevColor);
+          doc.font(this.getPdfFont(theme, 'bold')).fontSize(12).fillColor(sevColor);
           doc.text(this.stripFormatting(c.title), x + 16, curY, { width: width - 26 });
           curY += 18;
         }
-        doc.font('Helvetica').fontSize(12).fillColor(theme.colors.text);
+        doc.font(this.getPdfFont(theme, 'regular')).fontSize(12).fillColor(theme.colors.text);
         doc.text(this.stripFormatting(c.text), x + 16, curY, { width: width - 26 });
 
         return y + totalH + 8;
@@ -233,7 +268,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         const fontSize = h.level === 1 ? 28 : h.level === 2 ? 22 : 18;
         const color = h.level === 1 ? theme.colors.primary : theme.colors.text;
 
-        doc.font('Helvetica-Bold').fontSize(fontSize).fillColor(color);
+        doc.font(this.getPdfFont(theme, 'bold')).fontSize(fontSize).fillColor(color);
         doc.text(this.stripFormatting(h.text), x, y, { width, lineGap: 4 });
         const height = doc.heightOfString(this.stripFormatting(h.text), { width });
         return y + height;
@@ -241,7 +276,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
       case 'paragraph': {
         const p = element as ParagraphElement;
-        doc.font('Helvetica').fontSize(14).fillColor(theme.colors.text);
+        doc.font(this.getPdfFont(theme, 'regular')).fontSize(14).fillColor(theme.colors.text);
         doc.text(this.stripFormatting(p.text), x, y, { width, lineGap: 4 });
         const height = doc.heightOfString(this.stripFormatting(p.text), { width });
         return y + height;
@@ -255,13 +290,13 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         l.items.forEach((item, idx) => {
           const bullet = l.ordered ? `${idx + 1}.` : '•';
           doc
-            .font('Helvetica-Bold')
+            .font(this.getPdfFont(theme, 'bold'))
             .fontSize(13)
             .fillColor(theme.colors.primary)
             .text(bullet, x, currentY, { width: 18 });
 
           doc
-            .font('Helvetica')
+            .font(this.getPdfFont(theme, 'regular'))
             .fontSize(13)
             .fillColor(theme.colors.text)
             .text(this.stripFormatting(item.text), x + 20, currentY, {
@@ -285,7 +320,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         const authorText = q.author ? `— ${this.stripFormatting(q.author)}` : '';
 
         doc
-          .font('Helvetica-Oblique')
+          .font(this.getPdfFont(theme, 'italic'))
           .fontSize(13)
           .fillColor(theme.colors.muted || '#aaaaaa');
         const textHeight = doc.heightOfString(quoteText, { width: width - 24 });
@@ -301,14 +336,14 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         doc.rect(x, y, 4, totalHeight).fill(theme.colors.accent || theme.colors.primary);
 
         doc
-          .font('Helvetica-Oblique')
+          .font(this.getPdfFont(theme, 'italic'))
           .fontSize(13)
           .fillColor(theme.colors.text)
           .text(quoteText, x + 16, y + 8, { width: width - 28 });
 
         if (authorText) {
           doc
-            .font('Helvetica')
+            .font(this.getPdfFont(theme, 'regular'))
             .fontSize(11)
             .fillColor(theme.colors.muted || '#888888')
             .text(authorText, x + 16, y + 8 + textHeight + 4, { width: width - 28 });
@@ -320,7 +355,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       case 'code': {
         const c = element as CodeElement;
         const lines = c.code.split('\n');
-        doc.font('Courier').fontSize(10);
+        doc.font(this.getPdfFont(theme, 'code')).fontSize(10);
         const lineHeight = 14;
         const boxHeight = lines.length * lineHeight + 20;
 
@@ -363,13 +398,13 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
             : theme.colors.accent || '#38bdf8';
 
           doc
-            .font('Courier')
+            .font(this.getPdfFont(theme, 'code'))
             .fontSize(9)
             .fillColor(numColor)
             .text(String(lineNum).padStart(2, ' '), x + 10, lineY, { width: 22 });
 
           doc
-            .font('Courier')
+            .font(this.getPdfFont(theme, 'code'))
             .fontSize(10)
             .fillColor(textColor)
             .text(line || ' ', x + 36, lineY, { width: width - 48 });
@@ -386,15 +421,20 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         // Estimate total card height without pre-drawing text
         let estHeight = cardPad * 2;
         if (card.title) {
-          doc.font('Helvetica-Bold').fontSize(15);
-          estHeight += doc.heightOfString(this.stripFormatting(card.title), { width: width - cardPad * 2 }) + 8;
+          doc.font(this.getPdfFont(theme, 'bold')).fontSize(15);
+          estHeight +=
+            doc.heightOfString(this.stripFormatting(card.title), { width: width - cardPad * 2 }) +
+            8;
         }
         if (card.elements) {
           for (const child of card.elements) {
             if (child.type === 'metric') estHeight += 95;
             else if (child.type === 'paragraph') {
-              doc.font('Helvetica').fontSize(12);
-              estHeight += doc.heightOfString(this.stripFormatting((child as ParagraphElement).text), { width: width - cardPad * 2 }) + 8;
+              doc.font(this.getPdfFont(theme, 'regular')).fontSize(12);
+              estHeight +=
+                doc.heightOfString(this.stripFormatting((child as ParagraphElement).text), {
+                  width: width - cardPad * 2,
+                }) + 8;
             } else {
               estHeight += 45;
             }
@@ -418,26 +458,29 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         let renderTop = y + cardPad;
         if (card.title) {
           doc
-            .font('Helvetica-Bold')
+            .font(this.getPdfFont(theme, 'bold'))
             .fontSize(15)
             .fillColor(variantColor)
             .text(this.stripFormatting(card.title), x + cardPad, renderTop, {
               width: width - cardPad * 2,
             });
-          renderTop += doc.heightOfString(this.stripFormatting(card.title), { width: width - cardPad * 2 }) + 8;
+          renderTop +=
+            doc.heightOfString(this.stripFormatting(card.title), { width: width - cardPad * 2 }) +
+            8;
         }
 
         if (card.elements) {
           for (const child of card.elements) {
-            renderTop = this.renderElement(
-              doc,
-              child,
-              x + cardPad,
-              renderTop,
-              width - cardPad * 2,
-              theme,
-              presentation
-            ) + 6;
+            renderTop =
+              this.renderElement(
+                doc,
+                child,
+                x + cardPad,
+                renderTop,
+                width - cardPad * 2,
+                theme,
+                presentation
+              ) + 6;
           }
         }
 
@@ -459,14 +502,14 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           .stroke();
 
         doc
-          .font('Helvetica-Bold')
+          .font(this.getPdfFont(theme, 'bold'))
           .fontSize(10)
           .fillColor(theme.colors.muted || '#888888')
           .text(m.label.toUpperCase(), x + 14, y + 12, { width: width - 28 });
 
         const displayVal = m.unit ? `${m.value} ${m.unit}` : m.value;
         doc
-          .font('Helvetica-Bold')
+          .font(this.getPdfFont(theme, 'bold'))
           .fontSize(26)
           .fillColor(variantColor)
           .text(displayVal, x + 14, y + 28, { width: width - 28 });
@@ -474,7 +517,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         if (m.change) {
           const changeColor = m.change.startsWith('+') ? '#10b981' : '#ef4444';
           doc
-            .font('Helvetica-Bold')
+            .font(this.getPdfFont(theme, 'bold'))
             .fontSize(11)
             .fillColor(changeColor)
             .text(m.change, x + width - 85, y + 34, { width: 70, align: 'right' });
@@ -505,7 +548,15 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           let colCursorY = y;
 
           for (const child of col.elements) {
-            colCursorY = this.renderElement(doc, child, curX, colCursorY, colWidth, theme, presentation);
+            colCursorY = this.renderElement(
+              doc,
+              child,
+              curX,
+              colCursorY,
+              colWidth,
+              theme,
+              presentation
+            );
             colCursorY += 8;
           }
 
@@ -531,7 +582,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           doc.rect(x, curY, width, rowHeight).fill(theme.colors.primary);
           headers.forEach((h, idx) => {
             doc
-              .font('Helvetica-Bold')
+              .font(this.getPdfFont(theme, 'bold'))
               .fontSize(12)
               .fillColor('#ffffff')
               .text(this.stripFormatting(h), x + idx * colWidth + 6, curY + 6, {
@@ -551,7 +602,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
           row.forEach((cell, idx) => {
             doc
-              .font('Helvetica')
+              .font(this.getPdfFont(theme, 'regular'))
               .fontSize(11)
               .fillColor(theme.colors.text)
               .text(this.stripFormatting(cell), x + idx * colWidth + 6, curY + 6, {
@@ -574,19 +625,24 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         const b = element as BadgeElement;
         const variantColor = this.getVariantColor(b.variant, theme);
         const text = this.stripFormatting(b.text).toUpperCase();
-        const badgeW = Math.min(180, Math.max(60, text.length * 7 + 20));
-        const badgeH = 22;
+        const badgeW = Math.min(260, Math.max(70, text.length * 7.5 + 24));
+        const badgeH = 24;
+        const badgeX = width > 400 ? x + (width - badgeW) / 2 : x;
 
         doc
-          .roundedRect(x, y, badgeW, badgeH, 11)
+          .roundedRect(badgeX, y, badgeW, badgeH, 12)
           .fill(theme.colors.surface || 'rgba(255,255,255,0.08)');
-        doc.roundedRect(x, y, badgeW, badgeH, 11).lineWidth(1).strokeColor(variantColor).stroke();
+        doc
+          .roundedRect(badgeX, y, badgeW, badgeH, 12)
+          .lineWidth(1.2)
+          .strokeColor(variantColor)
+          .stroke();
 
         doc
-          .font('Helvetica-Bold')
-          .fontSize(10)
+          .font(this.getPdfFont(theme, 'bold'))
+          .fontSize(9.5)
           .fillColor(variantColor)
-          .text(text, x, y + 6, { width: badgeW, align: 'center' });
+          .text(text, badgeX, y + 6, { width: badgeW, align: 'center' });
 
         return y + badgeH + 6;
       }
@@ -617,7 +673,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           let curItemY = lineY + 12;
           if (item.date) {
             doc
-              .font('Helvetica-Bold')
+              .font(this.getPdfFont(theme, 'bold'))
               .fontSize(10)
               .fillColor(theme.colors.accent || theme.colors.primary)
               .text(this.stripFormatting(item.date), itemX, curItemY, {
@@ -628,7 +684,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           }
 
           doc
-            .font('Helvetica-Bold')
+            .font(this.getPdfFont(theme, 'bold'))
             .fontSize(12)
             .fillColor(theme.colors.text)
             .text(this.stripFormatting(item.title), itemX, curItemY, {
@@ -639,7 +695,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
           if (item.description) {
             doc
-              .font('Helvetica')
+              .font(this.getPdfFont(theme, 'regular'))
               .fontSize(9)
               .fillColor(theme.colors.muted || '#888888')
               .text(this.stripFormatting(item.description), itemX, curItemY, {
@@ -666,8 +722,11 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         for (const el of c.left) {
           if (el.type === 'metric') leftContentH += 95;
           else if (el.type === 'paragraph') {
-            doc.font('Helvetica').fontSize(12);
-            leftContentH += doc.heightOfString(this.stripFormatting((el as ParagraphElement).text), { width: colW - pad * 2 }) + 8;
+            doc.font(this.getPdfFont(theme, 'regular')).fontSize(12);
+            leftContentH +=
+              doc.heightOfString(this.stripFormatting((el as ParagraphElement).text), {
+                width: colW - pad * 2,
+              }) + 8;
           } else if (el.type === 'badge') leftContentH += 32;
           else leftContentH += 45;
         }
@@ -678,8 +737,11 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         for (const el of c.right) {
           if (el.type === 'metric') rightContentH += 95;
           else if (el.type === 'paragraph') {
-            doc.font('Helvetica').fontSize(12);
-            rightContentH += doc.heightOfString(this.stripFormatting((el as ParagraphElement).text), { width: colW - pad * 2 }) + 8;
+            doc.font(this.getPdfFont(theme, 'regular')).fontSize(12);
+            rightContentH +=
+              doc.heightOfString(this.stripFormatting((el as ParagraphElement).text), {
+                width: colW - pad * 2,
+              }) + 8;
           } else if (el.type === 'badge') rightContentH += 32;
           else rightContentH += 45;
         }
@@ -711,16 +773,14 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         // Middle VS Badge
         const vsX = x + colW + 4;
         const vsY = y + totalH / 2 - 12;
-        doc
-          .roundedRect(vsX, vsY, 24, 24, 12)
-          .fill(theme.colors.surface || '#151522');
+        doc.roundedRect(vsX, vsY, 24, 24, 12).fill(theme.colors.surface || '#151522');
         doc
           .roundedRect(vsX, vsY, 24, 24, 12)
           .lineWidth(1)
           .strokeColor(theme.colors.border || 'rgba(255,255,255,0.2)')
           .stroke();
         doc
-          .font('Helvetica-Bold')
+          .font(this.getPdfFont(theme, 'bold'))
           .fontSize(9)
           .fillColor(theme.colors.muted || '#888888')
           .text('VS', vsX, vsY + 7, { width: 24, align: 'center' });
@@ -730,28 +790,33 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         let leftY = y + pad;
         if (c.leftTitle) {
           doc
-            .font('Helvetica-Bold')
+            .font(this.getPdfFont(theme, 'bold'))
             .fontSize(14)
             .fillColor(theme.colors.primary)
             .text(this.stripFormatting(c.leftTitle), x + pad, leftY, { width: colW - pad * 2 });
           leftY += 24;
         }
         for (const el of c.left) {
-          leftY = this.renderElement(doc, el, x + pad, leftY, colW - pad * 2, theme, presentation) + 6;
+          leftY =
+            this.renderElement(doc, el, x + pad, leftY, colW - pad * 2, theme, presentation) + 6;
         }
 
         // Render right content
         let rightY = y + pad;
         if (c.rightTitle) {
           doc
-            .font('Helvetica-Bold')
+            .font(this.getPdfFont(theme, 'bold'))
             .fontSize(14)
             .fillColor(theme.colors.primary)
-            .text(this.stripFormatting(c.rightTitle), rightX + pad, rightY, { width: colW - pad * 2 });
+            .text(this.stripFormatting(c.rightTitle), rightX + pad, rightY, {
+              width: colW - pad * 2,
+            });
           rightY += 24;
         }
         for (const el of c.right) {
-          rightY = this.renderElement(doc, el, rightX + pad, rightY, colW - pad * 2, theme, presentation) + 6;
+          rightY =
+            this.renderElement(doc, el, rightX + pad, rightY, colW - pad * 2, theme, presentation) +
+            6;
         }
 
         return y + totalH + 8;
@@ -771,7 +836,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         let topY = y + 10;
         if (ch.title) {
           doc
-            .font('Helvetica-Bold')
+            .font(this.getPdfFont(theme, 'bold'))
             .fontSize(13)
             .fillColor(theme.colors.text)
             .text(this.stripFormatting(ch.title), x + 14, topY, { width: width - 28 });
@@ -790,13 +855,13 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
           doc.rect(barX, barY, barW, h).fill(theme.colors.primary);
           doc
-            .font('Helvetica')
+            .font(this.getPdfFont(theme, 'regular'))
             .fontSize(9)
             .fillColor(theme.colors.text)
             .text(String(val), barX, barY - 12, { width: barW, align: 'center' });
           if (ch.labels?.[idx]) {
             doc
-              .font('Helvetica')
+              .font(this.getPdfFont(theme, 'regular'))
               .fontSize(9)
               .fillColor(theme.colors.muted || '#888888')
               .text(this.stripFormatting(ch.labels[idx]!), barX - 10, topY + plotH + 4, {
@@ -817,7 +882,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           .fill(theme.colors.surface || 'rgba(255,255,255,0.04)');
         doc.roundedRect(x, y, width, boxH, 8).strokeColor(theme.colors.primary).stroke();
         doc
-          .font('Courier')
+          .font(this.getPdfFont(theme, 'code'))
           .fontSize(11)
           .fillColor(theme.colors.text)
           .text(this.stripFormatting(m.code), x + 12, y + 12, { width: width - 24 });
@@ -838,7 +903,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         doc.rect(x, y, 4, boxH).fill(theme.colors.primary);
 
         doc
-          .font('Helvetica-Oblique')
+          .font(this.getPdfFont(theme, 'italic'))
           .fontSize(14)
           .fillColor(theme.colors.text)
           .text(this.stripFormatting(mathEl.expression), x + 16, y + 18, {
@@ -865,7 +930,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           const numStr = String(s.number);
           doc.roundedRect(x + width / 2 - 40, curY, 80, 18, 9).fill(theme.colors.primary);
           doc
-            .font('Helvetica-Bold')
+            .font(this.getPdfFont(theme, 'bold'))
             .fontSize(9)
             .fillColor('#000000')
             .text(`SECTION ${numStr}`.toUpperCase(), x, curY + 4, { width, align: 'center' });
@@ -873,7 +938,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         }
 
         doc
-          .font('Helvetica-Bold')
+          .font(this.getPdfFont(theme, 'bold'))
           .fontSize(22)
           .fillColor(theme.colors.text)
           .text(this.stripFormatting(s.title), x + 20, curY, {
@@ -884,7 +949,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
         if (s.subtitle) {
           doc
-            .font('Helvetica')
+            .font(this.getPdfFont(theme, 'regular'))
             .fontSize(12)
             .fillColor(theme.colors.muted || '#999999')
             .text(this.stripFormatting(s.subtitle), x + 30, curY, {
@@ -930,7 +995,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         let curY = y;
         if (t.title) {
           doc
-            .font('Helvetica-Bold')
+            .font(this.getPdfFont(theme, 'bold'))
             .fontSize(18)
             .fillColor(theme.colors.primary)
             .text(this.stripFormatting(t.title), x, curY, { width });
@@ -953,13 +1018,13 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
           doc.roundedRect(x + 10, itemY + 6, 22, 22, 4).fill(theme.colors.primary);
           doc
-            .font('Helvetica-Bold')
+            .font(this.getPdfFont(theme, 'bold'))
             .fontSize(10)
             .fillColor('#000000')
             .text(num, x + 10, itemY + 11, { width: 22, align: 'center' });
 
           doc
-            .font('Helvetica-Bold')
+            .font(this.getPdfFont(theme, 'bold'))
             .fontSize(12)
             .fillColor(theme.colors.text)
             .text(this.stripFormatting(item.title), x + 40, itemY + (descText ? 5 : 10), {
@@ -968,7 +1033,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
           if (descText) {
             doc
-              .font('Helvetica')
+              .font(this.getPdfFont(theme, 'regular'))
               .fontSize(9)
               .fillColor(theme.colors.muted || '#888888')
               .text(this.stripFormatting(descText), x + 40, itemY + 19, {
@@ -983,7 +1048,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       case 'icon': {
         const ic = element as IconElement;
         const iconText = `★ ${ic.name.replace(/^[^:]+:/, '').toUpperCase()}`;
-        doc.font('Helvetica-Bold').fontSize(11).fillColor(theme.colors.primary);
+        doc.font(this.getPdfFont(theme, 'bold')).fontSize(11).fillColor(theme.colors.primary);
         doc.text(iconText, x, y, { width: 120 });
         return y + 20;
       }
@@ -1114,7 +1179,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
     let titleOffset = 0;
     if (diagram.title) {
       doc
-        .font('Helvetica-Bold')
+        .font(this.getPdfFont(theme, 'bold'))
         .fontSize(14)
         .fillColor(theme.colors.primary)
         .text(this.stripFormatting(diagram.title), x, y, { width, align: 'center' });
@@ -1189,11 +1254,24 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       if (e.label) {
         const midX = (x1 + x2) / 2;
         const midY = (y1 + y2) / 2;
+        const labelText = this.stripFormatting(e.label);
+        const labelW = Math.min(90, Math.max(45, labelText.length * 5.5 + 16));
+        doc.save();
         doc
-          .font('Helvetica')
-          .fontSize(8)
+          .roundedRect(midX - labelW / 2, midY - 8, labelW, 16, 4)
+          .fill(theme.colors.surface || '#151522');
+        doc
+          .roundedRect(midX - labelW / 2, midY - 8, labelW, 16, 4)
+          .lineWidth(0.8)
+          .strokeColor(theme.colors.border || '#334155')
+          .stroke();
+        doc.restore();
+
+        doc
+          .font(this.getPdfFont(theme, 'bold'))
+          .fontSize(7.5)
           .fillColor(theme.colors.muted || '#888888')
-          .text(this.stripFormatting(e.label), midX - 25, midY - 6, { width: 50, align: 'center' });
+          .text(labelText, midX - labelW / 2, midY - 5, { width: labelW, align: 'center' });
       }
     });
 
@@ -1216,8 +1294,8 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       doc.restore();
 
       doc
-        .font('Helvetica-Bold')
-        .fontSize(10)
+        .font(this.getPdfFont(theme, 'bold'))
+        .fontSize(9.5)
         .fillColor(theme.colors.text)
         .text(this.stripFormatting(n.label), p.x + 4, p.y + nodeH / 2 - 5, {
           width: nodeW - 8,
