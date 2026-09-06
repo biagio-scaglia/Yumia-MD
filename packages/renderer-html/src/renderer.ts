@@ -1866,9 +1866,15 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       case 'hero': {
         const hero = element as HeroElement;
         const align = hero.align || 'center';
-        const tagHtml = hero.tagline
-          ? `<div class="yumia-hero-tagline" style="display:inline-flex; align-items:center; padding:4px 14px; border-radius:999px; background:rgba(255,255,255,0.08); border:1px solid var(--yumia-primary); color:var(--yumia-primary); font-size:0.85rem; font-weight:700; margin-bottom:1rem; letter-spacing:0.06em; text-transform:uppercase;">${this.formatInline(hero.tagline)}</div>`
+        const badgeHtml = hero.badge
+          ? `<div class="yumia-hero-badge" style="display:inline-flex; align-items:center; padding:4px 14px; border-radius:999px; background:rgba(255,255,255,0.08); border:1px solid var(--yumia-primary); color:var(--yumia-primary); font-size:0.85rem; font-weight:700; margin-bottom:1rem; letter-spacing:0.06em; text-transform:uppercase;">${this.formatInline(hero.badge)}</div>`
           : '';
+        const tagHtml =
+          !hero.badge && hero.tagline
+            ? `<div class="yumia-hero-tagline" style="display:inline-flex; align-items:center; padding:4px 14px; border-radius:999px; background:rgba(255,255,255,0.08); border:1px solid var(--yumia-primary); color:var(--yumia-primary); font-size:0.85rem; font-weight:700; margin-bottom:1rem; letter-spacing:0.06em; text-transform:uppercase;">${this.formatInline(hero.tagline)}</div>`
+            : hero.badge && hero.tagline
+              ? `<p class="yumia-hero-tagline-text" style="color:var(--yumia-muted); font-size:0.95rem; margin-top:0.5rem;">${this.formatInline(hero.tagline)}</p>`
+              : '';
         const titleHtml = `<h1 class="yumia-hero-title" style="font-size:clamp(2.4rem, 4.5vw, 4rem); font-weight:800; line-height:1.1; color:var(--yumia-text); margin-bottom:0.8rem;">${this.formatInline(hero.title)}</h1>`;
         const subHtml = hero.subtitle
           ? `<p class="yumia-hero-subtitle" style="font-size:clamp(1.1rem, 1.8vw, 1.5rem); color:var(--yumia-muted); max-width:800px; margin-bottom:1.5rem; line-height:1.5;">${this.formatInline(hero.subtitle)}</p>`
@@ -1879,9 +1885,11 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
 
         return `
         <div class="yumia-hero" data-align="${align}" data-yumia-role="hero" style="display:flex; flex-direction:column; align-items:${align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'}; text-align:${align}; justify-content:center; flex:1; width:100%; margin:auto 0;">
-          ${tagHtml}
+          ${badgeHtml}
+          ${!hero.badge ? tagHtml : ''}
           ${titleHtml}
           ${subHtml}
+          ${hero.badge ? tagHtml : ''}
           ${innerHtml ? `<div style="width:100%; margin-top:1rem;">${innerHtml}</div>` : ''}
         </div>`;
       }
@@ -2254,11 +2262,18 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       const r = ranks[u] ?? 0;
       const neighbors = adj[u] || [];
       for (const v of neighbors) {
-        const nextR = r + 1;
+        const nextR = Math.min(nodeIds.length - 1, r + 1);
         if (ranks[v] === undefined || ranks[v]! < nextR) {
           ranks[v] = nextR;
-          queue.push(v);
+          // Cycle guard: never enqueue more times than O(n)
+          if ((ranks[v] ?? 0) < nodeIds.length) {
+            queue.push(v);
+          }
         }
+      }
+      // Hard stop against cyclic longest-path inflation
+      if (queue.length > nodeIds.length * nodeIds.length) {
+        break;
       }
     }
 

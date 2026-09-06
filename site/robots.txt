@@ -9,6 +9,9 @@ Allow: /
 User-agent: ChatGPT-User
 Allow: /
 
+User-agent: OAI-SearchBot
+Allow: /
+
 User-agent: PerplexityBot
 Allow: /
 
@@ -27,6 +30,14 @@ Allow: /
 User-agent: Bingbot
 Allow: /
 
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
 # Canonical Sitemaps & LLM Context Feeds
 Sitemap: https://yumiamd.org/sitemap.xml
-Sitemap: https://yumiamd.org/llms.txt

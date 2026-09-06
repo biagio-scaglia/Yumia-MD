@@ -1,6 +1,6 @@
 {
   "name": "@yumiamd/renderer",
-  "version": "0.1.29",
+  "version": "0.1.31",
   "private": true,
   "description": "Base renderer abstraction and rendering context for YumiaMD",
   "type": "module",
@@ -13,6 +13,7 @@
     }
   },
   "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@yumiamd/ast": "workspace:*",
     "@yumiamd/layout": "workspace:*",
     "@yumiamd/theme": "workspace:*"

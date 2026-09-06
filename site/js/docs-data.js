@@ -351,7 +351,7 @@ slide "Cluster Node Topology"
             <tr>
               <td><code>class</code></td>
               <td>PlantUML-style class diagrams with interfaces, members, and relationships</td>
-              <td><code>title</code>, classes, interfaces, attributes, methods, relationships (<code>&lt;\|--</code>, <code>&lt;\|..</code>)</td>
+              <td><code>title</code>, classes, interfaces, attributes, methods, relationships (<code>&lt;|--</code>, <code>&lt;|..</code>)</td>
               <td>PPTX, PDF, HTML</td>
             </tr>
             <tr>
@@ -450,7 +450,7 @@ All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the
       </div>
 
       <h2>Diagram Syntax & Semantics</h2>
-      <p>Declare your topology naturally with bracketed nodes, edge protocols, and semantic modifiers:</p>
+      <p>Declare your topology naturally with bracketed nodes, edge protocols, and semantic modifiers. Prefer <code>node [Full Label] variant="…"</code> (or id aliases) so variants attach to the edge-declared node without ghost duplicates:</p>
 
       <div class="code-block">
         <div class="code-header"><span class="code-lang-tag">YUMIA DSL</span><button class="copy-btn" onclick="copyCode(this)"><i class="fa-regular fa-copy"></i> Copy</button></div>
@@ -461,9 +461,9 @@ All deprecated v1 endpoints will be sunset on October 1st. Please migrate to the
     [Edge Sensors] -> [Ingestion Broker] -[TLS 1.3]-> [Neural Dispatcher]
     [Neural Dispatcher] -[gRPC Streaming]-> [Quantum Tensor Cores] -> [(Vector Knowledge Base)]
     [Quantum Tensor Cores] -[Hot Cache]-> [(Redis Semantic Cache)]
-    node qtc label="Quantum Tensor Cores" variant="accent"
-    node vkb label="Vector Knowledge Base" shape="database" variant="primary"
-    node cache label="Redis Semantic Cache" shape="database" variant="success"</code></pre>
+    node [Quantum Tensor Cores] variant="accent"
+    node [Vector Knowledge Base] shape="database" variant="primary"
+    node [Redis Semantic Cache] shape="database" variant="success"</code></pre>
       </div>
 
       <h2>Node Shape Tokens</h2>
@@ -777,6 +777,91 @@ document "Security Report"
     `,
   },
   {
+    id: 'limitations',
+    title: 'Known Limitations',
+    category: 'Ecosystem & Workflows',
+    icon: 'fa-solid fa-triangle-exclamation',
+    lead: 'Honest PPTX/PDF capability matrix for yumiamd v0.1.31+. What works, what is partial, and what is intentionally not claimed.',
+    content: `
+      <div class="callout tip">
+        <div class="callout-title"><i class="fa-solid fa-lightbulb" style="color: var(--yumia-success); margin-right: 0.4rem;"></i> Use a current CLI</div>
+        <p>Prefer <code>npx yumiamd@latest</code>, a fresh global install, or the monorepo CLI (<code>pnpm yumia</code>). An older global <code>yumia</code> on your PATH can emit stale PDF/PPTX output.</p>
+      </div>
+
+      <h2>Rendering Matrix (HTML · PPTX · PDF)</h2>
+      <div class="docs-table-wrapper">
+        <table class="docs-table">
+          <thead>
+            <tr>
+              <th>Capability</th>
+              <th>HTML</th>
+              <th>PPTX</th>
+              <th>PDF</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Shared layout engine</strong></td>
+              <td>CSS flex</td>
+              <td>Yes (roots + nested)</td>
+              <td>Yes (roots + nested paint)</td>
+            </tr>
+            <tr>
+              <td><strong>Local images</strong></td>
+              <td>Yes</td>
+              <td>Yes (<code>contain</code>)</td>
+              <td>Yes (aspect fit)</td>
+            </tr>
+            <tr>
+              <td><strong>Remote image URLs</strong></td>
+              <td>Browser fetch</td>
+              <td>Placeholder</td>
+              <td>Placeholder</td>
+            </tr>
+            <tr>
+              <td><strong>Icons / SVG</strong></td>
+              <td>Yes</td>
+              <td>Raster PNG via resvg</td>
+              <td>Raster PNG via resvg</td>
+            </tr>
+            <tr>
+              <td><strong>Native <code>diagram</code></strong></td>
+              <td>SVG</td>
+              <td>Layered + orthogonal edges</td>
+              <td>Layered + orthogonal edges</td>
+            </tr>
+            <tr>
+              <td><strong>Mermaid</strong></td>
+              <td>Client SVG</td>
+              <td>Source box</td>
+              <td>Source box</td>
+            </tr>
+            <tr>
+              <td><strong>Speaker notes</strong></td>
+              <td>Speaker view</td>
+              <td>Native notes</td>
+              <td>Not on page</td>
+            </tr>
+            <tr>
+              <td><strong><code>embedFonts</code> / POTX</strong></td>
+              <td>N/A</td>
+              <td>Not implemented</td>
+              <td>System TTF when found</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Layout &amp; Overflow</h2>
+      <ul>
+        <li>Overflow is detected by the layout engine and reported by the design linter; renderers do not auto-split slides.</li>
+        <li>PDF blocks mid-slide auto page-breaks so page count equals slide count (dense content may clip at the footer).</li>
+        <li>Flow diagrams are heuristic layered layouts — reverse-rank edges can still cross.</li>
+        <li>Full markdown matrix: <a href="/docs/limitations.md"><code>/docs/limitations.md</code></a>.</li>
+      </ul>
+    `,
+  },
+  {
     id: 'faq',
     title: 'Frequently Asked Questions (FAQ)',
     category: 'Ecosystem & Workflows',
@@ -795,14 +880,20 @@ document "Security Report"
         <li><strong>PowerPoint / Canva:</strong> GUI tools where geometry is positioned manually with pixel coordinates. Difficult to automate, version with Git, or generate programmatically.</li>
         <li><strong>Mermaid / PlantUML:</strong> Great for diagramming, but export flat raster PNGs or rigid HTML embeds without native PowerPoint vector shape generation.</li>
         <li><strong>Marp / Slidev:</strong> Markdown slide engines that export flat rasterized screenshot images when generating PowerPoint files.</li>
-        <li><strong>Yumia:</strong> A true <em>Design Compiler</em>. It uses pure semantic ASTs and compiles into <strong>100% native OpenXML vector shapes, editable text frames, Microsoft charts, and Sugiyama-layered architecture flowcharts</strong>.</li>
+        <li><strong>Yumia:</strong> A true <em>Design Compiler</em>. It uses pure semantic ASTs and compiles into <strong>100% native OpenXML vector shapes, editable text frames, Microsoft charts, and layered architecture flowcharts</strong>.</li>
       </ul>
 
       <h2>What CLI commands are available?</h2>
       <p>The Yumia CLI includes: <code>yumia check --optimize</code> (design audit & visual quality score), <code>yumia explain</code> (rhythm and composition breakdown), <code>yumia dev</code> (live-reload server with DevTools inspector), <code>yumia build</code> (multi-target compilation), <code>yumia lint</code>, <code>yumia validate</code>, <code>yumia schema</code>, and <code>yumia deploy</code>.</p>
 
       <h2>How do AI models generate Yumia documents?</h2>
-      <p>AI models can use Yumia's indentation-based syntax (<code>.yumia</code>) and JSON Schema (<code>yumia schema</code>) to generate documents with zero unclosed HTML tags and zero CSS hallucinations, verifying results automatically via <code>yumia check --json</code>.</p>
+      <p>AI models can use Yumia's indentation-based syntax (<code>.yumia</code>), JSON Schema (<code>yumia schema</code>), and the machine-readable feeds at <a href="/llms.txt"><code>/llms.txt</code></a> / <a href="/llms-full.txt"><code>/llms-full.txt</code></a> to generate documents with zero unclosed HTML tags and zero CSS hallucinations, verifying results automatically via <code>yumia check --json</code>.</p>
+
+      <h2>Does Yumia export editable PowerPoint?</h2>
+      <p>Yes. <code>yumia build --format pptx</code> emits native OpenXML shapes, text frames, charts, and speaker notes that remain editable in Microsoft PowerPoint — not flattened screenshot slides.</p>
+
+      <h2>Where can I read known PPTX/PDF limitations?</h2>
+      <p>See the honest capability matrix in <a href="#limitations">Known Limitations</a> or the crawlable markdown at <a href="/docs/limitations.md"><code>/docs/limitations.md</code></a>.</p>
     `,
   },
 ];

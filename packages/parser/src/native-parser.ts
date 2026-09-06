@@ -196,6 +196,9 @@ export class NativeYumiaParser {
       // Slide-level notes
       if (tok.command === 'notes') {
         const noteLines: string[] = [];
+        if (tok.args) {
+          noteLines.push(this.stripQuotes(tok.args));
+        }
         idx++;
         while (idx < tokens.length && tokens[idx]!.indent > tok.indent) {
           noteLines.push(tokens[idx]!.text);
@@ -241,6 +244,7 @@ export class NativeYumiaParser {
         const titleMatch = tok.args.match(/^(?:title=)?["']([^"']+)["']/);
         const subMatch = tok.args.match(/\bsubtitle=["']([^"']+)["']/);
         const tagMatch = tok.args.match(/\btagline=["']([^"']+)["']/);
+        const badgeMatch = tok.args.match(/\bbadge=["']([^"']+)["']/);
         const alignMatch = tok.args.match(/\balign=["']?([^"'\s]+)["']?/);
         const emphMatch = tok.args.match(/\bemphasis=["']?([^"'\s]+)["']?/);
         const densMatch = tok.args.match(/\bdensity=["']?([^"'\s]+)["']?/);
@@ -265,6 +269,7 @@ export class NativeYumiaParser {
           children.length > 0 ? children : undefined,
           {
             tagline: tagMatch ? tagMatch[1] : undefined,
+            badge: badgeMatch ? badgeMatch[1] : undefined,
             align: alignMatch ? (alignMatch[1] as 'left' | 'center' | 'right') : undefined,
             emphasis: emphMatch ? emphMatch[1] : undefined,
             density: densMatch ? densMatch[1] : undefined,
@@ -339,7 +344,9 @@ export class NativeYumiaParser {
       case 'paragraph':
       case 'text':
       case 'p': {
-        let text = this.stripQuotes(tok.args);
+        const alignMatch = tok.args.match(/\balign=["']?([^"'\s]+)["']?/);
+        const raw = tok.args.replace(/\balign=["']?[^"'\s]+["']?/g, '').trim();
+        let text = this.stripQuotes(raw);
         let nextIdx = idx + 1;
         if (!text) {
           const pLines: string[] = [];
@@ -349,7 +356,8 @@ export class NativeYumiaParser {
           }
           text = pLines.join(' ');
         }
-        return { element: createParagraph(text), nextIdx };
+        const align = alignMatch ? (alignMatch[1] as 'left' | 'center' | 'right') : undefined;
+        return { element: createParagraph(text, align), nextIdx };
       }
 
       case 'icon': {
@@ -735,7 +743,10 @@ export class NativeYumiaParser {
             }
           } else if (dLine.startsWith('node ')) {
             const nParts = dLine.slice(5).trim();
-            const nIdMatch = nParts.match(/^(\S+)/);
+            // Match full bracket labels: [Sorgente Yumia], not just "[Sorgente"
+            const nIdMatch = nParts.match(
+              /^(\[[^\]]+\]|\([^)]+\)|\{[^}]+\}|[a-zA-Z0-9_-]+(?:\[\([^)]+\)\]|\(\([^)]+\)\)|\[[^\]]+\]|\{[^}]+\})?)/
+            );
             const nLabelMatch = nParts.match(/\blabel=["']([^"']+)["']/);
             const nShapeMatch = nParts.match(/\bshape=["']?([^"'\s]+)["']?/);
             const nVarMatch = nParts.match(/\bvariant=["']?([^"'\s]+)["']?/);
@@ -749,6 +760,7 @@ export class NativeYumiaParser {
                 explicitLabel
               );
               nodeMap.set(nId.toLowerCase(), node);
+              nodeMap.set(node.id, node);
             }
           }
           nextIdx++;

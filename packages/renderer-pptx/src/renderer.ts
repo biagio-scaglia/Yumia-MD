@@ -25,8 +25,8 @@ import {
   TimelineElement,
   TocElement,
 } from '@yumiamd/ast';
-import { DefaultLayoutEngine, LayoutNode, Rect, Size, SlideLayoutResult } from '@yumiamd/layout';
-import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
+import { DefaultLayoutEngine, LayoutNode, Rect, Size, SlideLayoutResult, computeDiagramLayout, fitDiagramLabel, orthogonalEdgePoints } from '@yumiamd/layout';
+import { RenderContext, YumiaRenderer, resolveSlideGeometry, themeSizeToPptxPoints, resolveLocalAsset, rasterizeIcon } from '@yumiamd/renderer';
 import { resolveTheme, YumiaTheme } from '@yumiamd/theme';
 
 export interface PptxRenderOptions {
@@ -185,18 +185,16 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     pptx.title = title;
     pptx.author = author;
 
-    // Define 16:9 widescreen canvas (13.333 x 7.5 inches) or 4:3 canvas (10 x 7.5 inches)
-    const is43 = presentation.metadata.aspectRatio === '4:3';
-    const slideWidthInches = is43 ? 10.0 : 13.333;
-    const slideHeightInches = 7.5;
-    const layoutName = is43 ? 'YUMIA_4_3' : 'YUMIA_16_9';
+    // Define slide canvas from shared aspect-ratio geometry (16:9 / 4:3 / 16:10)
+    const geometry = resolveSlideGeometry(presentation.metadata.aspectRatio);
+    const slideWidthInches = geometry.inches.width;
+    const slideHeightInches = geometry.inches.height;
+    const layoutName = geometry.layoutName;
 
     pptx.defineLayout({ name: layoutName, width: slideWidthInches, height: slideHeightInches });
     pptx.layout = layoutName;
 
-    const pixelViewport: Size = is43
-      ? { width: 1440, height: 1080 }
-      : { width: 1920, height: 1080 };
+    const pixelViewport: Size = geometry.pixelViewport;
     const scaleX = slideWidthInches / pixelViewport.width;
     const scaleY = slideHeightInches / pixelViewport.height;
 
@@ -333,17 +331,32 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         break;
       case 'icon': {
         const ic = element as IconElement;
-        const iconName = ic.name.replace(/^[^:]+:/, '').toUpperCase();
-        pptxSlide.addText(`★ ${iconName}`, {
-          x: rect.x,
-          y: rect.y,
-          w: Math.max(rect.w, 1.5),
-          h: Math.max(rect.h, 0.4),
-          fontSize: 14,
-          bold: true,
-          color: this.cleanHexColor(theme.colors.primary),
-          valign: 'middle',
-        });
+        const rawSize = typeof ic.size === 'number' ? ic.size : parseInt(String(ic.size || 32), 10);
+        const px = Number.isFinite(rawSize) && rawSize > 0 ? Math.min(128, rawSize) : 32;
+        const color = '#' + this.cleanHexColor(ic.color || theme.colors.primary);
+        try {
+          const raster = rasterizeIcon(ic.name, px, color);
+          const inches = Math.max(0.25, Math.min(rect.w, rect.h, px / 96));
+          pptxSlide.addImage({
+            data: `image/png;base64,${raster.png.toString('base64')}`,
+            x: rect.x,
+            y: rect.y,
+            w: inches,
+            h: inches,
+          });
+        } catch {
+          const iconName = ic.name.replace(/^[^:]+:/, '').toUpperCase();
+          pptxSlide.addText(`★ ${iconName}`, {
+            x: rect.x,
+            y: rect.y,
+            w: Math.max(rect.w, 1.5),
+            h: Math.max(rect.h, 0.4),
+            fontSize: 14,
+            bold: true,
+            color: this.cleanHexColor(theme.colors.primary),
+            valign: 'middle',
+          });
+        }
         break;
       }
       case 'grid':
@@ -384,7 +397,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       w: rect.w,
       h: rect.h,
       align: heading.align || 'left',
-      valign: 'middle',
+      valign: 'top',
       margin: 0,
     });
   }
@@ -395,7 +408,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     rect: { x: number; y: number; w: number; h: number },
     theme: YumiaTheme
   ): void {
-    const fontSize = theme.typography.sizes?.body || 18;
+    const fontSize = themeSizeToPptxPoints(theme.typography.sizes?.body, 18);
     const color = this.cleanHexColor(theme.colors.text);
 
     const chunks = parseInlineMarkdown(paragraph.text, {
@@ -412,6 +425,8 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       align: paragraph.align || 'left',
       valign: 'top',
       margin: 0,
+      // Keep glyphs inside the layout box; wrapping is fine, overflow into neighbors is not.
+      shrinkText: rect.h < 0.32,
     });
   }
 
@@ -421,7 +436,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     rect: { x: number; y: number; w: number; h: number },
     theme: YumiaTheme
   ): void {
-    const fontSize = theme.typography.sizes?.body || 18;
+    const fontSize = themeSizeToPptxPoints(theme.typography.sizes?.body, 18) - 0.5;
     const color = this.cleanHexColor(theme.colors.text);
     const allChunks: InlineChunk[] = [];
 
@@ -431,7 +446,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         color,
         fontFace: cleanFontFace(theme.typography.bodyFont),
         indentLevel: item.depth || 0,
-        paraSpaceAfter: 8,
+        paraSpaceAfter: 4,
       });
 
       if (itemChunks.length > 0) {
@@ -528,15 +543,8 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     image: ImageElement,
     rect: { x: number; y: number; w: number; h: number }
   ): void {
-    try {
-      pptxSlide.addImage({
-        path: image.src,
-        x: rect.x,
-        y: rect.y,
-        w: rect.w,
-        h: rect.h,
-      });
-    } catch {
+    const resolved = resolveLocalAsset(image.src);
+    const drawPlaceholder = () => {
       pptxSlide.addShape('rect', {
         x: rect.x,
         y: rect.y,
@@ -555,6 +563,24 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         align: 'center',
         valign: 'middle',
       });
+    };
+
+    if (!resolved || !resolved.exists) {
+      drawPlaceholder();
+      return;
+    }
+
+    try {
+      pptxSlide.addImage({
+        path: resolved.absolutePath,
+        x: rect.x,
+        y: rect.y,
+        w: rect.w,
+        h: rect.h,
+        sizing: { type: 'contain', w: rect.w, h: rect.h },
+      });
+    } catch {
+      drawPlaceholder();
     }
   }
 
@@ -697,10 +723,10 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     if (card.title) {
       pptxSlide.addText(card.title, {
         x: rect.x + 0.25,
-        y: rect.y + 0.18,
+        y: rect.y + 0.12,
         w: rect.w - 0.5,
-        h: 0.35,
-        fontSize: 20,
+        h: 0.3,
+        fontSize: themeSizeToPptxPoints(theme.typography.sizes?.h4, 22),
         bold: true,
         color: titleColor,
         fontFace: cleanFontFace(theme.typography.headingFont),
@@ -844,14 +870,15 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       });
     } else {
       pptxSlide.addText(code.code, {
-        x: rect.x + 0.2,
-        y: rect.y + 0.32,
-        w: rect.w - 0.4,
-        h: rect.h - 0.4,
-        fontSize: 11.5,
+        x: rect.x + 0.22,
+        y: rect.y + 0.36,
+        w: Math.max(0.2, rect.w - 0.44),
+        h: Math.max(0.2, rect.h - 0.48),
+        fontSize: rect.h < 2.2 ? 10 : 11.5,
         fontFace: 'Consolas',
         color: textColor,
         valign: 'top',
+        margin: 0,
       });
     }
   }
@@ -954,12 +981,12 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       rectRadius: 0.08,
     });
 
-    const titleH = callout.title ? 0.35 : 0;
+    const titleH = callout.title ? 0.38 : 0;
     if (callout.title) {
       pptxSlide.addText(callout.title, {
-        x: rect.x + 0.15,
-        y: rect.y + 0.08,
-        w: rect.w - 0.3,
+        x: rect.x + 0.2,
+        y: rect.y + 0.16,
+        w: rect.w - 0.4,
         h: 0.3,
         fontSize: 13,
         bold: true,
@@ -969,10 +996,10 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     }
 
     pptxSlide.addText(callout.text, {
-      x: rect.x + 0.15,
-      y: rect.y + titleH + 0.08,
-      w: rect.w - 0.3,
-      h: rect.h - titleH - 0.16,
+      x: rect.x + 0.2,
+      y: rect.y + titleH + 0.14,
+      w: rect.w - 0.4,
+      h: Math.max(0.2, rect.h - titleH - 0.28),
       fontSize: 12,
       color: this.cleanHexColor(theme.colors.text),
       fontFace: cleanFontFace(theme.typography.bodyFont),
@@ -997,43 +1024,99 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       h: node.bounds.height * scaleY,
     };
 
-    let curY = rect.y;
-    if (hero.tagline) {
+    const align = (hero.align as 'left' | 'center' | 'right') || 'center';
+    const compact = rect.h < 2.4;
+    const maxY = rect.y + rect.h - 0.04;
+    let curY = rect.y + (compact ? 0.08 : 0.24);
+
+    if (hero.badge && curY < maxY) {
+      const badgeW = Math.min(3.2, Math.max(1.4, hero.badge.length * 0.11 + 0.6));
+      const badgeX =
+        align === 'left'
+          ? rect.x
+          : align === 'right'
+            ? rect.x + rect.w - badgeW
+            : rect.x + (rect.w - badgeW) / 2;
+      const badgeH = Math.min(compact ? 0.26 : 0.32, maxY - curY);
+      pptxSlide.addShape(pptx.ShapeType.roundRect, {
+        x: badgeX,
+        y: curY,
+        w: badgeW,
+        h: badgeH,
+        fill: { color: this.cleanHexColor(theme.colors.surface) },
+        line: { color: this.cleanHexColor(theme.colors.primary), width: 1.5 },
+        rectRadius: 0.16,
+      });
+      pptxSlide.addText(hero.badge.toUpperCase(), {
+        x: badgeX,
+        y: curY,
+        w: badgeW,
+        h: badgeH,
+        fontSize: compact ? 9 : 10,
+        bold: true,
+        color: this.cleanHexColor(theme.colors.primary),
+        fontFace: cleanFontFace(theme.typography.headingFont),
+        align: 'center',
+        valign: 'middle',
+      });
+      curY += compact ? 0.36 : 0.48;
+    } else if (hero.tagline && curY < maxY) {
+      const tagH = Math.min(0.32, maxY - curY);
       pptxSlide.addText(hero.tagline.toUpperCase(), {
         x: rect.x,
         y: curY,
         w: rect.w,
-        h: 0.35,
-        fontSize: 11,
+        h: tagH,
+        fontSize: compact ? 10 : 11,
         bold: true,
         color: this.cleanHexColor(theme.colors.primary),
         fontFace: cleanFontFace(theme.typography.headingFont),
-        align: (hero.align as 'left' | 'center' | 'right') || 'center',
+        align,
       });
-      curY += 0.42;
+      curY += compact ? 0.34 : 0.42;
     }
 
-    const titleLines = Math.max(1, Math.ceil(hero.title.length / 38));
-    const titleH = Math.max(0.7, titleLines * 0.52 + 0.12);
-    const titleFontSize = titleLines > 2 ? 26 : titleLines > 1 ? 29 : 33;
+    const titleLines = Math.max(1, Math.ceil(hero.title.length / (compact ? 48 : 38)));
+    const titleBudget = Math.max(0.24, maxY - curY - (hero.subtitle ? 0.3 : 0.02));
+    const titleH = Math.min(
+      Math.max(compact ? 0.42 : 0.7, titleLines * (compact ? 0.36 : 0.55) + 0.08),
+      titleBudget
+    );
+    const displaySize = themeSizeToPptxPoints(theme.typography.sizes?.display, 56);
+    const titleFontSize = compact
+      ? titleLines > 1
+        ? Math.min(20, displaySize - 16)
+        : Math.min(24, displaySize - 12)
+      : titleLines > 2
+        ? displaySize - 10
+        : titleLines > 1
+          ? displaySize - 6
+          : displaySize;
 
-    pptxSlide.addText(hero.title, {
-      x: rect.x,
-      y: curY,
-      w: rect.w,
-      h: titleH,
-      fontSize: titleFontSize,
-      bold: true,
-      color: this.cleanHexColor(theme.colors.text),
-      fontFace: cleanFontFace(theme.typography.headingFont),
-      align: (hero.align as 'left' | 'center' | 'right') || 'center',
-    });
-    curY += titleH + 0.08;
+    if (titleH >= 0.24) {
+      pptxSlide.addText(hero.title, {
+        x: rect.x,
+        y: curY,
+        w: rect.w,
+        h: titleH,
+        fontSize: titleFontSize,
+        bold: true,
+        color: this.cleanHexColor(theme.colors.text),
+        fontFace: cleanFontFace(theme.typography.headingFont),
+        align,
+        valign: 'top',
+      });
+    }
+    curY += titleH + (compact ? 0.04 : 0.08);
 
-    if (hero.subtitle) {
-      const subLines = Math.max(1, Math.ceil(hero.subtitle.length / 56));
-      const subH = Math.max(0.38, subLines * 0.3 + 0.1);
-      const subFontSize = subLines > 2 ? 14 : 16;
+    if (hero.subtitle && curY < maxY - 0.14) {
+      const subLines = Math.max(1, Math.ceil(hero.subtitle.length / (compact ? 64 : 56)));
+      const subH = Math.min(
+        Math.max(compact ? 0.28 : 0.38, subLines * 0.28 + 0.06),
+        maxY - curY
+      );
+      const bodySize = themeSizeToPptxPoints(theme.typography.sizes?.body, 18);
+      const subFontSize = compact ? bodySize - 1 : subLines > 2 ? bodySize - 1 : bodySize + 1;
       pptxSlide.addText(hero.subtitle, {
         x: rect.x,
         y: curY,
@@ -1042,9 +1125,24 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         fontSize: subFontSize,
         color: this.cleanHexColor(theme.colors.muted || theme.colors.text),
         fontFace: cleanFontFace(theme.typography.bodyFont),
-        align: (hero.align as 'left' | 'center' | 'right') || 'center',
+        align,
+        valign: 'top',
       });
-      curY += subH + 0.12;
+      curY += subH + (compact ? 0.06 : 0.12);
+    }
+
+    // Keep badge+tagline secondary line inside hero bounds only.
+    if (hero.tagline && hero.badge && curY + 0.28 <= maxY) {
+      pptxSlide.addText(hero.tagline, {
+        x: rect.x,
+        y: curY,
+        w: rect.w,
+        h: 0.28,
+        fontSize: 12,
+        color: this.cleanHexColor(theme.colors.muted || theme.colors.text),
+        fontFace: cleanFontFace(theme.typography.bodyFont),
+        align,
+      });
     }
 
     if (node.children) {
@@ -1315,7 +1413,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     const { element, bounds } = node;
     const compare = element as CompareElement;
     const rect = this.toInches(bounds, scaleX, scaleY);
-    const colW = (rect.w - 0.4) / 2;
+    const colW = (rect.w - 0.5) / 2;
 
     // Left container
     pptxSlide.addShape(pptx.ShapeType.roundRect, {
@@ -1342,7 +1440,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     }
 
     // Right container
-    const rightX = rect.x + colW + 0.4;
+    const rightX = rect.x + colW + 0.5;
     pptxSlide.addShape(pptx.ShapeType.roundRect, {
       x: rightX,
       y: rect.y,
@@ -1366,27 +1464,31 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       });
     }
 
-    // Center VS Badge
-    const vsX = rect.x + colW + 0.05;
-    pptxSlide.addShape(pptx.ShapeType.roundRect, {
+    // Center VS Badge — keep wide enough so "VS" stays on one line
+    const vsW = 0.42;
+    const vsH = 0.42;
+    const vsX = rect.x + colW + (0.5 - vsW) / 2;
+    const vsY = rect.y + rect.h / 2 - vsH / 2;
+    pptxSlide.addShape(pptx.ShapeType.ellipse, {
       x: vsX,
-      y: rect.y + rect.h / 2 - 0.18,
-      w: 0.3,
-      h: 0.3,
-      fill: { color: this.cleanHexColor(theme.colors.border || '#334155') },
-      rectRadius: 0.15,
+      y: vsY,
+      w: vsW,
+      h: vsH,
+      fill: { color: this.cleanHexColor(theme.colors.surface || theme.colors.background) },
+      line: { color: this.cleanHexColor(theme.colors.primary), width: 1.5 },
     });
     pptxSlide.addText('VS', {
       x: vsX,
-      y: rect.y + rect.h / 2 - 0.18,
-      w: 0.3,
-      h: 0.3,
-      fontSize: 10,
+      y: vsY,
+      w: vsW,
+      h: vsH,
+      fontSize: 11,
       bold: true,
-      color: this.cleanHexColor(theme.colors.muted || '#94a3b8'),
+      color: this.cleanHexColor(theme.colors.text),
       fontFace: cleanFontFace(theme.typography.headingFont),
       align: 'center',
       valign: 'middle',
+      margin: 0,
     });
 
     // Render left & right child elements
@@ -1661,19 +1763,19 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     };
   }
 
-  private getHeadingFontSize(level: number, theme: YumiaTheme): number {
-    const sizes = theme.typography.sizes;
+  private getHeadingFontSize(level: number, theme?: YumiaTheme): number {
+    const sizes = theme?.typography?.sizes;
     switch (level) {
       case 1:
-        return sizes?.h1 || 40;
+        return themeSizeToPptxPoints(sizes?.h1, 44);
       case 2:
-        return sizes?.h2 || 32;
+        return themeSizeToPptxPoints(sizes?.h2, 36);
       case 3:
-        return sizes?.h3 || 26;
+        return themeSizeToPptxPoints(sizes?.h3, 28);
       case 4:
-        return sizes?.h4 || 20;
+        return themeSizeToPptxPoints(sizes?.h4, 22);
       default:
-        return 18;
+        return themeSizeToPptxPoints(sizes?.body, 18);
     }
   }
 
@@ -1743,157 +1845,95 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     theme: YumiaTheme
   ): void {
     const isLR = (diagram.direction || 'LR').toUpperCase() === 'LR';
-    const nodeIds = diagram.nodes.map((n) => n.id);
-    if (nodeIds.length === 0) return;
+    if (diagram.nodes.length === 0) return;
 
-    // Calculate ranks
-    const inDegree: Record<string, number> = {};
-    const adj: Record<string, string[]> = {};
-    nodeIds.forEach((id) => {
-      inDegree[id] = 0;
-      adj[id] = [];
-    });
-
-    diagram.edges.forEach((e) => {
-      if (adj[e.from]) adj[e.from]!.push(e.to);
-      if (inDegree[e.to] !== undefined) inDegree[e.to]!++;
-    });
-
-    const ranks: Record<string, number> = {};
-    const queue: string[] = [];
-    nodeIds.forEach((id) => {
-      if (inDegree[id] === 0) {
-        ranks[id] = 0;
-        queue.push(id);
-      }
-    });
-
-    if (queue.length === 0) {
-      ranks[nodeIds[0]!] = 0;
-      queue.push(nodeIds[0]!);
+    if (diagram.title) {
+      pptxSlide.addText(diagram.title, {
+        x: rect.x,
+        y: rect.y,
+        w: rect.w,
+        h: 0.28,
+        fontSize: 12,
+        bold: true,
+        color: this.cleanHexColor(theme.colors.primary),
+        fontFace: cleanFontFace(theme.typography.headingFont),
+        align: 'center',
+      });
     }
 
-    while (queue.length > 0) {
-      const u = queue.shift()!;
-      const r = ranks[u] ?? 0;
-      const neighbors = adj[u] || [];
-      for (const v of neighbors) {
-        const nextR = r + 1;
-        if (ranks[v] === undefined || ranks[v]! < nextR) {
-          ranks[v] = nextR;
-          queue.push(v);
-        }
-      }
+    const layout = computeDiagramLayout(diagram, 1000, isLR, {
+      originX: 0,
+      originY: diagram.title ? 30 : 0,
+      titleHeight: diagram.title ? 30 : 0,
+    });
+
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = 0;
+    let maxY = 0;
+    for (const p of Object.values(layout.positions)) {
+      minX = Math.min(minX, p.x);
+      minY = Math.min(minY, p.y);
+      maxX = Math.max(maxX, p.x + layout.nodeWidth);
+      maxY = Math.max(maxY, p.y + layout.nodeHeight);
     }
-
-    nodeIds.forEach((id, idx) => {
-      if (ranks[id] === undefined) ranks[id] = idx;
-    });
-
-    const rankGroups: Record<number, string[]> = {};
-    nodeIds.forEach((id) => {
-      const r = ranks[id] ?? 0;
-      if (!rankGroups[r]) rankGroups[r] = [];
-      rankGroups[r]!.push(id);
-    });
-
-    const sortedRanks = Object.keys(rankGroups)
-      .map(Number)
-      .sort((a, b) => a - b);
-    const numRanks = Math.max(1, sortedRanks.length);
-    let maxLane = 1;
-    sortedRanks.forEach((r) => {
-      maxLane = Math.max(maxLane, rankGroups[r]!.length);
-    });
-
-    const nodeW = isLR
-      ? Math.min(1.8, (rect.w - 0.5) / (numRanks * 1.5))
-      : Math.min(2.0, (rect.w - 0.5) / maxLane);
-    const nodeH = isLR
-      ? Math.min(0.65, (rect.h - 0.5) / maxLane)
-      : Math.min(0.6, (rect.h - 0.5) / (numRanks * 1.4));
-
-    const gapX = isLR
-      ? numRanks > 1
-        ? (rect.w - numRanks * nodeW) / (numRanks - 1)
-        : 0
-      : maxLane > 1
-        ? (rect.w - maxLane * nodeW) / (maxLane - 1)
-        : 0;
-    const gapY = isLR
-      ? maxLane > 1
-        ? (rect.h - maxLane * nodeH) / (maxLane - 1)
-        : 0
-      : numRanks > 1
-        ? (rect.h - numRanks * nodeH) / (numRanks - 1)
-        : 0;
-
-    const maxLaneHeight = isLR ? maxLane * (nodeH + gapY) - gapY : numRanks * (nodeH + gapY) - gapY;
-    const maxRankWidth = isLR ? numRanks * (nodeW + gapX) - gapX : maxLane * (nodeW + gapX) - gapX;
+    const contentW = Math.max(1, maxX - minX);
+    const contentH = Math.max(1, maxY - minY);
+    const drawY = diagram.title ? rect.y + 0.32 : rect.y;
+    const drawH = diagram.title ? Math.max(0.4, rect.h - 0.32) : rect.h;
+    const s = Math.min(rect.w / contentW, drawH / contentH);
+    const nodeW = layout.nodeWidth * s;
+    const nodeH = layout.nodeHeight * s;
+    const offsetX = rect.x + (rect.w - contentW * s) / 2;
+    const offsetY = drawY + (drawH - contentH * s) / 2;
 
     const positions: Record<string, { x: number; y: number }> = {};
-    sortedRanks.forEach((r, rIdx) => {
-      const ids = rankGroups[r]!;
-      if (isLR) {
-        const colHeight = ids.length * (nodeH + gapY) - gapY;
-        const offsetY = (maxLaneHeight - colHeight) / 2;
-        ids.forEach((id, lIdx) => {
-          positions[id] = {
-            x: rect.x + rIdx * (nodeW + gapX),
-            y: rect.y + offsetY + lIdx * (nodeH + gapY),
-          };
-        });
-      } else {
-        const rowWidth = ids.length * (nodeW + gapX) - gapX;
-        const offsetX = (maxRankWidth - rowWidth) / 2;
-        ids.forEach((id, lIdx) => {
-          positions[id] = {
-            x: rect.x + offsetX + lIdx * (nodeW + gapX),
-            y: rect.y + rIdx * (nodeH + gapY),
-          };
-        });
-      }
-    });
+    for (const [id, p] of Object.entries(layout.positions)) {
+      positions[id] = {
+        x: offsetX + (p.x - minX) * s,
+        y: offsetY + (p.y - minY) * s,
+      };
+    }
 
-    const surfaceColor = this.cleanHexColor(theme.colors.surface || '1e293b');
     const arrowColor = this.cleanHexColor(theme.colors.accent || theme.colors.primary);
+    const surfaceColor = this.cleanHexColor(theme.colors.surface || theme.colors.background);
 
-    // Draw connecting edges
+    // Draw connecting edges (orthogonal elbows to reduce crossings)
     diagram.edges.forEach((e) => {
       const p1 = positions[e.from];
       const p2 = positions[e.to];
       if (!p1 || !p2) return;
 
-      const x1 = isLR ? p1.x + nodeW : p1.x + nodeW / 2;
-      const y1 = isLR ? p1.y + nodeH / 2 : p1.y + nodeH;
-      const x2 = isLR ? p2.x : p2.x + nodeW / 2;
-      const y2 = isLR ? p2.y + nodeH / 2 : p2.y;
-
-      const minX = Math.min(x1, x2);
-      const minY = Math.min(y1, y2);
-      const lineW = Math.max(0.01, Math.abs(x2 - x1));
-      const lineH = Math.max(0.01, Math.abs(y2 - y1));
-      const flipH = x2 < x1;
-      const flipV = y2 < y1;
-
-      pptxSlide.addShape(pptx.ShapeType.line, {
-        x: minX,
-        y: minY,
-        w: lineW,
-        h: lineH,
-        flipH,
-        flipV,
-        line: {
-          color: arrowColor,
-          width: 2,
-          endArrowType: 'triangle',
-          dashType: e.style === 'dashed' ? 'dash' : 'solid',
-        },
-      });
+      const pts = orthogonalEdgePoints(isLR, p1, p2, nodeW, nodeH);
+      if (pts.length < 2) return;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const a = pts[i]!;
+        const b = pts[i + 1]!;
+        const segMinX = Math.min(a.x, b.x);
+        const segMinY = Math.min(a.y, b.y);
+        const lineW = Math.max(0.01, Math.abs(b.x - a.x));
+        const lineH = Math.max(0.01, Math.abs(b.y - a.y));
+        const isLast = i === pts.length - 2;
+        pptxSlide.addShape(pptx.ShapeType.line, {
+          x: segMinX,
+          y: segMinY,
+          w: lineW,
+          h: lineH,
+          flipH: b.x < a.x,
+          flipV: b.y < a.y,
+          line: {
+            color: arrowColor,
+            width: 2,
+            endArrowType: isLast ? 'triangle' : undefined,
+            dashType: e.style === 'dashed' ? 'dash' : 'solid',
+          },
+        });
+      }
 
       if (e.label) {
-        const midX = (x1 + x2) / 2;
-        const midY = (y1 + y2) / 2;
+        const mid = pts[Math.floor(pts.length / 2)]!;
+        const midX = mid.x;
+        const midY = mid.y;
         const pillW = Math.min(1.4, Math.max(0.7, e.label.length * 0.08 + 0.25));
         pptxSlide.addShape(pptx.ShapeType.roundRect, {
           x: midX - pillW / 2,
@@ -1963,17 +2003,18 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         });
       }
 
-      pptxSlide.addText(n.label, {
-        x: p.x + 0.06,
+      pptxSlide.addText(fitDiagramLabel(n.label, Math.max(10, Math.floor((nodeW * 72) / 6.8))), {
+        x: p.x + 0.08,
         y: p.y + 0.06,
-        w: Math.max(0.1, nodeW - 0.12),
+        w: Math.max(0.1, nodeW - 0.16),
         h: Math.max(0.1, nodeH - 0.12),
         align: 'center',
         valign: 'middle',
-        fontSize: n.label.length > 18 ? 10 : 11,
+        fontSize: nodeW < 1.1 ? 10 : n.label.length > 22 ? 11 : 12,
         bold: true,
         color: this.cleanHexColor(theme.colors.text || 'ffffff'),
         fontFace: cleanFontFace(theme.typography.headingFont),
+        margin: 0,
       });
     });
   }

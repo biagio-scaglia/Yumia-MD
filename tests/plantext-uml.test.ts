@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseNativeYumia, parseYumia } from '@yumiamd/parser';
+import { parseYumia } from '@yumiamd/parser';
 import { YumiaCompiler } from '@yumiamd/core';
 import { HtmlRenderer } from '@yumiamd/renderer-html';
 import { PptxRenderer } from '@yumiamd/renderer-pptx';

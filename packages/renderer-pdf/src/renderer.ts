@@ -14,6 +14,7 @@ import {
   HeadingElement,
   HeroElement,
   IconElement,
+  ImageElement,
   ListElement,
   MathElement,
   MermaidElement,
@@ -30,7 +31,16 @@ import {
   TimelineElement,
   TocElement,
 } from '@yumiamd/ast';
-import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
+import {
+  RenderContext,
+  YumiaRenderer,
+  findSystemFont,
+  rasterizeIcon,
+  resolveLocalAsset,
+  resolveSlideGeometry,
+  themeSizeToPdfPoints,
+} from '@yumiamd/renderer';
+import { DefaultLayoutEngine, LayoutNode, computeDiagramLayout, fitDiagramLabel, orthogonalEdgePoints } from '@yumiamd/layout';
 import { defaultTheme, resolveTheme, ThemeOverrides, YumiaTheme } from '@yumiamd/theme';
 
 export interface PdfOutput {
@@ -44,10 +54,26 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
   readonly name = 'PdfRenderer';
   readonly targetFormat = 'pdf';
 
+  private unicodeFontsRegistered = false;
+  private hasUnicodeFont = false;
+  /** When false, PDFKit is prevented from auto-creating overflow pages mid-slide. */
+  private allowAutoPage = true;
+  private layoutEngine = new DefaultLayoutEngine();
+
   private getPdfFont(
     theme: YumiaTheme,
     weight: 'regular' | 'bold' | 'italic' | 'boldItalic' | 'code' = 'regular'
   ): string {
+    if (weight === 'code') {
+      return 'Courier';
+    }
+
+    // Prefer embedded system Unicode fonts when available (Windows/macOS/Linux).
+    if (this.hasUnicodeFont) {
+      if (weight === 'bold' || weight === 'boldItalic') return 'YumiaUnicodeBold';
+      return 'YumiaUnicode';
+    }
+
     const headingFont = (theme.typography?.headingFont || '').toLowerCase();
     const isSerif =
       headingFont.includes('serif') ||
@@ -60,7 +86,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       headingFont.includes('code') ||
       theme.name === 'terminal';
 
-    if (weight === 'code' || isMono) {
+    if (isMono) {
       if (weight === 'bold' || weight === 'boldItalic') return 'Courier-Bold';
       if (weight === 'italic') return 'Courier-Oblique';
       return 'Courier';
@@ -79,6 +105,22 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
     return 'Helvetica';
   }
 
+  private ensureUnicodeFonts(doc: PDFKit.PDFDocument): void {
+    if (this.unicodeFontsRegistered) return;
+    this.unicodeFontsRegistered = true;
+    const regular = findSystemFont('regular');
+    const bold = findSystemFont('bold') || regular;
+    if (regular) {
+      try {
+        doc.registerFont('YumiaUnicode', regular);
+        if (bold) doc.registerFont('YumiaUnicodeBold', bold);
+        this.hasUnicodeFont = true;
+      } catch {
+        this.hasUnicodeFont = false;
+      }
+    }
+  }
+
   async render(presentation: Presentation, context: RenderContext = {}): Promise<PdfOutput> {
     const colorOverrides = presentation.metadata.colors
       ? ({ colors: presentation.metadata.colors } as ThemeOverrides)
@@ -86,9 +128,14 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
     const resolvedTheme = resolveTheme(presentation.metadata.theme, colorOverrides);
     const theme = context.theme || resolvedTheme || defaultTheme;
 
-    const is43 = presentation.metadata.aspectRatio === '4:3';
-    const pageWidth = is43 ? 720 : 960;
-    const pageHeight = 540;
+    const geometry = resolveSlideGeometry(presentation.metadata.aspectRatio);
+    const pageWidth = geometry.points.width;
+    const pageHeight = geometry.points.height;
+
+    // Reset per-render font registration state
+    this.unicodeFontsRegistered = false;
+    this.hasUnicodeFont = false;
+    this.allowAutoPage = true;
 
     return new Promise((resolvePromise, rejectPromise) => {
       try {
@@ -102,6 +149,20 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           },
         });
 
+        // PDFKit's text() auto-adds pages on overflow. For slide decks that is a
+        // correctness bug (extra blank/partial pages). Guard addPage so only
+        // explicit slide breaks create pages.
+        let createdPages = 0;
+        const originalAddPage = doc.addPage.bind(doc);
+        doc.addPage = ((...args: Parameters<typeof doc.addPage>) => {
+          if (!this.allowAutoPage) {
+            // Swallow overflow page breaks; content is clipped to the slide canvas.
+            return doc;
+          }
+          createdPages += 1;
+          return originalAddPage(...args);
+        }) as typeof doc.addPage;
+
         const chunks: Buffer[] = [];
         doc.on('data', (chunk) => chunks.push(chunk));
         doc.on('end', () => {
@@ -109,7 +170,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           resolvePromise({
             format: 'pdf',
             data: new Uint8Array(buffer),
-            pageCount: presentation.slides.length,
+            pageCount: createdPages,
             slideCount: presentation.slides.length,
           });
         });
@@ -147,24 +208,37 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
     theme: YumiaTheme,
     presentation?: Presentation
   ): void {
+    this.ensureUnicodeFonts(doc);
+
+    this.allowAutoPage = true;
     doc.addPage({
       size: [pageWidth, pageHeight],
       margins: { top: 0, bottom: 0, left: 0, right: 0 },
     });
+    // Lock page creation for the rest of this slide's paint cycle.
+    this.allowAutoPage = false;
 
     // 1. Fill Slide Background
     doc.rect(0, 0, pageWidth, pageHeight).fill(theme.colors.background);
 
-    // 2. Padding and usable content boundaries
+    // 2. Shared layout geometry (parity with PPTX) scaled into PDF points
+    const geometry = resolveSlideGeometry(presentation?.metadata.aspectRatio);
+    const viewport = geometry.pixelViewport;
+    const scaleX = pageWidth / viewport.width;
+    const scaleY = pageHeight / viewport.height;
+    const padPx = Math.round((pageWidth * 0.06) / scaleX);
+    const footerBand = 28;
+    const contentBottom = pageHeight - footerBand;
     const padX = pageWidth * 0.06;
-    const padY = pageHeight * 0.08;
-    const contentWidth = pageWidth - padX * 2;
-    let cursorY = padY;
 
-    // 3. Render slide elements sequentially
-    for (const element of slide.elements) {
-      cursorY = this.renderElement(doc, element, padX, cursorY, contentWidth, theme, presentation);
-      cursorY += 12; // Gap between root blocks
+    const slideLayout = this.layoutEngine.computeSlide(slide, viewport, {
+      padding: padPx,
+      gap: 24,
+    });
+
+    // 3. Paint layout tree (roots + nested children for parity with PPTX)
+    for (const node of slideLayout.nodes) {
+      this.paintLayoutNode(doc, node, scaleX, scaleY, theme, presentation, contentBottom);
     }
 
     // 4. Slide Footer, Watermark & Progress bar
@@ -181,7 +255,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         .fontSize(9)
         .fillColor(theme.colors.muted || '#888888')
         .text(watermarkText.toUpperCase(), padX, pageHeight - 22, {
-          width: contentWidth - 80,
+          width: pageWidth - padX * 2 - 80,
           align: 'left',
         });
     }
@@ -194,6 +268,229 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         width: 60,
         align: 'right',
       });
+  }
+
+  private paintLayoutNode(
+    doc: PDFKit.PDFDocument,
+    node: LayoutNode,
+    scaleX: number,
+    scaleY: number,
+    theme: YumiaTheme,
+    presentation: Presentation | undefined,
+    contentBottom: number
+  ): void {
+    const el = node.element;
+    const x = node.bounds.x * scaleX;
+    const y = node.bounds.y * scaleY;
+    const w = node.bounds.width * scaleX;
+    const h = node.bounds.height * scaleY;
+    if (y >= contentBottom - 8) return;
+
+    const hasChildren = !!(node.children && node.children.length > 0);
+    if (
+      hasChildren &&
+      (el.type === 'grid' ||
+        el.type === 'stack' ||
+        el.type === 'columns' ||
+        el.type === 'column')
+    ) {
+      for (const child of node.children!) {
+        this.paintLayoutNode(doc, child, scaleX, scaleY, theme, presentation, contentBottom);
+      }
+      return;
+    }
+
+    if (hasChildren && el.type === 'card') {
+      this.paintCardFrame(doc, el as CardElement, x, y, w, h, theme);
+      for (const child of node.children!) {
+        this.paintLayoutNode(doc, child, scaleX, scaleY, theme, presentation, contentBottom);
+      }
+      return;
+    }
+
+    if (hasChildren && el.type === 'compare') {
+      this.paintCompareFrame(doc, el as CompareElement, x, y, w, h, theme);
+      for (const child of node.children!) {
+        this.paintLayoutNode(doc, child, scaleX, scaleY, theme, presentation, contentBottom);
+      }
+      return;
+    }
+
+    if (el.type === 'hero') {
+      this.paintHeroInBounds(doc, el as HeroElement, x, y, w, h, theme);
+      if (hasChildren) {
+        for (const child of node.children!) {
+          this.paintLayoutNode(doc, child, scaleX, scaleY, theme, presentation, contentBottom);
+        }
+      }
+      return;
+    }
+
+    this.renderElement(doc, el, x, y, w, theme, presentation);
+  }
+
+  private paintCardFrame(
+    doc: PDFKit.PDFDocument,
+    card: CardElement,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    theme: YumiaTheme
+  ): void {
+    const variantColor = this.getVariantColor(card.variant, theme);
+    doc.save();
+    doc
+      .roundedRect(x, y, width, height, 8)
+      .fill(theme.colors.surface || 'rgba(255,255,255,0.06)');
+    doc.roundedRect(x, y, width, height, 8).lineWidth(1.5).strokeColor(variantColor).stroke();
+    doc.restore();
+    if (card.title) {
+      doc
+        .font(this.getPdfFont(theme, 'bold'))
+        .fontSize(13)
+        .fillColor(variantColor)
+        .text(this.stripFormatting(card.title), x + 12, y + 10, {
+          width: width - 24,
+          height: 22,
+          ellipsis: true,
+        });
+    }
+  }
+
+  private paintCompareFrame(
+    doc: PDFKit.PDFDocument,
+    compare: CompareElement,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    theme: YumiaTheme
+  ): void {
+    const gap = 16;
+    const colW = (width - gap) / 2;
+    const leftColor = theme.colors.primary;
+    const rightColor = theme.colors.accent || theme.colors.secondary || theme.colors.primary;
+    doc.save();
+    doc.roundedRect(x, y, colW, height, 8).fill(theme.colors.surface || '#151522');
+    doc
+      .roundedRect(x, y, colW, height, 8)
+      .lineWidth(1.4)
+      .strokeColor(theme.colors.border || 'rgba(255,255,255,0.15)')
+      .stroke();
+    doc
+      .roundedRect(x + colW + gap, y, colW, height, 8)
+      .fill(theme.colors.surface || '#151522');
+    doc
+      .roundedRect(x + colW + gap, y, colW, height, 8)
+      .lineWidth(1.4)
+      .strokeColor(theme.colors.border || 'rgba(255,255,255,0.15)')
+      .stroke();
+    doc.restore();
+
+    const midX = x + colW + gap / 2;
+    const midY = y + height / 2;
+    doc.circle(midX, midY, 16).fill(theme.colors.surface || '#151522');
+    doc.circle(midX, midY, 16).lineWidth(1.4).strokeColor(theme.colors.primary).stroke();
+    doc
+      .font(this.getPdfFont(theme, 'bold'))
+      .fontSize(10)
+      .fillColor(theme.colors.text)
+      .text('VS', midX - 14, midY - 5, { width: 28, align: 'center' });
+
+    if (compare.leftTitle) {
+      doc
+        .font(this.getPdfFont(theme, 'bold'))
+        .fontSize(11)
+        .fillColor(leftColor)
+        .text(this.stripFormatting(compare.leftTitle), x + 10, y + 10, {
+          width: colW - 20,
+          height: 28,
+          ellipsis: true,
+        });
+    }
+    if (compare.rightTitle) {
+      doc
+        .font(this.getPdfFont(theme, 'bold'))
+        .fontSize(11)
+        .fillColor(rightColor)
+        .text(this.stripFormatting(compare.rightTitle), x + colW + gap + 10, y + 10, {
+          width: colW - 20,
+          height: 28,
+          ellipsis: true,
+        });
+    }
+  }
+
+  private paintHeroInBounds(
+    doc: PDFKit.PDFDocument,
+    hero: HeroElement,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    theme: YumiaTheme
+  ): void {
+    const align = (hero.align as 'left' | 'center' | 'right') || 'center';
+    const compact = height < 140;
+    let curY = y;
+    const maxY = y + height - 4;
+
+    if (hero.badge && curY < maxY) {
+      const label = this.stripFormatting(hero.badge).toUpperCase();
+      doc.font(this.getPdfFont(theme, 'bold')).fontSize(compact ? 8 : 9);
+      const labelW = Math.min(width, Math.max(70, doc.widthOfString(label) + 24));
+      const badgeX =
+        align === 'left' ? x : align === 'right' ? x + width - labelW : x + (width - labelW) / 2;
+      doc
+        .roundedRect(badgeX, curY, labelW, compact ? 16 : 18, 9)
+        .lineWidth(1.2)
+        .strokeColor(theme.colors.primary)
+        .fillColor(theme.colors.surface || '#f8fafc')
+        .fillAndStroke();
+      doc
+        .font(this.getPdfFont(theme, 'bold'))
+        .fontSize(compact ? 8 : 9)
+        .fillColor(theme.colors.primary)
+        .text(label, badgeX, curY + 3, { width: labelW, align: 'center' });
+      curY += compact ? 22 : 28;
+    } else if (hero.tagline && curY < maxY) {
+      doc.font(this.getPdfFont(theme, 'bold')).fontSize(compact ? 10 : 11).fillColor(theme.colors.primary);
+      doc.text(this.stripFormatting(hero.tagline).toUpperCase(), x, curY, { width, align });
+      curY += 20;
+    }
+
+    if (curY < maxY) {
+      const titleSize = compact
+        ? themeSizeToPdfPoints(theme.typography.sizes?.h1, 44)
+        : themeSizeToPdfPoints(theme.typography.sizes?.display, 56);
+      doc.font(this.getPdfFont(theme, 'bold')).fontSize(titleSize).fillColor(theme.colors.text);
+      doc.text(this.stripFormatting(hero.title), x, curY, {
+        width,
+        height: Math.max(20, maxY - curY - (hero.subtitle ? 28 : 4)),
+        lineGap: 4,
+        align,
+        ellipsis: true,
+      });
+      curY += Math.min(
+        maxY - curY,
+        doc.heightOfString(this.stripFormatting(hero.title), { width }) + 8
+      );
+    }
+
+    if (hero.subtitle && curY < maxY) {
+      const subSize = themeSizeToPdfPoints(theme.typography.sizes?.body, 18);
+      doc
+        .font(this.getPdfFont(theme, 'regular'))
+        .fontSize(compact ? subSize - 1 : subSize + 1)
+        .fillColor(theme.colors.muted || '#888888');
+      doc.text(this.stripFormatting(hero.subtitle), x, curY, {
+        width,
+        height: Math.max(16, maxY - curY),
+        align,
+        ellipsis: true,
+      });
+    }
   }
 
   private renderElement(
@@ -210,21 +507,51 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         const hero = element as HeroElement;
         const align = (hero.align as 'left' | 'center' | 'right') || 'center';
         let curY = y;
-        if (hero.tagline) {
+
+        if (hero.badge) {
+          const label = this.stripFormatting(hero.badge).toUpperCase();
+          doc.font(this.getPdfFont(theme, 'bold')).fontSize(9);
+          const labelW = Math.min(width, Math.max(70, doc.widthOfString(label) + 24));
+          const badgeX =
+            align === 'left' ? x : align === 'right' ? x + width - labelW : x + (width - labelW) / 2;
+          doc
+            .roundedRect(badgeX, curY, labelW, 18, 9)
+            .lineWidth(1.2)
+            .strokeColor(theme.colors.primary)
+            .fillColor(theme.colors.surface || '#f8fafc')
+            .fillAndStroke();
+          doc
+            .font(this.getPdfFont(theme, 'bold'))
+            .fontSize(9)
+            .fillColor(theme.colors.primary)
+            .text(label, badgeX, curY + 4, { width: labelW, align: 'center' });
+          curY += 28;
+        } else if (hero.tagline) {
           doc.font(this.getPdfFont(theme, 'bold')).fontSize(11).fillColor(theme.colors.primary);
           doc.text(this.stripFormatting(hero.tagline).toUpperCase(), x, curY, { width, align });
           curY += 22;
         }
-        doc.font(this.getPdfFont(theme, 'bold')).fontSize(32).fillColor(theme.colors.text);
+
+        const titleSize = themeSizeToPdfPoints(theme.typography.sizes?.display, 56);
+        doc.font(this.getPdfFont(theme, 'bold')).fontSize(titleSize).fillColor(theme.colors.text);
         doc.text(this.stripFormatting(hero.title), x, curY, { width, lineGap: 6, align });
         curY += doc.heightOfString(this.stripFormatting(hero.title), { width }) + 10;
         if (hero.subtitle) {
+          const subSize = themeSizeToPdfPoints(theme.typography.sizes?.body, 18) + 1;
           doc
             .font(this.getPdfFont(theme, 'regular'))
-            .fontSize(15)
+            .fontSize(subSize)
             .fillColor(theme.colors.muted || '#888888');
           doc.text(this.stripFormatting(hero.subtitle), x, curY, { width, lineGap: 4, align });
           curY += doc.heightOfString(this.stripFormatting(hero.subtitle), { width }) + 14;
+        }
+        if (hero.tagline && hero.badge) {
+          doc
+            .font(this.getPdfFont(theme, 'regular'))
+            .fontSize(11)
+            .fillColor(theme.colors.muted || '#888888');
+          doc.text(this.stripFormatting(hero.tagline), x, curY, { width, align });
+          curY += 18;
         }
         if (hero.elements) {
           for (const child of hero.elements) {
@@ -267,21 +594,97 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
       case 'heading': {
         const h = element as HeadingElement;
-        const fontSize = h.level === 1 ? 28 : h.level === 2 ? 22 : 18;
+        const sizes = theme.typography.sizes;
+        const fontSize =
+          h.level === 1
+            ? themeSizeToPdfPoints(sizes?.h1, 44)
+            : h.level === 2
+              ? themeSizeToPdfPoints(sizes?.h2, 36)
+              : themeSizeToPdfPoints(sizes?.h3, 28);
         const color = h.level === 1 ? theme.colors.primary : theme.colors.text;
 
         doc.font(this.getPdfFont(theme, 'bold')).fontSize(fontSize).fillColor(color);
-        doc.text(this.stripFormatting(h.text), x, y, { width, lineGap: 4 });
+        doc.text(this.stripFormatting(h.text), x, y, {
+          width,
+          lineGap: 4,
+          align: h.align || 'left',
+        });
         const height = doc.heightOfString(this.stripFormatting(h.text), { width });
         return y + height;
       }
 
       case 'paragraph': {
         const p = element as ParagraphElement;
-        doc.font(this.getPdfFont(theme, 'regular')).fontSize(14).fillColor(theme.colors.text);
-        doc.text(this.stripFormatting(p.text), x, y, { width, lineGap: 4 });
+        const bodySize = themeSizeToPdfPoints(theme.typography.sizes?.body, 18);
+        doc.font(this.getPdfFont(theme, 'regular')).fontSize(bodySize).fillColor(theme.colors.text);
+        doc.text(this.stripFormatting(p.text), x, y, {
+          width,
+          lineGap: 4,
+          align: p.align || 'left',
+        });
         const height = doc.heightOfString(this.stripFormatting(p.text), { width });
         return y + height;
+      }
+
+      case 'image': {
+        const img = element as ImageElement;
+        const resolved = resolveLocalAsset(img.src);
+        const maxH = typeof img.height === 'number' ? Math.min(img.height, 280) : 220;
+        const boxH = maxH;
+
+        if (!resolved || !resolved.exists) {
+          doc
+            .roundedRect(x, y, width, Math.min(120, boxH), 6)
+            .lineWidth(1)
+            .strokeColor(theme.colors.border || '#94a3b8')
+            .fillColor(theme.colors.surface || '#e2e8f0')
+            .fillAndStroke();
+          doc
+            .font(this.getPdfFont(theme, 'regular'))
+            .fontSize(11)
+            .fillColor(theme.colors.muted || '#64748b')
+            .text(`[Image: ${img.alt || img.src}]`, x + 8, y + 40, {
+              width: width - 16,
+              align: 'center',
+            });
+          return y + Math.min(120, boxH) + 8;
+        }
+
+        try {
+          // Fit image into available width while preserving aspect ratio (no stretch).
+          const fitW = width;
+          const fitH = boxH;
+          doc.image(resolved.absolutePath, x, y, {
+            fit: [fitW, fitH],
+            align: 'center',
+            valign: 'center',
+          });
+          if (img.caption) {
+            doc
+              .font(this.getPdfFont(theme, 'regular'))
+              .fontSize(10)
+              .fillColor(theme.colors.muted || '#888888')
+              .text(this.stripFormatting(img.caption), x, y + fitH + 4, {
+                width,
+                align: 'center',
+              });
+            return y + fitH + 22;
+          }
+          return y + fitH + 8;
+        } catch {
+          doc
+            .roundedRect(x, y, width, 80, 6)
+            .fill(theme.colors.surface || '#e2e8f0');
+          doc
+            .font(this.getPdfFont(theme, 'regular'))
+            .fontSize(11)
+            .fillColor(theme.colors.muted || '#64748b')
+            .text(`[Image unavailable: ${img.alt || img.src}]`, x + 8, y + 30, {
+              width: width - 16,
+              align: 'center',
+            });
+          return y + 88;
+        }
       }
 
       case 'list': {
@@ -357,9 +760,16 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       case 'code': {
         const c = element as CodeElement;
         const lines = c.code.split('\n');
+        const textW = Math.max(40, width - 48);
         doc.font(this.getPdfFont(theme, 'code')).fontSize(10);
-        const lineHeight = 14;
-        const boxHeight = lines.length * lineHeight + 20;
+
+        // Measure wrapped line heights so long lines never overlap the next line.
+        const lineGap = 2;
+        const heights = lines.map((line) =>
+          Math.max(14, doc.heightOfString(line || ' ', { width: textW, lineGap: 0 }))
+        );
+        const contentH = heights.reduce((sum, h) => sum + h, 0) + Math.max(0, lines.length - 1) * lineGap;
+        const boxHeight = contentH + 20;
 
         doc
           .roundedRect(x, y, width, boxHeight, 6)
@@ -387,10 +797,11 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           }
         }
 
+        let lineY = y + 10;
         lines.forEach((line, idx) => {
           const lineNum = idx + 1;
-          const lineY = y + 10 + idx * lineHeight;
           const isHl = highlightSet.has(lineNum);
+          const lineH = heights[idx]!;
 
           const numColor = isHl ? theme.colors.primary : theme.colors.muted || '#555566';
           const textColor = c.highlight
@@ -403,13 +814,18 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
             .font(this.getPdfFont(theme, 'code'))
             .fontSize(9)
             .fillColor(numColor)
-            .text(String(lineNum).padStart(2, ' '), x + 10, lineY, { width: 22 });
+            .text(String(lineNum).padStart(2, ' '), x + 10, lineY, {
+              width: 22,
+              lineBreak: false,
+            });
 
           doc
             .font(this.getPdfFont(theme, 'code'))
             .fontSize(10)
             .fillColor(textColor)
-            .text(line || ' ', x + 36, lineY, { width: width - 48 });
+            .text(line || ' ', x + 36, lineY, { width: textW, lineGap: 0 });
+
+          lineY += lineH + lineGap;
         });
 
         return y + boxHeight;
@@ -1287,10 +1703,19 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
       case 'icon': {
         const ic = element as IconElement;
-        const iconText = `★ ${ic.name.replace(/^[^:]+:/, '').toUpperCase()}`;
-        doc.font(this.getPdfFont(theme, 'bold')).fontSize(11).fillColor(theme.colors.primary);
-        doc.text(iconText, x, y, { width: 120 });
-        return y + 20;
+        const rawSize = typeof ic.size === 'number' ? ic.size : parseInt(String(ic.size || 28), 10);
+        const size = Number.isFinite(rawSize) && rawSize > 0 ? Math.min(96, rawSize) : 28;
+        const color = ic.color || theme.colors.primary;
+        try {
+          const raster = rasterizeIcon(ic.name, size, color);
+          doc.image(raster.png, x, y, { width: size, height: size });
+          return y + size + 8;
+        } catch {
+          const iconText = `★ ${ic.name.replace(/^[^:]+:/, '').toUpperCase()}`;
+          doc.font(this.getPdfFont(theme, 'bold')).fontSize(11).fillColor(color);
+          doc.text(iconText, x, y, { width: Math.max(120, size * 3) });
+          return y + 20;
+        }
       }
 
       case 'grid': {
@@ -1301,26 +1726,47 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         const availableWidth = width - gap * (colCount - 1);
         const colWidth = availableWidth / colCount;
 
-        let maxY = y;
+        const colYs = Array(colCount).fill(y);
         for (let i = 0; i < g.elements.length; i++) {
           const colIdx = i % colCount;
           const colX = x + colIdx * (colWidth + gap);
+          const curColY = colYs[colIdx]!;
           const childY = this.renderElement(
             doc,
             g.elements[i]!,
             colX,
-            y,
+            curColY,
             colWidth,
             theme,
             presentation
           );
-          if (childY > maxY) maxY = childY;
+          colYs[colIdx] = childY + 12;
         }
-        return maxY + 8;
+        return Math.max(...colYs);
       }
 
       case 'stack': {
         const st = element as StackElement;
+        const direction = (st.direction || 'vertical').toLowerCase();
+        if (direction === 'horizontal' || direction === 'row') {
+          const count = Math.max(1, st.elements.length);
+          const gap = 12;
+          const colW = (width - gap * (count - 1)) / count;
+          let maxY = y;
+          st.elements.forEach((child, i) => {
+            const childY = this.renderElement(
+              doc,
+              child,
+              x + i * (colW + gap),
+              y,
+              colW,
+              theme,
+              presentation
+            );
+            maxY = Math.max(maxY, childY);
+          });
+          return maxY;
+        }
         let curY = y;
         for (const child of st.elements) {
           curY = this.renderElement(doc, child, x, curY, width, theme, presentation) + 8;
@@ -1354,154 +1800,64 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
     theme: YumiaTheme
   ): number {
     const isLR = (diagram.direction || 'LR').toUpperCase() === 'LR';
-    const nodeIds = diagram.nodes.map((n) => n.id);
-    if (nodeIds.length === 0) return y;
+    if (diagram.nodes.length === 0) return y;
 
-    // Calculate ranks
-    const inDegree: Record<string, number> = {};
-    const adj: Record<string, string[]> = {};
-    nodeIds.forEach((id) => {
-      inDegree[id] = 0;
-      adj[id] = [];
+    const layout = computeDiagramLayout(diagram, width, isLR, {
+      originX: x,
+      originY: y,
+      titleHeight: 24,
     });
+    const { nodeWidth: nodeW, nodeHeight: nodeH, positions } = layout;
 
-    diagram.edges.forEach((e) => {
-      if (adj[e.from]) adj[e.from]!.push(e.to);
-      if (inDegree[e.to] !== undefined) inDegree[e.to]!++;
-    });
-
-    const ranks: Record<string, number> = {};
-    const queue: string[] = [];
-    nodeIds.forEach((id) => {
-      if (inDegree[id] === 0) {
-        ranks[id] = 0;
-        queue.push(id);
-      }
-    });
-
-    if (queue.length === 0) {
-      ranks[nodeIds[0]!] = 0;
-      queue.push(nodeIds[0]!);
-    }
-
-    while (queue.length > 0) {
-      const u = queue.shift()!;
-      const r = ranks[u] ?? 0;
-      const neighbors = adj[u] || [];
-      for (const v of neighbors) {
-        const nextR = r + 1;
-        if (ranks[v] === undefined || ranks[v]! < nextR) {
-          ranks[v] = nextR;
-          queue.push(v);
-        }
-      }
-    }
-
-    nodeIds.forEach((id, idx) => {
-      if (ranks[id] === undefined) ranks[id] = idx;
-    });
-
-    const rankGroups: Record<number, string[]> = {};
-    nodeIds.forEach((id) => {
-      const r = ranks[id] ?? 0;
-      if (!rankGroups[r]) rankGroups[r] = [];
-      rankGroups[r]!.push(id);
-    });
-
-    const sortedRanks = Object.keys(rankGroups)
-      .map(Number)
-      .sort((a, b) => a - b);
-    const numRanks = Math.max(1, sortedRanks.length);
-    let maxLane = 1;
-    sortedRanks.forEach((r) => {
-      maxLane = Math.max(maxLane, rankGroups[r]!.length);
-    });
-
-    const nodeW = isLR
-      ? Math.min(110, (width - 40) / (numRanks * 1.3))
-      : Math.min(120, (width - 40) / maxLane);
-    const nodeH = 40;
-    const gapX = isLR ? 35 : 25;
-    const gapY = isLR ? 25 : 35;
-
-    let titleOffset = 0;
     if (diagram.title) {
       doc
         .font(this.getPdfFont(theme, 'bold'))
         .fontSize(14)
         .fillColor(theme.colors.primary)
         .text(this.stripFormatting(diagram.title), x, y, { width, align: 'center' });
-      titleOffset = 24;
     }
-
-    const startY = y + titleOffset;
-    const maxLaneHeight = isLR ? maxLane * (nodeH + gapY) - gapY : numRanks * (nodeH + gapY) - gapY;
-    const maxRankWidth = isLR ? numRanks * (nodeW + gapX) - gapX : maxLane * (nodeW + gapX) - gapX;
-
-    const positions: Record<string, { x: number; y: number }> = {};
-    sortedRanks.forEach((r, rIdx) => {
-      const ids = rankGroups[r]!;
-      if (isLR) {
-        const colHeight = ids.length * (nodeH + gapY) - gapY;
-        const offsetY = (maxLaneHeight - colHeight) / 2;
-        ids.forEach((id, lIdx) => {
-          positions[id] = {
-            x: x + 20 + rIdx * (nodeW + gapX),
-            y: startY + 10 + offsetY + lIdx * (nodeH + gapY),
-          };
-        });
-      } else {
-        const rowWidth = ids.length * (nodeW + gapX) - gapX;
-        const offsetX = (maxRankWidth - rowWidth) / 2;
-        ids.forEach((id, lIdx) => {
-          positions[id] = {
-            x: x + 20 + offsetX + lIdx * (nodeW + gapX),
-            y: startY + 10 + rIdx * (nodeH + gapY),
-          };
-        });
-      }
-    });
 
     const arrowColor = theme.colors.accent || theme.colors.primary;
 
-    // Draw edges
     diagram.edges.forEach((e) => {
       const p1 = positions[e.from];
       const p2 = positions[e.to];
       if (!p1 || !p2) return;
 
-      const x1 = isLR ? p1.x + nodeW : p1.x + nodeW / 2;
-      const y1 = isLR ? p1.y + nodeH / 2 : p1.y + nodeH;
-      const x2 = isLR ? p2.x : p2.x + nodeW / 2;
-      const y2 = isLR ? p2.y + nodeH / 2 : p2.y;
+      const pts = orthogonalEdgePoints(isLR, p1, p2, nodeW, nodeH);
+      if (pts.length < 2) return;
+      const last = pts[pts.length - 1]!;
+      const prev = pts[pts.length - 2]!;
 
       doc.save();
       doc.lineWidth(1.5).strokeColor(arrowColor);
       if (e.style === 'dashed') doc.dash(4, { space: 3 });
-      doc.moveTo(x1, y1).lineTo(x2, y2).stroke();
+      doc.moveTo(pts[0]!.x, pts[0]!.y);
+      for (let i = 1; i < pts.length; i++) doc.lineTo(pts[i]!.x, pts[i]!.y);
+      doc.stroke();
       doc.restore();
 
-      // Arrow head
-      const angle = Math.atan2(y2 - y1, x2 - x1);
+      const angle = Math.atan2(last.y - prev.y, last.x - prev.x);
       const headLen = 6;
       doc.save();
       doc.fillColor(arrowColor);
       doc
-        .moveTo(x2, y2)
+        .moveTo(last.x, last.y)
         .lineTo(
-          x2 - headLen * Math.cos(angle - Math.PI / 6),
-          y2 - headLen * Math.sin(angle - Math.PI / 6)
+          last.x - headLen * Math.cos(angle - Math.PI / 6),
+          last.y - headLen * Math.sin(angle - Math.PI / 6)
         )
         .lineTo(
-          x2 - headLen * Math.cos(angle + Math.PI / 6),
-          y2 - headLen * Math.sin(angle + Math.PI / 6)
+          last.x - headLen * Math.cos(angle + Math.PI / 6),
+          last.y - headLen * Math.sin(angle + Math.PI / 6)
         )
         .fill();
       doc.restore();
 
       if (e.label) {
-        const midX = (x1 + x2) / 2;
-        const midY = (y1 + y2) / 2;
+        const mid = pts[Math.floor(pts.length / 2)]!;
+        const midX = mid.x;
+        const midY = mid.y;
         const labelText = this.stripFormatting(e.label);
         const labelW = Math.min(90, Math.max(45, labelText.length * 5.5 + 16));
         doc.save();
@@ -1514,7 +1870,6 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
           .strokeColor(theme.colors.border || '#334155')
           .stroke();
         doc.restore();
-
         doc
           .font(this.getPdfFont(theme, 'bold'))
           .fontSize(7.5)
@@ -1523,7 +1878,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       }
     });
 
-    // Draw nodes
+    const maxChars = Math.max(6, Math.floor((nodeW - 10) / 6));
     diagram.nodes.forEach((n) => {
       const p = positions[n.id];
       if (!p) return;
@@ -1535,27 +1890,27 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       else if (variant === 'success') nodeColor = theme.colors.success || '#10b981';
       else if (variant === 'warning') nodeColor = theme.colors.warning || '#f59e0b';
       else if (variant === 'danger') nodeColor = theme.colors.danger || '#ef4444';
+      else if (variant === 'info') nodeColor = theme.colors.info || theme.colors.primary;
 
       doc.save();
       doc.roundedRect(p.x, p.y, nodeW, nodeH, 6).fill(theme.colors.surface || '#151522');
       doc.roundedRect(p.x, p.y, nodeW, nodeH, 6).lineWidth(1.5).strokeColor(nodeColor).stroke();
       doc.restore();
 
+      const label = fitDiagramLabel(this.stripFormatting(n.label), maxChars);
       doc
         .font(this.getPdfFont(theme, 'bold'))
-        .fontSize(9.5)
+        .fontSize(Math.min(10, Math.max(7.5, nodeH / 4)))
         .fillColor(theme.colors.text)
-        .text(this.stripFormatting(n.label), p.x + 4, p.y + nodeH / 2 - 5, {
+        .text(label, p.x + 4, p.y + Math.max(4, nodeH / 2 - 6), {
           width: nodeW - 8,
+          height: nodeH - 8,
           align: 'center',
+          ellipsis: true,
         });
     });
 
-    const totalH = isLR
-      ? titleOffset + 20 + maxLane * (nodeH + gapY)
-      : titleOffset + 20 + numRanks * (nodeH + gapY);
-
-    return y + totalH + 8;
+    return y + layout.height + 8;
   }
 
   private renderSequence(
@@ -1774,19 +2129,27 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
   }
 
   private stripFormatting(text: string): string {
-    return text
+    let result = text
       .replace(/\*\*(.*?)\*\*/g, '$1')
       .replace(/\*(.*?)\*/g, '$1')
       .replace(/`(.*?)`/g, '$1')
-      .replace(
-        /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2300}-\u{23FF}\u{2B50}]/gu,
-        ''
-      )
-      .replace(/\u200D/g, '')
-      .replace(/\uFE0F/g, '')
       .replace(/[“”]/g, '"')
       .replace(/[‘’]/g, "'")
       .replace(/[—–]/g, '-')
       .trim();
+
+    // Only strip emoji when falling back to WinAnsi core fonts (no Unicode TTF).
+    if (!this.hasUnicodeFont) {
+      result = result
+        .replace(
+          /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2300}-\u{23FF}\u{2B50}]/gu,
+          ''
+        )
+        .replace(/\u200D/g, '')
+        .replace(/\uFE0F/g, '')
+        .trim();
+    }
+
+    return result;
   }
 }

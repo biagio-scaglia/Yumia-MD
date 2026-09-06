@@ -14,6 +14,7 @@ build/
 # Test & Coverage
 coverage/
 .vitest/
+tests/visual-regression/artifacts/
 
 # Logs & Temporary
 *.log
