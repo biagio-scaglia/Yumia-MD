@@ -7,6 +7,7 @@ import {
   ColumnElement,
   ColumnsElement,
   CompareElement,
+  DiagramElement,
   GridElement,
   HeadingElement,
   HeroElement,
@@ -2149,9 +2150,195 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       case 'compare': {
         return this.renderCompare(element as CompareElement, theme);
       }
+      case 'diagram': {
+        return this.renderDiagram(element as DiagramElement, theme);
+      }
       default:
         return '';
     }
+  }
+
+  private renderDiagram(d: DiagramElement, theme: YumiaTheme): string {
+    const isLR = (d.direction || 'LR').toUpperCase() === 'LR';
+    const nodeW = 140;
+    const nodeH = 50;
+    const gapX = isLR ? 70 : 40;
+    const gapY = isLR ? 40 : 60;
+
+    // Build graph and calculate ranks
+    const nodeIds = d.nodes.map((n) => n.id);
+    const inDegree: Record<string, number> = {};
+    const adj: Record<string, string[]> = {};
+    nodeIds.forEach((id) => {
+      inDegree[id] = 0;
+      adj[id] = [];
+    });
+
+    d.edges.forEach((e) => {
+      if (adj[e.from]) adj[e.from]!.push(e.to);
+      if (inDegree[e.to] !== undefined) inDegree[e.to]!++;
+    });
+
+    const ranks: Record<string, number> = {};
+    const queue: string[] = [];
+    nodeIds.forEach((id) => {
+      if (inDegree[id] === 0) {
+        ranks[id] = 0;
+        queue.push(id);
+      }
+    });
+
+    // If cycle or no root, fallback sequence
+    if (queue.length === 0 && nodeIds.length > 0) {
+      ranks[nodeIds[0]!] = 0;
+      queue.push(nodeIds[0]!);
+    }
+
+    while (queue.length > 0) {
+      const u = queue.shift()!;
+      const r = ranks[u] ?? 0;
+      const neighbors = adj[u] || [];
+      for (const v of neighbors) {
+        const nextR = r + 1;
+        if (ranks[v] === undefined || ranks[v]! < nextR) {
+          ranks[v] = nextR;
+          queue.push(v);
+        }
+      }
+    }
+
+    // Assign any unvisited nodes
+    nodeIds.forEach((id, idx) => {
+      if (ranks[id] === undefined) ranks[id] = idx;
+    });
+
+    // Group nodes by rank
+    const rankGroups: Record<number, string[]> = {};
+    nodeIds.forEach((id) => {
+      const r = ranks[id] ?? 0;
+      if (!rankGroups[r]) rankGroups[r] = [];
+      rankGroups[r]!.push(id);
+    });
+
+    const sortedRanks = Object.keys(rankGroups)
+      .map(Number)
+      .sort((a, b) => a - b);
+    const positions: Record<string, { x: number; y: number }> = {};
+
+    let maxLaneIndex = 0;
+    sortedRanks.forEach((r, rIdx) => {
+      const ids = rankGroups[r]!;
+      maxLaneIndex = Math.max(maxLaneIndex, ids.length);
+      ids.forEach((id, lIdx) => {
+        if (isLR) {
+          positions[id] = {
+            x: 40 + rIdx * (nodeW + gapX),
+            y: 40 + lIdx * (nodeH + gapY),
+          };
+        } else {
+          positions[id] = {
+            x: 40 + lIdx * (nodeW + gapX),
+            y: 40 + rIdx * (nodeH + gapY),
+          };
+        }
+      });
+    });
+
+    const totalWidth = isLR
+      ? 80 + Math.max(1, sortedRanks.length) * (nodeW + gapX) - gapX
+      : 80 + Math.max(1, maxLaneIndex) * (nodeW + gapX) - gapX;
+    const totalHeight = isLR
+      ? 80 + Math.max(1, maxLaneIndex) * (nodeH + gapY) - gapY
+      : 80 + Math.max(1, sortedRanks.length) * (nodeH + gapY) - gapY;
+
+    const arrowColor = theme.colors.accent || theme.colors.primary;
+    const markerId = `arrow-${Math.random().toString(36).slice(2, 8)}`;
+
+    let edgesSvg = '';
+    d.edges.forEach((e) => {
+      const p1 = positions[e.from];
+      const p2 = positions[e.to];
+      if (!p1 || !p2) return;
+
+      let x1 = 0;
+      let y1 = 0;
+      let x2 = 0;
+      let y2 = 0;
+
+      if (isLR) {
+        x1 = p1.x + nodeW;
+        y1 = p1.y + nodeH / 2;
+        x2 = p2.x;
+        y2 = p2.y + nodeH / 2;
+      } else {
+        x1 = p1.x + nodeW / 2;
+        y1 = p1.y + nodeH;
+        x2 = p2.x + nodeW / 2;
+        y2 = p2.y;
+      }
+
+      const midX = (x1 + x2) / 2;
+      const midY = (y1 + y2) / 2;
+      const dash = e.style === 'dashed' ? 'stroke-dasharray="5,5"' : '';
+
+      edgesSvg += `<path d="M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}" fill="none" stroke="${arrowColor}" stroke-width="2" ${dash} marker-end="url(#${markerId})" />`;
+      if (e.label) {
+        edgesSvg += `<g transform="translate(${midX}, ${midY})">
+          <rect x="-35" y="-10" width="70" height="20" rx="4" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+          <text x="0" y="3" text-anchor="middle" fill="#e2e8f0" font-size="10" font-family="sans-serif">${this.escapeHtml(e.label)}</text>
+        </g>`;
+      }
+    });
+
+    let nodesSvg = '';
+    d.nodes.forEach((n) => {
+      const p = positions[n.id];
+      if (!p) return;
+      const variant = n.variant || 'primary';
+      let nodeColor = theme.colors.primary;
+      if (variant === 'accent') nodeColor = theme.colors.accent || theme.colors.secondary || theme.colors.primary;
+      else if (variant === 'success') nodeColor = theme.colors.success || '#10b981';
+      else if (variant === 'warning') nodeColor = theme.colors.warning || '#f59e0b';
+      else if (variant === 'danger') nodeColor = theme.colors.danger || '#ef4444';
+
+      let shapeSvg = '';
+      if (n.shape === 'database') {
+        shapeSvg = `
+          <rect x="${p.x}" y="${p.y}" width="${nodeW}" height="${nodeH}" rx="6" fill="rgba(15, 23, 42, 0.75)" stroke="${nodeColor}" stroke-width="2" />
+          <path d="M ${p.x} ${p.y + 12} C ${p.x + nodeW / 2} ${p.y + 20}, ${p.x + nodeW / 2} ${p.y + 20}, ${p.x + nodeW} ${p.y + 12}" fill="none" stroke="${nodeColor}" stroke-width="1.5"/>
+        `;
+      } else if (n.shape === 'diamond') {
+        const cx = p.x + nodeW / 2;
+        const cy = p.y + nodeH / 2;
+        shapeSvg = `<polygon points="${cx},${p.y} ${p.x + nodeW},${cy} ${cx},${p.y + nodeH} ${p.x},${cy}" fill="rgba(15, 23, 42, 0.75)" stroke="${nodeColor}" stroke-width="2"/>`;
+      } else {
+        shapeSvg = `<rect x="${p.x}" y="${p.y}" width="${nodeW}" height="${nodeH}" rx="8" fill="rgba(15, 23, 42, 0.75)" stroke="${nodeColor}" stroke-width="2" />`;
+      }
+
+      nodesSvg += `
+        <g class="yumia-diag-node" data-id="${n.id}">
+          ${shapeSvg}
+          <text x="${p.x + nodeW / 2}" y="${p.y + nodeH / 2 + 4}" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="600" font-family="sans-serif">${this.escapeHtml(n.label)}</text>
+        </g>
+      `;
+    });
+
+    const titleHtml = d.title ? `<div style="font-weight:700; font-size:1.1rem; color:var(--yumia-primary); margin-bottom:0.6rem; text-align:center;">${this.escapeHtml(d.title)}</div>` : '';
+
+    return `
+      <div class="yumia-diagram-container" style="width:100%; display:flex; flex-direction:column; align-items:center; margin:1rem 0;">
+        ${titleHtml}
+        <svg class="yumia-diagram" viewBox="0 0 ${totalWidth} ${totalHeight}" style="max-width:100%; height:auto; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:10px;">
+          <defs>
+            <marker id="${markerId}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="${arrowColor}" />
+            </marker>
+          </defs>
+          ${edgesSvg}
+          ${nodesSvg}
+        </svg>
+      </div>
+    `;
   }
 
   private renderBadge(b: BadgeElement): string {

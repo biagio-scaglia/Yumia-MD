@@ -5,6 +5,9 @@ import {
   ColumnElement,
   CompareElement,
   Diagnostic,
+  DiagramEdge,
+  DiagramElement,
+  DiagramNode,
   Presentation,
   PresentationMetadata,
   Slide,
@@ -22,6 +25,7 @@ import {
   createColumn,
   createColumns,
   createCompare,
+  createDiagram,
   createGrid,
   createHeading,
   createHero,
@@ -81,6 +85,8 @@ export class DefaultYumiaParser implements YumiaParser {
     if (
       trimmed.startsWith('document ') ||
       trimmed.startsWith('document\n') ||
+      trimmed.startsWith('component ') ||
+      trimmed.startsWith('component\n') ||
       trimmed.startsWith('slide ') ||
       trimmed.startsWith('slide\n')
     ) {
@@ -860,6 +866,13 @@ export class DefaultYumiaParser implements YumiaParser {
             end: { line: baseLine + i - 1, column: 1 },
           };
           elements.push(el);
+        } else if (directiveName === 'diagram') {
+          const el = this.parseDiagramDirective(directiveArg, blockLines);
+          el.loc = {
+            start: { line: directiveStartLine, column: 1 },
+            end: { line: baseLine + i - 1, column: 1 },
+          };
+          elements.push(el);
         }
         continue;
       }
@@ -1226,6 +1239,99 @@ export class DefaultYumiaParser implements YumiaParser {
     }
 
     return createTimeline(items, layout);
+  }
+
+  private parseDiagramDirective(directiveArg: string, blockLines: string[]): DiagramElement {
+    const typeMatch = directiveArg.match(/\btype=["']?([^"'\s]+)["']?/);
+    const dirMatch = directiveArg.match(/\b(?:direction|dir)=["']?([^"'\s]+)["']?/);
+    const titleMatch = directiveArg.match(/\btitle=["']([^"']+)["']/);
+    const diagType = typeMatch ? typeMatch[1] : 'flow';
+    const direction = (dirMatch ? dirMatch[1]!.toUpperCase() : 'LR') as
+      | 'LR'
+      | 'TB'
+      | 'RL'
+      | 'BT';
+    const title = titleMatch ? titleMatch[1] : undefined;
+
+    const nodes: DiagramNode[] = [];
+    const edges: DiagramEdge[] = [];
+    const nodeMap = new Map<string, DiagramNode>();
+
+    const ensureNode = (rawLabel: string, shape?: string, variant?: string): DiagramNode => {
+      const clean = rawLabel.replace(/^[[({]+|[\])}]+$/g, '').trim();
+      const id = clean.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+      if (!nodeMap.has(id)) {
+        let detectedShape: DiagramNode['shape'] = 'round';
+        if (rawLabel.startsWith('[(') || shape === 'database') detectedShape = 'database';
+        else if (rawLabel.startsWith('((') || shape === 'circle') detectedShape = 'circle';
+        else if (rawLabel.startsWith('{') || shape === 'diamond') detectedShape = 'diamond';
+        else if (shape) detectedShape = shape as DiagramNode['shape'];
+
+        const node: DiagramNode = {
+          id,
+          label: clean,
+          shape: detectedShape,
+          variant: variant || (nodes.length === 0 ? 'primary' : 'accent'),
+        };
+        nodeMap.set(id, node);
+        nodes.push(node);
+      }
+      return nodeMap.get(id)!;
+    };
+
+    for (const rawLine of blockLines) {
+      const dLine = rawLine.trim();
+      if (!dLine || dLine.startsWith('#') || dLine.startsWith('//')) continue;
+
+      if (dLine.includes('->') || dLine.includes('-->') || dLine.includes('-[')) {
+        const segRegex =
+          /(\[[^\]]+\]|\(\([^)]+\)\)|\[\([^)]+\)\]|\S+)(?:\s*(?:-\[([^\]]+)\]->|-->|->)\s*)?/g;
+        let m: RegExpExecArray | null;
+        let prevNode: DiagramNode | null = null;
+        let pendingEdgeLabel: string | undefined = undefined;
+
+        while ((m = segRegex.exec(dLine)) !== null) {
+          const rawNodeText = m[1]!;
+          const edgeLabel = m[2];
+          if (rawNodeText) {
+            const currNode = ensureNode(rawNodeText);
+            if (prevNode) {
+              edges.push({
+                from: prevNode.id,
+                to: currNode.id,
+                label: pendingEdgeLabel,
+                arrow: true,
+                style: 'solid',
+              });
+            }
+            prevNode = currNode;
+            pendingEdgeLabel = edgeLabel;
+          }
+        }
+      } else if (dLine.startsWith('node ')) {
+        const nParts = dLine.slice(5).trim();
+        const nIdMatch = nParts.match(/^(\S+)/);
+        const nLabelMatch = nParts.match(/\blabel=["']([^"']+)["']/);
+        const nShapeMatch = nParts.match(/\bshape=["']?([^"'\s]+)["']?/);
+        const nVarMatch = nParts.match(/\bvariant=["']?([^"'\s]+)["']?/);
+        if (nIdMatch) {
+          const nId = nIdMatch[1]!;
+          const node = ensureNode(
+            nLabelMatch ? nLabelMatch[1]! : nId,
+            nShapeMatch ? nShapeMatch[1] : undefined,
+            nVarMatch ? nVarMatch[1] : undefined
+          );
+          node.id = nId.toLowerCase();
+          if (nLabelMatch) node.label = nLabelMatch[1]!;
+        }
+      }
+    }
+
+    return createDiagram(nodes, edges, {
+      diagramType: diagType,
+      direction,
+      title,
+    });
   }
 
   private parseCompareBlock(

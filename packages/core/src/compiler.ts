@@ -1,4 +1,5 @@
-import { Diagnostic, Presentation } from '@yumiamd/ast';
+import * as fs from 'node:fs';
+import { Diagnostic, Presentation, Slide } from '@yumiamd/ast';
 import { DefaultLayoutEngine, LayoutEngine, PresentationLayoutResult, Size } from '@yumiamd/layout';
 import { DefaultYumiaParser, ParserOptions, YumiaParser } from '@yumiamd/parser';
 import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
@@ -17,6 +18,12 @@ export interface ValidationResult {
   slideCount: number;
   errors: Diagnostic[];
   warnings: Diagnostic[];
+}
+
+export interface CompileOptions {
+  parserOptions?: ParserOptions | undefined;
+  renderContext?: Partial<RenderContext> | undefined;
+  data?: Record<string, unknown> | unknown[] | string | undefined;
 }
 
 export class YumiaCompiler {
@@ -83,11 +90,13 @@ export class YumiaCompiler {
   async render<TOutput>(
     presentation: Presentation,
     renderer: YumiaRenderer<TOutput>,
-    contextOverrides: Partial<RenderContext> = {}
+    contextOverrides: Partial<RenderContext> = {},
+    data?: Record<string, unknown> | unknown[] | string
   ): Promise<TOutput> {
-    const layout = contextOverrides.layout ?? this.layout(presentation);
-    const presentationTheme = presentation.metadata.theme
-      ? resolveTheme(presentation.metadata.theme)
+    const boundPresentation = data ? expandDataBindings(presentation, data) : presentation;
+    const layout = contextOverrides.layout ?? this.layout(boundPresentation);
+    const presentationTheme = boundPresentation.metadata.theme
+      ? resolveTheme(boundPresentation.metadata.theme)
       : this.defaultTheme;
     const theme = contextOverrides.theme ?? presentationTheme;
 
@@ -97,19 +106,19 @@ export class YumiaCompiler {
       options: contextOverrides.options ?? {},
     };
 
-    return renderer.render(presentation, context);
+    return renderer.render(boundPresentation, context);
   }
 
   async compile<TOutput>(
     source: string,
     renderer: YumiaRenderer<TOutput>,
-    options?: {
-      parserOptions?: ParserOptions;
-      renderContext?: Partial<RenderContext>;
-    }
+    options?: CompileOptions
   ): Promise<TOutput> {
-    const presentation = this.parse(source, options?.parserOptions);
-    return this.render(presentation, renderer, options?.renderContext);
+    let presentation = this.parse(source, options?.parserOptions);
+    if (options?.data) {
+      presentation = expandDataBindings(presentation, options.data);
+    }
+    return this.render(presentation, renderer, options?.renderContext, options?.data);
   }
 
   getSchema(): Record<string, unknown> {
@@ -140,6 +149,10 @@ export class YumiaCompiler {
               syntax: ':::chart type="bar|line|pie|doughnut" title="..." labels="..." data="..."',
               description:
                 'Native editable chart for PowerPoint, PDF vector paths, and interactive SVG',
+            },
+            diagram: {
+              syntax: ':::diagram [direction="LR|TB"]\\n[NodeA] -> [NodeB]\\n:::',
+              description: 'Architecture and vector flow diagram blocks with native rendering',
             },
             mermaid: {
               syntax: ':::mermaid\\ngraph LR\\n  A --> B\\n:::',
@@ -193,6 +206,186 @@ export class YumiaCompiler {
       },
     };
   }
+}
+
+// ---------------------------------------------------------
+// Data-Binding & Templating Engine
+// ---------------------------------------------------------
+
+export function loadData(
+  source: string | Record<string, unknown> | unknown[]
+): Record<string, unknown> | unknown[] {
+  if (typeof source !== 'string') return source;
+  const trimmed = source.trim();
+
+  // Try checking if it is a filepath on disk
+  if (
+    typeof process !== 'undefined' &&
+    (trimmed.endsWith('.json') || trimmed.endsWith('.csv') || !trimmed.includes('\n'))
+  ) {
+    try {
+      if (fs.existsSync(trimmed)) {
+        const fileContent = fs.readFileSync(trimmed, 'utf8');
+        return parseDataString(fileContent, trimmed.endsWith('.csv'));
+      }
+    } catch {
+      // Fallback to direct parse
+    }
+  }
+
+  return parseDataString(
+    trimmed,
+    trimmed.includes(',') && !trimmed.startsWith('{') && !trimmed.startsWith('[')
+  );
+}
+
+export function parseDataString(
+  content: string,
+  forceCsv: boolean = false
+): Record<string, unknown> | unknown[] {
+  const trimmed = content.trim();
+  if (!forceCsv && (trimmed.startsWith('{') || trimmed.startsWith('['))) {
+    try {
+      return JSON.parse(trimmed);
+    } catch {
+      // ignore
+    }
+  }
+
+  // Parse CSV
+  const lines = trimmed
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  if (lines.length === 0) return [];
+  const headerLine = lines[0]!;
+  const headers = parseCsvLine(headerLine);
+  const rows: Record<string, unknown>[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const cols = parseCsvLine(lines[i]!);
+    const row: Record<string, unknown> = {};
+    headers.forEach((h, hIdx) => {
+      const rawVal = cols[hIdx] ?? '';
+      const num = Number(rawVal);
+      row[h] = !isNaN(num) && rawVal !== '' ? num : rawVal;
+    });
+    rows.push(row);
+  }
+  return rows;
+}
+
+function parseCsvLine(line: string): string[] {
+  const result: string[] = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      result.push(cur.trim().replace(/^"|"$/g, ''));
+      cur = '';
+    } else {
+      cur += char;
+    }
+  }
+  result.push(cur.trim().replace(/^"|"$/g, ''));
+  return result;
+}
+
+export function evaluateInterpolation(text: string, context: Record<string, unknown>): string {
+  if (!text || typeof text !== 'string') return text;
+  return text.replace(/\{\{\s*([a-zA-Z0-9_$.]+)\s*\}\}/g, (match, expr) => {
+    const val = resolvePath(context, expr);
+    return val !== undefined && val !== null ? String(val) : match;
+  });
+}
+
+function resolvePath(obj: Record<string, unknown>, path: string): unknown {
+  const parts = path.split('.');
+  let current: unknown = obj;
+  for (const part of parts) {
+    if (current === undefined || current === null || typeof current !== 'object') {
+      return undefined;
+    }
+    current = (current as Record<string, unknown>)[part];
+  }
+  return current;
+}
+
+function deepInterpolate<T>(item: T, context: Record<string, unknown>): T {
+  if (typeof item === 'string') {
+    return evaluateInterpolation(item, context) as unknown as T;
+  }
+  if (Array.isArray(item)) {
+    return item.map((el) => deepInterpolate(el, context)) as unknown as T;
+  }
+  if (item !== null && typeof item === 'object') {
+    const res: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(item)) {
+      res[key] = deepInterpolate(value, context);
+    }
+    return res as unknown as T;
+  }
+  return item;
+}
+
+export function expandDataBindings(
+  presentation: Presentation,
+  rawData?: Record<string, unknown> | unknown[] | string
+): Presentation {
+  if (!rawData) return presentation;
+  const data = loadData(rawData);
+  const rootContext: Record<string, unknown> = Array.isArray(data)
+    ? { items: data, rows: data, data }
+    : { ...(typeof data === 'object' && data !== null ? data : {}), data };
+
+  const expandedSlides: Slide[] = [];
+
+  for (const slide of presentation.slides) {
+    if (slide.each) {
+      const eachExpr = slide.each.trim();
+      let itemName = 'item';
+      let arrayExpr = eachExpr;
+      const inMatch = eachExpr.match(/^(?:(?:\(([^,]+)(?:,\s*([^)]+))?\))|(\S+))\s+in\s+(.+)$/);
+      if (inMatch) {
+        itemName = (inMatch[1] || inMatch[3] || 'item').trim();
+        arrayExpr = inMatch[4]!.trim();
+      }
+
+      const targetArray =
+        resolvePath(rootContext, arrayExpr) ?? (Array.isArray(data) ? data : undefined);
+      if (Array.isArray(targetArray)) {
+        targetArray.forEach((item, index) => {
+          const slideContext: Record<string, unknown> = {
+            ...rootContext,
+            [itemName]: item,
+            index: index + 1,
+            i: index,
+            ...(typeof item === 'object' && item !== null ? (item as Record<string, unknown>) : {}),
+          };
+          const cloned = JSON.parse(JSON.stringify(slide)) as Slide;
+          delete cloned.each;
+          const interpolated = deepInterpolate(cloned, slideContext);
+          expandedSlides.push(interpolated);
+        });
+        continue;
+      }
+    }
+
+    // Default interpolate standard slide
+    const cloned = JSON.parse(JSON.stringify(slide)) as Slide;
+    const interpolated = deepInterpolate(cloned, rootContext);
+    expandedSlides.push(interpolated);
+  }
+
+  const interpolatedMetadata = deepInterpolate(presentation.metadata, rootContext);
+  return {
+    ...presentation,
+    metadata: interpolatedMetadata,
+    slides: expandedSlides,
+  };
 }
 
 // Top-level convenience exports

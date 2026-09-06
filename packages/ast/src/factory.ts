@@ -9,6 +9,9 @@ import {
   ColumnsElement,
   CompareElement,
   ComponentElement,
+  DiagramEdge,
+  DiagramElement,
+  DiagramNode,
   GridElement,
   GroupElement,
   HeadingElement,
@@ -396,5 +399,20 @@ export function createCallout(
     severity,
     ...(title ? { title } : {}),
     ...(icon ? { icon } : {}),
+  };
+}
+
+export function createDiagram(
+  nodes: DiagramNode[] = [],
+  edges: DiagramEdge[] = [],
+  options: Partial<DiagramElement> = {}
+): DiagramElement {
+  return {
+    type: 'diagram',
+    nodes,
+    edges,
+    diagramType: options.diagramType || 'flow',
+    direction: options.direction || 'LR',
+    ...(options || {}),
   };
 }

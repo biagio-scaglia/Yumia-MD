@@ -46,6 +46,7 @@ Theming & Color Options:
 Server & Compiler Options:
   --port <num>       Port for live dev server (default: 3000)
   --open             Open default browser automatically in dev mode
+  --data, -d <file>  Data source file (.json / .csv) for dynamic templating
   --watch, -w        Watch for file changes during compilation
   --out, -o <file>   Specify output file path (default: dist/<name>.<format>)
   --format, -f <fmt> Target output format: pptx (default) | pdf | html
@@ -100,6 +101,7 @@ export async function runCli(
   const cliSecondary = getFlagValue(args, ['--secondary']);
   const cliText = getFlagValue(args, ['--text']);
   const cliAccent = getFlagValue(args, ['--accent']);
+  const cliData = getFlagValue(args, ['--data', '-d']);
   const cliFormat = (getFlagValue(args, ['--format', '-f']) || 'pptx').toLowerCase();
 
   if (command === 'schema') {
@@ -599,6 +601,7 @@ Opening slide introducing the presentation deck.
           const htmlRenderer = new HtmlRenderer();
           const result = await compiler.compile(source, htmlRenderer, {
             ...(renderTheme ? { renderContext: { theme: renderTheme } } : {}),
+            data: cliData,
           });
           writeFileSync(outputPath, result.html, 'utf-8');
           return { slideCount: result.slideCount, format: result.format };
@@ -606,6 +609,7 @@ Opening slide introducing the presentation deck.
           const pdfRenderer = new PdfRenderer();
           const result = await compiler.compile(source, pdfRenderer, {
             ...(renderTheme ? { renderContext: { theme: renderTheme } } : {}),
+            data: cliData,
           });
           const buffer =
             result.data instanceof Uint8Array
@@ -617,6 +621,7 @@ Opening slide introducing the presentation deck.
           const pptxRenderer = new PptxRenderer();
           const result = await compiler.compile(source, pptxRenderer, {
             ...(renderTheme ? { renderContext: { theme: renderTheme } } : {}),
+            data: cliData,
           });
           const buffer =
             result.data instanceof Uint8Array

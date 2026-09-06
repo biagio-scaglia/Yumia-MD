@@ -4,6 +4,9 @@ import {
   CardElement,
   ChartDataSeries,
   ColumnElement,
+  ComponentDefinition,
+  DiagramEdge,
+  DiagramNode,
   MetricElement,
   Presentation,
   PresentationMetadata,
@@ -18,6 +21,7 @@ import {
   createColumn,
   createColumns,
   createCompare,
+  createDiagram,
   createGrid,
   createHeading,
   createHero,
@@ -73,6 +77,7 @@ export class NativeYumiaParser {
     }
 
     const metadata: PresentationMetadata = {};
+    const components: Record<string, ComponentDefinition> = {};
     const slides: Slide[] = [];
     let currentSlideElements: SlideElement[] = [];
     let currentSlide: Slide | null = null;
@@ -123,15 +128,39 @@ export class NativeYumiaParser {
         continue;
       }
 
+      // Component definition: component Name param1, param2...
+      if (cmdLower === 'component') {
+        const parts = tok.args.split(/[,\s]+/).filter(Boolean);
+        const name = parts[0] || 'MyComponent';
+        const params = parts.slice(1);
+        const templateElements: SlideElement[] = [];
+        let nextIdx = idx + 1;
+        while (nextIdx < tokens.length && tokens[nextIdx]!.indent > tok.indent) {
+          const childRes = this.parseElement(tokens, nextIdx, components);
+          if (childRes) {
+            templateElements.push(childRes.element);
+            nextIdx = childRes.nextIdx;
+          } else {
+            nextIdx++;
+          }
+        }
+        components[name.toLowerCase()] = { name, params, template: templateElements };
+        idx = nextIdx;
+        continue;
+      }
+
       // Slide start
       if (tok.command === 'slide' || tok.command === '---') {
         flushSlide();
-        const slideTitle = tok.command === 'slide' ? this.stripQuotes(tok.args) : undefined;
+        const eachMatch = tok.args.match(/\b(?:each|for)=["']([^"']+)["']/);
+        const cleanArgs = tok.args.replace(/\b(?:each|for)=["'][^"']+["']/g, '').trim();
+        const slideTitle = tok.command === 'slide' && cleanArgs ? this.stripQuotes(cleanArgs) : undefined;
         currentSlide = createSlide([], {
           loc: {
             start: { line: tok.lineNum, column: 1 },
             end: { line: tok.lineNum, column: tok.text.length },
           },
+          each: eachMatch ? eachMatch[1] : undefined,
         });
         if (slideTitle) {
           currentSlideElements.push(createHeading(slideTitle, 1));
@@ -164,7 +193,7 @@ export class NativeYumiaParser {
       }
 
       // Slide elements
-      const parsedEl = this.parseElement(tokens, idx);
+      const parsedEl = this.parseElement(tokens, idx, components);
       if (parsedEl) {
         currentSlideElements.push(parsedEl.element);
         idx = parsedEl.nextIdx;
@@ -180,12 +209,15 @@ export class NativeYumiaParser {
       slides.push(createSlide([createHeading(metadata.title || 'Untitled Presentation', 1)]));
     }
 
-    return createPresentation(metadata, slides);
+    const presentation = createPresentation(metadata, slides);
+    presentation.components = components;
+    return presentation;
   }
 
   private parseElement(
     tokens: LineToken[],
-    idx: number
+    idx: number,
+    components: Record<string, ComponentDefinition> = {}
   ): { element: SlideElement; nextIdx: number } | null {
     const tok = tokens[idx]!;
     const baseIndent = tok.indent;
@@ -204,7 +236,7 @@ export class NativeYumiaParser {
         let nextIdx = idx + 1;
 
         while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
-          const childRes = this.parseElement(tokens, nextIdx);
+          const childRes = this.parseElement(tokens, nextIdx, components);
           if (childRes) {
             children.push(childRes.element);
             nextIdx = childRes.nextIdx;
@@ -320,7 +352,7 @@ export class NativeYumiaParser {
         const children: SlideElement[] = [];
         let nextIdx = idx + 1;
         while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
-          const childRes = this.parseElement(tokens, nextIdx);
+          const childRes = this.parseElement(tokens, nextIdx, components);
           if (childRes) {
             children.push(childRes.element);
             nextIdx = childRes.nextIdx;
@@ -336,7 +368,7 @@ export class NativeYumiaParser {
         const cols: SlideElement[] = [];
         let nextIdx = idx + 1;
         while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
-          const childRes = this.parseElement(tokens, nextIdx);
+          const childRes = this.parseElement(tokens, nextIdx, components);
           if (childRes) {
             cols.push(childRes.element);
             nextIdx = childRes.nextIdx;
@@ -359,7 +391,7 @@ export class NativeYumiaParser {
         const children: SlideElement[] = [];
         let nextIdx = idx + 1;
         while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
-          const childRes = this.parseElement(tokens, nextIdx);
+          const childRes = this.parseElement(tokens, nextIdx, components);
           if (childRes) {
             children.push(childRes.element);
             nextIdx = childRes.nextIdx;
@@ -378,7 +410,7 @@ export class NativeYumiaParser {
         const children: SlideElement[] = [];
         let nextIdx = idx + 1;
         while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
-          const childRes = this.parseElement(tokens, nextIdx);
+          const childRes = this.parseElement(tokens, nextIdx, components);
           if (childRes) {
             children.push(childRes.element);
             nextIdx = childRes.nextIdx;
@@ -416,18 +448,20 @@ export class NativeYumiaParser {
       case 'code': {
         const langMatch = tok.args.match(/\blang(?:uage)?=["']?([^"'\s]+)["']?/);
         const hlMatch = tok.args.match(/\bhighlight=["']([^"']+)["']/);
+        const language = langMatch ? langMatch[1] : tok.args.trim().split(' ')[0] || 'typescript';
+        const highlightLines = hlMatch ? parseHighlightLines(hlMatch[1]!) : undefined;
+
         const codeLines: string[] = [];
         let nextIdx = idx + 1;
         while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
           codeLines.push(tokens[nextIdx]!.text);
           nextIdx++;
         }
-        const el = createCode(codeLines.join('\n'), langMatch ? langMatch[1] : undefined);
-        if (hlMatch && hlMatch[1]) {
-          el.highlight = hlMatch[1];
-          el.highlightLines = parseHighlightLines(hlMatch[1]);
-        }
-        return { element: el, nextIdx };
+        const codeText = codeLines.join('\n');
+        return {
+          element: createCode(codeText, language, highlightLines),
+          nextIdx,
+        };
       }
 
       case 'section': {
@@ -453,11 +487,10 @@ export class NativeYumiaParser {
       case 'badge': {
         const textMatch = tok.args.match(/^(?:text=)?["']([^"']+)["']/);
         const variantMatch = tok.args.match(/\bvariant=["']?([^"'\s]+)["']?/);
-        const text = textMatch ? textMatch[1]! : this.stripQuotes(tok.args);
         return {
           element: createBadge(
-            text,
-            variantMatch ? (variantMatch[1] as BadgeElement['variant']) : 'default'
+            textMatch ? textMatch[1]! : this.stripQuotes(tok.args),
+            variantMatch ? (variantMatch[1] as BadgeElement['variant']) : 'primary'
           ),
           nextIdx: idx + 1,
         };
@@ -480,27 +513,21 @@ export class NativeYumiaParser {
 
       case 'image':
       case 'img': {
-        const srcMatch = tok.args.match(/^(?:src=)?["']([^"']+)["']/);
+        const srcMatch = tok.args.match(/^(?:src=)?["']?([^"'\s]+)["']?/);
         const altMatch = tok.args.match(/\balt=["']([^"']+)["']/);
-        const capMatch = tok.args.match(/\bcaption=["']([^"']+)["']/);
         const fitMatch = tok.args.match(/\bfit=["']?([^"'\s]+)["']?/);
-        const widthMatch = tok.args.match(/\bwidth=["']?([^"'\s]+)["']?/);
-        const heightMatch = tok.args.match(/\bheight=["']?([^"'\s]+)["']?/);
         const radiusMatch = tok.args.match(/\bradius=["']?([^"'\s]+)["']?/);
-        const aspectMatch = tok.args.match(/\baspect=["']?([^"'\s]+)["']?/);
+        const shadowMatch = tok.args.match(/\bshadow(?:=["']?([^"'\s]+)["']?)?/);
 
-        const src = srcMatch ? srcMatch[1]! : this.stripQuotes(tok.args);
         return {
           element: createImage(
-            src,
+            srcMatch ? srcMatch[1]! : '',
             altMatch ? altMatch[1] : undefined,
-            capMatch ? capMatch[1] : undefined,
+            undefined,
             {
               fit: fitMatch ? fitMatch[1] : undefined,
-              width: widthMatch ? widthMatch[1] : undefined,
-              height: heightMatch ? heightMatch[1] : undefined,
               radius: radiusMatch ? radiusMatch[1] : undefined,
-              aspectRatio: aspectMatch ? aspectMatch[1] : undefined,
+              shadow: shadowMatch ? (shadowMatch[1] ? shadowMatch[1] : true) : undefined,
             }
           ),
           nextIdx: idx + 1,
@@ -510,48 +537,151 @@ export class NativeYumiaParser {
       case 'chart': {
         const typeMatch = tok.args.match(/type=["']?([^"'\s]+)["']?/);
         const titleMatch = tok.args.match(/title=["']([^"']+)["']/);
-        const chartType = (typeMatch ? typeMatch[1] : 'bar') as 'bar' | 'line' | 'pie';
+        const labelsMatch = tok.args.match(/labels=["']([^"']+)["']/);
+        const dataMatch = tok.args.match(/data=["']([^"']+)["']/);
+
+        const chartType = typeMatch ? typeMatch[1]! : 'bar';
         const title = titleMatch ? titleMatch[1] : undefined;
-
-        const labels: string[] = [];
+        const labels = labelsMatch ? labelsMatch[1]!.split(',').map((s) => s.trim()) : [];
         const series: ChartDataSeries[] = [];
-        let nextIdx = idx + 1;
 
+        if (dataMatch) {
+          const vals = dataMatch[1]!.split(',').map((v) => parseFloat(v.trim()) || 0);
+          series.push({ name: title || 'Data', values: vals });
+        }
+
+        let nextIdx = idx + 1;
         while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
           const sub = tokens[nextIdx]!;
-          if (sub.command === 'labels') {
-            const rawLabels = sub.args.split(',').map((l) => this.stripQuotes(l.trim()));
-            labels.push(...rawLabels);
-          } else if (sub.command === 'series') {
-            const sNameMatch = sub.args.match(/^["']?([^:"']+):/);
-            const name = sNameMatch ? sNameMatch[1]!.trim() : 'Series';
-            const dataStr = sub.args.replace(/^["']?[^:"']+:?\s*/, '').replace(/["']$/, '');
-            const values = dataStr
-              .split(',')
-              .map((v) => parseFloat(v.trim()))
-              .filter((v) => !isNaN(v));
-            series.push({ name, values });
+          if (sub.command === 'series') {
+            const sNameMatch = sub.args.match(/name=["']([^"']+)["']/);
+            const sDataMatch = sub.args.match(/data=["']([^"']+)["']/);
+            if (sDataMatch) {
+              const vals = sDataMatch[1]!.split(',').map((v) => parseFloat(v.trim()) || 0);
+              series.push({
+                name: sNameMatch ? sNameMatch[1] : 'Series',
+                values: vals,
+              });
+            }
           }
           nextIdx++;
         }
 
-        if (labels.length === 0) labels.push('A', 'B', 'C');
-        if (series.length === 0) series.push({ name: 'Data', values: [10, 20, 30] });
+        return {
+          element: createChart(chartType, labels, series, title),
+          nextIdx,
+        };
+      }
 
-        return { element: createChart(chartType, labels, series, title), nextIdx };
+      case 'diagram': {
+        const typeMatch = tok.args.match(/\btype=["']?([^"'\s]+)["']?/);
+        const dirMatch = tok.args.match(/\b(?:direction|dir)=["']?([^"'\s]+)["']?/);
+        const titleMatch = tok.args.match(/\btitle=["']([^"']+)["']/);
+        const diagType = typeMatch ? typeMatch[1] : 'flow';
+        const direction = (dirMatch ? dirMatch[1]!.toUpperCase() : 'LR') as
+          | 'LR'
+          | 'TB'
+          | 'RL'
+          | 'BT';
+        const title = titleMatch ? titleMatch[1] : undefined;
+
+        const nodes: DiagramNode[] = [];
+        const edges: DiagramEdge[] = [];
+        const nodeMap = new Map<string, DiagramNode>();
+
+        const ensureNode = (rawLabel: string, shape?: string, variant?: string): DiagramNode => {
+          const clean = rawLabel.replace(/^[[({]+|[\])}]+$/g, '').trim();
+          const id = clean.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+          if (!nodeMap.has(id)) {
+            let detectedShape: DiagramNode['shape'] = 'round';
+            if (rawLabel.startsWith('[(') || shape === 'database') detectedShape = 'database';
+            else if (rawLabel.startsWith('((') || shape === 'circle') detectedShape = 'circle';
+            else if (rawLabel.startsWith('{') || shape === 'diamond') detectedShape = 'diamond';
+            else if (shape) detectedShape = shape as DiagramNode['shape'];
+
+            const node: DiagramNode = {
+              id,
+              label: clean,
+              shape: detectedShape,
+              variant: variant || (nodes.length === 0 ? 'primary' : 'accent'),
+            };
+            nodeMap.set(id, node);
+            nodes.push(node);
+          }
+          return nodeMap.get(id)!;
+        };
+
+        let nextIdx = idx + 1;
+        while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
+          const dLine = tokens[nextIdx]!.text;
+          if (dLine.includes('->') || dLine.includes('-->') || dLine.includes('-[')) {
+            const segRegex =
+              /(\[[^\]]+\]|\(\([^)]+\)\)|\[\([^)]+\)\]|\S+)(?:\s*(?:-\[([^\]]+)\]->|-->|->)\s*)?/g;
+            let m: RegExpExecArray | null;
+            let prevNode: DiagramNode | null = null;
+            let pendingEdgeLabel: string | undefined = undefined;
+
+            while ((m = segRegex.exec(dLine)) !== null) {
+              const rawNodeText = m[1]!;
+              const edgeLabel = m[2];
+              if (rawNodeText) {
+                const currNode = ensureNode(rawNodeText);
+                if (prevNode) {
+                  edges.push({
+                    from: prevNode.id,
+                    to: currNode.id,
+                    label: pendingEdgeLabel,
+                    arrow: true,
+                    style: 'solid',
+                  });
+                }
+                prevNode = currNode;
+                pendingEdgeLabel = edgeLabel;
+              }
+            }
+          } else if (dLine.startsWith('node ')) {
+            const nParts = dLine.slice(5).trim();
+            const nIdMatch = nParts.match(/^(\S+)/);
+            const nLabelMatch = nParts.match(/\blabel=["']([^"']+)["']/);
+            const nShapeMatch = nParts.match(/\bshape=["']?([^"'\s]+)["']?/);
+            const nVarMatch = nParts.match(/\bvariant=["']?([^"'\s]+)["']?/);
+            if (nIdMatch) {
+              const nId = nIdMatch[1]!;
+              const node = ensureNode(
+                nLabelMatch ? nLabelMatch[1]! : nId,
+                nShapeMatch ? nShapeMatch[1] : undefined,
+                nVarMatch ? nVarMatch[1] : undefined
+              );
+              node.id = nId.toLowerCase();
+              if (nLabelMatch) node.label = nLabelMatch[1]!;
+            }
+          }
+          nextIdx++;
+        }
+
+        const diagEl = createDiagram(nodes, edges, {
+          diagramType: diagType,
+          direction,
+          title,
+        });
+        diagEl.loc = {
+          start: { line: tok.lineNum, column: 1 },
+          end: { line: tok.lineNum, column: tok.text.length },
+        };
+        return { element: diagEl, nextIdx };
       }
 
       case 'compare': {
-        const leftTitleMatch = tok.args.match(/left(?:Title)?=["']([^"']+)["']/);
-        const rightTitleMatch = tok.args.match(/right(?:Title)?=["']([^"']+)["']/);
+        const leftTitleMatch = tok.args.match(/\bleft(?:Title)?=["']([^"']+)["']/);
+        const rightTitleMatch = tok.args.match(/\bright(?:Title)?=["']([^"']+)["']/);
         const leftTitle = leftTitleMatch ? leftTitleMatch[1] : undefined;
         const rightTitle = rightTitleMatch ? rightTitleMatch[1] : undefined;
 
         const leftEls: SlideElement[] = [];
         const rightEls: SlideElement[] = [];
         let currentSide: 'left' | 'right' = 'left';
-        let nextIdx = idx + 1;
 
+        let nextIdx = idx + 1;
         while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
           const sub = tokens[nextIdx]!;
           if (sub.command === 'left') {
@@ -563,7 +693,8 @@ export class NativeYumiaParser {
             nextIdx++;
             continue;
           }
-          const childRes = this.parseElement(tokens, nextIdx);
+
+          const childRes = this.parseElement(tokens, nextIdx, components);
           if (childRes) {
             if (currentSide === 'left') leftEls.push(childRes.element);
             else rightEls.push(childRes.element);
@@ -656,9 +787,61 @@ export class NativeYumiaParser {
         };
       }
 
-      default:
+      default: {
+        // Check if command is a registered component macro
+        const comp =
+          components[tok.command.toLowerCase()] ||
+          Object.values(components).find(
+            (c) => c.name.toLowerCase() === tok.command.toLowerCase()
+          );
+
+        if (comp) {
+          const rawArgs = this.parseArgumentsList(tok.args);
+          const argMap: Record<string, string> = {};
+          comp.params.forEach((param, pIdx) => {
+            argMap[param] = rawArgs[pIdx] ?? '';
+          });
+          const expanded = this.expandComponentTemplate(comp.template, argMap);
+          const element =
+            expanded.length === 1 ? expanded[0]! : createStack(expanded, 'vertical');
+          return { element, nextIdx: idx + 1 };
+        }
+
         // Default treat as paragraph
         return { element: createParagraph(tok.text), nextIdx: idx + 1 };
+      }
+    }
+  }
+
+  private parseArgumentsList(argsStr: string): string[] {
+    const results: string[] = [];
+    if (!argsStr) return results;
+    const regex = /"([^"]*)"|'([^']*)'|([^,\s]+)/g;
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(argsStr)) !== null) {
+      const val = match[1] ?? match[2] ?? match[3] ?? '';
+      const cleanVal = val.trim();
+      if (cleanVal !== '' && cleanVal !== ',') {
+        results.push(cleanVal);
+      }
+    }
+    return results;
+  }
+
+  private expandComponentTemplate(
+    template: SlideElement[],
+    args: Record<string, string>
+  ): SlideElement[] {
+    const jsonStr = JSON.stringify(template);
+    let substituted = jsonStr;
+    for (const [key, val] of Object.entries(args)) {
+      const safeVal = JSON.stringify(val).slice(1, -1);
+      substituted = substituted.split(`{{${key}}}`).join(safeVal);
+    }
+    try {
+      return JSON.parse(substituted);
+    } catch {
+      return template;
     }
   }
 

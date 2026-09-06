@@ -8,6 +8,7 @@ import {
   ColumnElement,
   ColumnsElement,
   CompareElement,
+  DiagramElement,
   GridElement,
   HeadingElement,
   HeroElement,
@@ -963,9 +964,195 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         return curY;
       }
 
+      case 'diagram': {
+        return this.renderDiagram(doc, element as DiagramElement, x, y, width, theme);
+      }
+
       default:
         return y;
     }
+  }
+
+  private renderDiagram(
+    doc: PDFKit.PDFDocument,
+    diagram: DiagramElement,
+    x: number,
+    y: number,
+    width: number,
+    theme: YumiaTheme
+  ): number {
+    const isLR = (diagram.direction || 'LR').toUpperCase() === 'LR';
+    const nodeIds = diagram.nodes.map((n) => n.id);
+    if (nodeIds.length === 0) return y;
+
+    // Calculate ranks
+    const inDegree: Record<string, number> = {};
+    const adj: Record<string, string[]> = {};
+    nodeIds.forEach((id) => {
+      inDegree[id] = 0;
+      adj[id] = [];
+    });
+
+    diagram.edges.forEach((e) => {
+      if (adj[e.from]) adj[e.from]!.push(e.to);
+      if (inDegree[e.to] !== undefined) inDegree[e.to]!++;
+    });
+
+    const ranks: Record<string, number> = {};
+    const queue: string[] = [];
+    nodeIds.forEach((id) => {
+      if (inDegree[id] === 0) {
+        ranks[id] = 0;
+        queue.push(id);
+      }
+    });
+
+    if (queue.length === 0) {
+      ranks[nodeIds[0]!] = 0;
+      queue.push(nodeIds[0]!);
+    }
+
+    while (queue.length > 0) {
+      const u = queue.shift()!;
+      const r = ranks[u] ?? 0;
+      const neighbors = adj[u] || [];
+      for (const v of neighbors) {
+        const nextR = r + 1;
+        if (ranks[v] === undefined || ranks[v]! < nextR) {
+          ranks[v] = nextR;
+          queue.push(v);
+        }
+      }
+    }
+
+    nodeIds.forEach((id, idx) => {
+      if (ranks[id] === undefined) ranks[id] = idx;
+    });
+
+    const rankGroups: Record<number, string[]> = {};
+    nodeIds.forEach((id) => {
+      const r = ranks[id] ?? 0;
+      if (!rankGroups[r]) rankGroups[r] = [];
+      rankGroups[r]!.push(id);
+    });
+
+    const sortedRanks = Object.keys(rankGroups)
+      .map(Number)
+      .sort((a, b) => a - b);
+    const numRanks = Math.max(1, sortedRanks.length);
+    let maxLane = 1;
+    sortedRanks.forEach((r) => {
+      maxLane = Math.max(maxLane, rankGroups[r]!.length);
+    });
+
+    const nodeW = isLR ? Math.min(110, (width - 40) / (numRanks * 1.3)) : Math.min(120, (width - 40) / maxLane);
+    const nodeH = 40;
+    const gapX = isLR ? 35 : 25;
+    const gapY = isLR ? 25 : 35;
+
+    let titleOffset = 0;
+    if (diagram.title) {
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(14)
+        .fillColor(theme.colors.primary)
+        .text(this.stripFormatting(diagram.title), x, y, { width, align: 'center' });
+      titleOffset = 24;
+    }
+
+    const startY = y + titleOffset;
+    const positions: Record<string, { x: number; y: number }> = {};
+    sortedRanks.forEach((r, rIdx) => {
+      const ids = rankGroups[r]!;
+      ids.forEach((id, lIdx) => {
+        if (isLR) {
+          positions[id] = {
+            x: x + 20 + rIdx * (nodeW + gapX),
+            y: startY + 10 + lIdx * (nodeH + gapY),
+          };
+        } else {
+          positions[id] = {
+            x: x + 20 + lIdx * (nodeW + gapX),
+            y: startY + 10 + rIdx * (nodeH + gapY),
+          };
+        }
+      });
+    });
+
+    const arrowColor = theme.colors.accent || theme.colors.primary;
+
+    // Draw edges
+    diagram.edges.forEach((e) => {
+      const p1 = positions[e.from];
+      const p2 = positions[e.to];
+      if (!p1 || !p2) return;
+
+      const x1 = isLR ? p1.x + nodeW : p1.x + nodeW / 2;
+      const y1 = isLR ? p1.y + nodeH / 2 : p1.y + nodeH;
+      const x2 = isLR ? p2.x : p2.x + nodeW / 2;
+      const y2 = isLR ? p2.y + nodeH / 2 : p2.y;
+
+      doc.save();
+      doc.lineWidth(1.5).strokeColor(arrowColor);
+      if (e.style === 'dashed') doc.dash(4, { space: 3 });
+      doc.moveTo(x1, y1).lineTo(x2, y2).stroke();
+      doc.restore();
+
+      // Arrow head
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      const headLen = 6;
+      doc.save();
+      doc.fillColor(arrowColor);
+      doc
+        .moveTo(x2, y2)
+        .lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6), y2 - headLen * Math.sin(angle - Math.PI / 6))
+        .lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6), y2 - headLen * Math.sin(angle + Math.PI / 6))
+        .fill();
+      doc.restore();
+
+      if (e.label) {
+        const midX = (x1 + x2) / 2;
+        const midY = (y1 + y2) / 2;
+        doc
+          .font('Helvetica')
+          .fontSize(8)
+          .fillColor(theme.colors.muted || '#888888')
+          .text(this.stripFormatting(e.label), midX - 25, midY - 6, { width: 50, align: 'center' });
+      }
+    });
+
+    // Draw nodes
+    diagram.nodes.forEach((n) => {
+      const p = positions[n.id];
+      if (!p) return;
+
+      const variant = n.variant || 'primary';
+      let nodeColor = theme.colors.primary;
+      if (variant === 'accent') nodeColor = theme.colors.accent || theme.colors.secondary || theme.colors.primary;
+      else if (variant === 'success') nodeColor = theme.colors.success || '#10b981';
+      else if (variant === 'warning') nodeColor = theme.colors.warning || '#f59e0b';
+      else if (variant === 'danger') nodeColor = theme.colors.danger || '#ef4444';
+
+      doc.save();
+      doc.roundedRect(p.x, p.y, nodeW, nodeH, 6).fill(theme.colors.surface || '#151522');
+      doc.roundedRect(p.x, p.y, nodeW, nodeH, 6).lineWidth(1.5).strokeColor(nodeColor).stroke();
+      doc.restore();
+
+      doc
+        .font('Helvetica-Bold')
+        .fontSize(10)
+        .fillColor('#ffffff')
+        .text(this.stripFormatting(n.label), p.x + 4, p.y + nodeH / 2 - 5, {
+          width: nodeW - 8,
+          align: 'center',
+        });
+    });
+
+    const totalH = isLR
+      ? titleOffset + 20 + maxLane * (nodeH + gapY)
+      : titleOffset + 20 + numRanks * (nodeH + gapY);
+
+    return y + totalH + 8;
   }
 
   private getVariantColor(variant: string | undefined, theme: YumiaTheme): string {

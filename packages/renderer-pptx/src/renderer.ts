@@ -6,6 +6,7 @@ import {
   ChartElement,
   CodeElement,
   CompareElement,
+  DiagramElement,
   HeadingElement,
   HeroElement,
   IconElement,
@@ -278,6 +279,9 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         break;
       case 'math':
         this.renderMath(pptxSlide, pptx, element as MathElement, rect, theme);
+        break;
+      case 'diagram':
+        this.renderDiagram(pptxSlide, pptx, element as DiagramElement, rect, theme);
         break;
       case 'icon': {
         const ic = element as IconElement;
@@ -1524,6 +1528,186 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         margin: 0.08,
       }
     );
+  }
+
+  private renderDiagram(
+    pptxSlide: PptxSlide,
+    pptx: PptxInstance,
+    diagram: DiagramElement,
+    rect: { x: number; y: number; w: number; h: number },
+    theme: YumiaTheme
+  ): void {
+    const isLR = (diagram.direction || 'LR').toUpperCase() === 'LR';
+    const nodeIds = diagram.nodes.map((n) => n.id);
+    if (nodeIds.length === 0) return;
+
+    // Calculate ranks
+    const inDegree: Record<string, number> = {};
+    const adj: Record<string, string[]> = {};
+    nodeIds.forEach((id) => {
+      inDegree[id] = 0;
+      adj[id] = [];
+    });
+
+    diagram.edges.forEach((e) => {
+      if (adj[e.from]) adj[e.from]!.push(e.to);
+      if (inDegree[e.to] !== undefined) inDegree[e.to]!++;
+    });
+
+    const ranks: Record<string, number> = {};
+    const queue: string[] = [];
+    nodeIds.forEach((id) => {
+      if (inDegree[id] === 0) {
+        ranks[id] = 0;
+        queue.push(id);
+      }
+    });
+
+    if (queue.length === 0) {
+      ranks[nodeIds[0]!] = 0;
+      queue.push(nodeIds[0]!);
+    }
+
+    while (queue.length > 0) {
+      const u = queue.shift()!;
+      const r = ranks[u] ?? 0;
+      const neighbors = adj[u] || [];
+      for (const v of neighbors) {
+        const nextR = r + 1;
+        if (ranks[v] === undefined || ranks[v]! < nextR) {
+          ranks[v] = nextR;
+          queue.push(v);
+        }
+      }
+    }
+
+    nodeIds.forEach((id, idx) => {
+      if (ranks[id] === undefined) ranks[id] = idx;
+    });
+
+    const rankGroups: Record<number, string[]> = {};
+    nodeIds.forEach((id) => {
+      const r = ranks[id] ?? 0;
+      if (!rankGroups[r]) rankGroups[r] = [];
+      rankGroups[r]!.push(id);
+    });
+
+    const sortedRanks = Object.keys(rankGroups)
+      .map(Number)
+      .sort((a, b) => a - b);
+    const numRanks = Math.max(1, sortedRanks.length);
+    let maxLane = 1;
+    sortedRanks.forEach((r) => {
+      maxLane = Math.max(maxLane, rankGroups[r]!.length);
+    });
+
+    const nodeW = isLR ? Math.min(1.8, (rect.w - 0.5) / (numRanks * 1.5)) : Math.min(2.0, (rect.w - 0.5) / maxLane);
+    const nodeH = isLR ? Math.min(0.65, (rect.h - 0.5) / maxLane) : Math.min(0.6, (rect.h - 0.5) / (numRanks * 1.4));
+
+    const gapX = isLR ? (numRanks > 1 ? (rect.w - numRanks * nodeW) / (numRanks - 1) : 0) : (maxLane > 1 ? (rect.w - maxLane * nodeW) / (maxLane - 1) : 0);
+    const gapY = isLR ? (maxLane > 1 ? (rect.h - maxLane * nodeH) / (maxLane - 1) : 0) : (numRanks > 1 ? (rect.h - numRanks * nodeH) / (numRanks - 1) : 0);
+
+    const positions: Record<string, { x: number; y: number }> = {};
+    sortedRanks.forEach((r, rIdx) => {
+      const ids = rankGroups[r]!;
+      ids.forEach((id, lIdx) => {
+        if (isLR) {
+          positions[id] = {
+            x: rect.x + rIdx * (nodeW + gapX),
+            y: rect.y + lIdx * (nodeH + gapY),
+          };
+        } else {
+          positions[id] = {
+            x: rect.x + lIdx * (nodeW + gapX),
+            y: rect.y + rIdx * (nodeH + gapY),
+          };
+        }
+      });
+    });
+
+    const surfaceColor = this.cleanHexColor(theme.colors.surface || '1e293b');
+    const arrowColor = this.cleanHexColor(theme.colors.accent || theme.colors.primary);
+
+    // Draw connecting edges
+    diagram.edges.forEach((e) => {
+      const p1 = positions[e.from];
+      const p2 = positions[e.to];
+      if (!p1 || !p2) return;
+
+      const x1 = isLR ? p1.x + nodeW : p1.x + nodeW / 2;
+      const y1 = isLR ? p1.y + nodeH / 2 : p1.y + nodeH;
+      const x2 = isLR ? p2.x : p2.x + nodeW / 2;
+      const y2 = isLR ? p2.y + nodeH / 2 : p2.y;
+
+      pptxSlide.addShape(pptx.ShapeType.line, {
+        x: x1,
+        y: y1,
+        w: x2 - x1,
+        h: y2 - y1,
+        line: {
+          color: arrowColor,
+          width: 2,
+          endArrowType: 'triangle',
+          dashType: e.style === 'dashed' ? 'dash' : 'solid',
+        },
+      });
+
+      if (e.label) {
+        const midX = (x1 + x2) / 2;
+        const midY = (y1 + y2) / 2;
+        pptxSlide.addText(e.label, {
+          x: midX - 0.4,
+          y: midY - 0.15,
+          w: 0.8,
+          h: 0.3,
+          fontSize: 9,
+          color: this.cleanHexColor(theme.colors.muted || '94a3b8'),
+          align: 'center',
+          valign: 'middle',
+        });
+      }
+    });
+
+    // Draw nodes
+    diagram.nodes.forEach((n) => {
+      const p = positions[n.id];
+      if (!p) return;
+
+      const variant = n.variant || 'primary';
+      let nodeBorderColor = this.cleanHexColor(theme.colors.primary);
+      if (variant === 'accent') nodeBorderColor = this.cleanHexColor(theme.colors.accent || theme.colors.secondary || theme.colors.primary);
+      else if (variant === 'success') nodeBorderColor = this.cleanHexColor(theme.colors.success || '10b981');
+      else if (variant === 'warning') nodeBorderColor = this.cleanHexColor(theme.colors.warning || 'f59e0b');
+      else if (variant === 'danger') nodeBorderColor = this.cleanHexColor(theme.colors.danger || 'ef4444');
+
+      let shapeType = pptx.ShapeType.roundRect;
+      if (n.shape === 'diamond') shapeType = pptx.ShapeType.diamond;
+      else if (n.shape === 'database') shapeType = pptx.ShapeType.can;
+      else if (n.shape === 'circle') shapeType = pptx.ShapeType.oval;
+
+      pptxSlide.addShape(shapeType, {
+        x: p.x,
+        y: p.y,
+        w: nodeW,
+        h: nodeH,
+        fill: { color: surfaceColor },
+        line: { color: nodeBorderColor, width: 2 },
+        rectRadius: 0.08,
+      });
+
+      pptxSlide.addText(n.label, {
+        x: p.x + 0.05,
+        y: p.y + 0.05,
+        w: nodeW - 0.1,
+        h: nodeH - 0.1,
+        align: 'center',
+        valign: 'middle',
+        fontSize: 11,
+        bold: true,
+        color: this.cleanHexColor(theme.colors.text || 'ffffff'),
+        fontFace: cleanFontFace(theme.typography.headingFont),
+      });
+    });
   }
 
   private isDarkColor(rawHex?: string): boolean {

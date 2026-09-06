@@ -338,6 +338,37 @@ export interface ResolvedStyle {
   custom?: Record<string, string | number> | undefined;
 }
 
+export interface DiagramNode {
+  id: string;
+  label: string;
+  shape?: 'box' | 'round' | 'circle' | 'database' | 'diamond' | string | undefined;
+  variant?: 'primary' | 'secondary' | 'accent' | 'success' | 'warning' | 'danger' | string | undefined;
+  icon?: string | undefined;
+}
+
+export interface DiagramEdge {
+  from: string;
+  to: string;
+  label?: string | undefined;
+  style?: 'solid' | 'dashed' | 'dotted' | undefined;
+  arrow?: boolean | undefined;
+}
+
+export interface DiagramElement extends BaseElement {
+  type: 'diagram';
+  diagramType?: 'flow' | 'architecture' | 'sequence' | 'tree' | string | undefined;
+  direction?: 'LR' | 'TB' | 'RL' | 'BT' | undefined;
+  nodes: DiagramNode[];
+  edges: DiagramEdge[];
+  title?: string | undefined;
+}
+
+export interface ComponentDefinition {
+  name: string;
+  params: string[];
+  template: SlideElement[];
+}
+
 export type SlideElement =
   | HeroElement
   | CalloutElement
@@ -354,6 +385,7 @@ export type SlideElement =
   | TableElement
   | ChartElement
   | MermaidElement
+  | DiagramElement
   | TimelineElement
   | CompareElement
   | BadgeElement
@@ -374,12 +406,14 @@ export interface Slide extends BaseElement {
   transition?: SlideTransitionType | SlideTransition;
   background?: SlideBackground;
   elements: SlideElement[];
-  notes?: string;
-  metadata?: Record<string, unknown>;
+  notes?: string | undefined;
+  metadata?: Record<string, unknown> | undefined;
+  each?: string | undefined;
 }
 
 export interface Presentation extends BaseElement {
   metadata: PresentationMetadata;
   slides: Slide[];
-  diagnostics?: Diagnostic[];
+  components?: Record<string, ComponentDefinition> | undefined;
+  diagnostics?: Diagnostic[] | undefined;
 }
