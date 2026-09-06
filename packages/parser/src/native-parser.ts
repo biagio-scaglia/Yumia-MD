@@ -301,10 +301,21 @@ export class NativeYumiaParser {
       case 'h1':
       case 'h2':
       case 'h3': {
-        const level =
-          tok.command === 'h1' ? 1 : tok.command === 'h2' ? 2 : tok.command === 'h3' ? 3 : 1;
-        const text = this.stripQuotes(tok.args);
-        const el = createHeading(text, level);
+        const lvlMatch = tok.args.match(/^(?:level=)?([1-4])\b/);
+        let level = 2;
+        let text = tok.args;
+        if (tok.command === 'h1') {
+          level = 1;
+        } else if (tok.command === 'h2') {
+          level = 2;
+        } else if (tok.command === 'h3') {
+          level = 3;
+        } else if (lvlMatch && lvlMatch[1]) {
+          level = parseInt(lvlMatch[1], 10);
+          text = tok.args.replace(/^(?:level=)?[1-4]\s*/, '');
+        }
+        text = this.stripQuotes(text);
+        const el = createHeading(text, Math.min(6, Math.max(1, level)) as 1 | 2 | 3 | 4 | 5 | 6);
         el.loc = {
           start: { line: tok.lineNum, column: 1 },
           end: { line: tok.lineNum, column: tok.text.length },
@@ -587,26 +598,69 @@ export class NativeYumiaParser {
         const edges: DiagramEdge[] = [];
         const nodeMap = new Map<string, DiagramNode>();
 
-        const ensureNode = (rawLabel: string, shape?: string, variant?: string): DiagramNode => {
-          const clean = rawLabel.replace(/^[[({]+|[\])}]+$/g, '').trim();
-          const id = clean.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
-          if (!nodeMap.has(id)) {
-            let detectedShape: DiagramNode['shape'] = 'round';
-            if (rawLabel.startsWith('[(') || shape === 'database') detectedShape = 'database';
-            else if (rawLabel.startsWith('((') || shape === 'circle') detectedShape = 'circle';
-            else if (rawLabel.startsWith('{') || shape === 'diamond') detectedShape = 'diamond';
-            else if (shape) detectedShape = shape as DiagramNode['shape'];
+        const ensureNode = (
+          rawInput: string,
+          shape?: string,
+          variant?: string,
+          explicitLabel?: string
+        ): DiagramNode => {
+          let id = '';
+          let label = '';
+          let detectedShape: DiagramNode['shape'] = (shape as DiagramNode['shape']) || 'round';
 
-            const node: DiagramNode = {
-              id,
-              label: clean,
-              shape: detectedShape,
-              variant: variant || (nodes.length === 0 ? 'primary' : 'accent'),
-            };
-            nodeMap.set(id, node);
-            nodes.push(node);
+          // Check if format is id[(label)], id((label)), id{label}, id[label]
+          const inlineMatch = rawInput.match(
+            /^([a-zA-Z0-9_-]+)(\[\([^)]+\)\]|\(\([^)]+\)\)|\{[^}]+\}|\[[^\]]+\])$/
+          );
+          if (inlineMatch) {
+            id = inlineMatch[1]!.toLowerCase();
+            const body = inlineMatch[2]!;
+            if (body.startsWith('[(')) detectedShape = 'database';
+            else if (body.startsWith('((')) detectedShape = 'circle';
+            else if (body.startsWith('{')) detectedShape = 'diamond';
+            label = body.replace(/^[[({]+|[\])}]+$/g, '').trim();
+          } else {
+            const clean = rawInput.replace(/^[[({]+|[\])}]+$/g, '').trim();
+            if (rawInput.startsWith('[(') || shape === 'database') detectedShape = 'database';
+            else if (rawInput.startsWith('((') || shape === 'circle') detectedShape = 'circle';
+            else if (rawInput.startsWith('{') || shape === 'diamond') detectedShape = 'diamond';
+            label = explicitLabel || clean;
+            id = clean.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
           }
-          return nodeMap.get(id)!;
+
+          // Check if already mapped under id, label, or slug
+          let existing =
+            nodeMap.get(id) ||
+            nodeMap.get(label.toLowerCase()) ||
+            nodeMap.get(label.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase());
+
+          if (!existing && explicitLabel) {
+            const labelSlug = explicitLabel.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+            existing = nodeMap.get(labelSlug) || nodeMap.get(explicitLabel.toLowerCase());
+          }
+
+          if (!existing) {
+            existing = {
+              id,
+              label,
+              shape: detectedShape,
+              variant:
+                (variant as DiagramNode['variant']) || (nodes.length === 0 ? 'primary' : 'accent'),
+            };
+            nodes.push(existing);
+          } else {
+            if (shape) existing.shape = detectedShape;
+            if (variant) existing.variant = variant as DiagramNode['variant'];
+            if (explicitLabel) existing.label = explicitLabel;
+          }
+
+          // Register all aliases so subsequent edge or node references find the exact same node
+          nodeMap.set(id, existing);
+          nodeMap.set(existing.id, existing);
+          nodeMap.set(existing.label.toLowerCase(), existing);
+          nodeMap.set(existing.label.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase(), existing);
+
+          return existing;
         };
 
         let nextIdx = idx + 1;
@@ -614,7 +668,7 @@ export class NativeYumiaParser {
           const dLine = tokens[nextIdx]!.text;
           if (dLine.includes('->') || dLine.includes('-->') || dLine.includes('-[')) {
             const segRegex =
-              /(\[[^\]]+\]|\(\([^)]+\)\)|\[\([^)]+\)\]|\S+)(?:\s*(?:-\[([^\]]+)\]->|-->|->)\s*)?/g;
+              /([a-zA-Z0-9_-]+\[\([^)]+\)\]|[a-zA-Z0-9_-]+\(\([^)]+\)\)|[a-zA-Z0-9_-]+\{[^}]+\}|[a-zA-Z0-9_-]+\[[^\]]+\]|\[\([^)]+\)\]|\(\([^)]+\)\)|\{[^}]+\}|\[[^\]]+\]|\S+)(?:\s*(?:-\[([^\]]+)\]->|-->|->)\s*)?/g;
             let m: RegExpExecArray | null;
             let prevNode: DiagramNode | null = null;
             let pendingEdgeLabel: string | undefined = undefined;
@@ -645,13 +699,14 @@ export class NativeYumiaParser {
             const nVarMatch = nParts.match(/\bvariant=["']?([^"'\s]+)["']?/);
             if (nIdMatch) {
               const nId = nIdMatch[1]!;
+              const explicitLabel = nLabelMatch ? nLabelMatch[1] : undefined;
               const node = ensureNode(
-                nLabelMatch ? nLabelMatch[1]! : nId,
+                nId,
                 nShapeMatch ? nShapeMatch[1] : undefined,
-                nVarMatch ? nVarMatch[1] : undefined
+                nVarMatch ? nVarMatch[1] : undefined,
+                explicitLabel
               );
-              node.id = nId.toLowerCase();
-              if (nLabelMatch) node.label = nLabelMatch[1]!;
+              nodeMap.set(nId.toLowerCase(), node);
             }
           }
           nextIdx++;

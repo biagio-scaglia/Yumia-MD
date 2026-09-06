@@ -1623,22 +1623,31 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         ? (rect.h - numRanks * nodeH) / (numRanks - 1)
         : 0;
 
+    const maxLaneHeight = isLR ? maxLane * (nodeH + gapY) - gapY : numRanks * (nodeH + gapY) - gapY;
+    const maxRankWidth = isLR ? numRanks * (nodeW + gapX) - gapX : maxLane * (nodeW + gapX) - gapX;
+
     const positions: Record<string, { x: number; y: number }> = {};
     sortedRanks.forEach((r, rIdx) => {
       const ids = rankGroups[r]!;
-      ids.forEach((id, lIdx) => {
-        if (isLR) {
+      if (isLR) {
+        const colHeight = ids.length * (nodeH + gapY) - gapY;
+        const offsetY = (maxLaneHeight - colHeight) / 2;
+        ids.forEach((id, lIdx) => {
           positions[id] = {
             x: rect.x + rIdx * (nodeW + gapX),
-            y: rect.y + lIdx * (nodeH + gapY),
+            y: rect.y + offsetY + lIdx * (nodeH + gapY),
           };
-        } else {
+        });
+      } else {
+        const rowWidth = ids.length * (nodeW + gapX) - gapX;
+        const offsetX = (maxRankWidth - rowWidth) / 2;
+        ids.forEach((id, lIdx) => {
           positions[id] = {
-            x: rect.x + lIdx * (nodeW + gapX),
+            x: rect.x + offsetX + lIdx * (nodeW + gapX),
             y: rect.y + rIdx * (nodeH + gapY),
           };
-        }
-      });
+        });
+      }
     });
 
     const surfaceColor = this.cleanHexColor(theme.colors.surface || '1e293b');
