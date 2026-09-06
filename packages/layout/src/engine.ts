@@ -114,9 +114,18 @@ export class DefaultLayoutEngine implements LayoutEngine {
   ): { nodes: LayoutNode[]; totalHeight: number } {
     let currentY = startY;
     const nodes: LayoutNode[] = [];
+    // Heroes sharing a slide with other roots must stay compact or they collide.
+    const compactHero = elements.length > 1 && elements.some((el) => el.type === 'hero');
 
     for (const element of elements) {
-      const node = this.layoutSingleElement(element, startX, currentY, availableWidth, gap);
+      const node = this.layoutSingleElement(
+        element,
+        startX,
+        currentY,
+        availableWidth,
+        gap,
+        compactHero
+      );
       nodes.push(node);
       currentY += node.bounds.height + gap;
     }
@@ -130,11 +139,12 @@ export class DefaultLayoutEngine implements LayoutEngine {
     x: number,
     y: number,
     width: number,
-    gap: number
+    gap: number,
+    compactHero: boolean = false
   ): LayoutNode {
     switch (element.type) {
       case 'hero': {
-        return this.layoutHero(element as HeroElement, x, y, width, gap);
+        return this.layoutHero(element as HeroElement, x, y, width, gap, compactHero);
       }
       case 'heading': {
         const height = this.estimateHeadingHeight(element, width);
@@ -252,33 +262,44 @@ export class DefaultLayoutEngine implements LayoutEngine {
     x: number,
     y: number,
     width: number,
-    gap: number
+    gap: number,
+    compact: boolean = false
   ): LayoutNode {
     let curY = y;
-    if (element.tagline) {
-      curY += 45;
+    if (element.badge || element.tagline) {
+      curY += compact ? 40 : 52;
     }
-    const charsPerLineTitle = Math.max(15, Math.floor(width / 34));
+    const charsPerLineTitle = Math.max(12, Math.floor(width / (compact ? 32 : 28)));
     const titleLines = Math.max(1, Math.ceil(element.title.length / charsPerLineTitle));
-    const titleHeight = Math.max(85, titleLines * 65 + 20);
+    const titleHeight = compact
+      ? Math.max(56, titleLines * 44 + 12)
+      : Math.max(100, titleLines * 72 + 24);
     curY += titleHeight;
 
     if (element.subtitle) {
-      const charsPerLineSub = Math.max(25, Math.floor(width / 20));
+      const charsPerLineSub = Math.max(20, Math.floor(width / (compact ? 20 : 18)));
       const subLines = Math.max(1, Math.ceil(element.subtitle.length / charsPerLineSub));
-      const subHeight = Math.max(50, subLines * 34 + 16);
+      const subHeight = compact
+        ? Math.max(36, subLines * 28 + 10)
+        : Math.max(56, subLines * 36 + 16);
       curY += subHeight;
     }
+
+    curY += compact ? 10 : 16;
 
     const children: LayoutNode[] = [];
     if (element.elements) {
       for (const child of element.elements) {
-        const node = this.layoutSingleElement(child, x, curY, width, gap);
+        const node = this.layoutSingleElement(child, x, curY, width, gap, false);
         children.push(node);
         curY += node.bounds.height + gap;
       }
     }
-    return { element, bounds: { x, y, width, height: Math.max(curY - y, 160) }, children };
+    return {
+      element,
+      bounds: { x, y, width, height: Math.max(curY - y, compact ? 120 : 160) },
+      children,
+    };
   }
 
   private layoutGrid(
