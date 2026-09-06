@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quantum Neural Processing &amp; Distributed Visual Intelligence</title>
+  <title>Yumia — Un linguaggio dichiarativo per documenti visivi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Orbitron:wght@500;700;900&family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap">
@@ -21,13 +21,13 @@
         securityLevel: 'loose',
         themeVariables: {
           darkMode: true,
-          background: '#FCFBF7',
-          primaryColor: '#8B0000',
+          background: '#0B0B12',
+          primaryColor: '#FF2E88',
           primaryTextColor: '#ffffff',
-          primaryBorderColor: '#8B0000',
-          lineColor: '#C29B38',
-          secondaryColor: '#F5F2EB',
-          tertiaryColor: '#F5F2EB'
+          primaryBorderColor: '#FF2E88',
+          lineColor: '#7B61FF',
+          secondaryColor: '#151522',
+          tertiaryColor: '#151522'
         }
       });
       window.mermaid = mermaid;
@@ -51,34 +51,34 @@
   </script>
   <style>
     :root {
-      --yumia-bg: #FCFBF7;
-      --yumia-surface: #F5F2EB;
-      --yumia-elevated-surface: #FFFFFF;
-      --yumia-text: #2C2B29;
-      --yumia-muted: #6B6862;
-      --yumia-primary: #8B0000;
-      --yumia-secondary: #1C3F60;
-      --yumia-accent: #C29B38;
-      --yumia-border: #E0DACD;
-      --yumia-divider: #D5CDBE;
-      --yumia-success: #2E7D32;
-      --yumia-warning: #E65100;
-      --yumia-danger: #C62828;
-      --yumia-info: #1565C0;
-      --yumia-font-heading: Georgia, Times New Roman, serif;
-      --yumia-font-body: Georgia, Times New Roman, serif;
-      --yumia-font-code: Courier New, monospace;
+      --yumia-bg: #0B0B12;
+      --yumia-surface: #151522;
+      --yumia-elevated-surface: #1D1D2E;
+      --yumia-text: #FFFFFF;
+      --yumia-muted: #A7A7B5;
+      --yumia-primary: #FF2E88;
+      --yumia-secondary: #00F0FF;
+      --yumia-accent: #7B61FF;
+      --yumia-border: #2E2E48;
+      --yumia-divider: #3E3E5E;
+      --yumia-success: #00FF9F;
+      --yumia-warning: #FFE600;
+      --yumia-danger: #FF0055;
+      --yumia-info: #00F0FF;
+      --yumia-font-heading: Outfit, Inter, sans-serif;
+      --yumia-font-body: Inter, sans-serif;
+      --yumia-font-code: JetBrains Mono, monospace;
       --yumia-line-height-tight: 1.15;
       --yumia-line-height-normal: 1.55;
-      --yumia-line-height-relaxed: 1.75;
+      --yumia-line-height-relaxed: 1.7;
       --yumia-line-height-body: 1.55;
-      --yumia-letter-spacing-tight: -0.01em;
-      --yumia-radius-sm: 2px;
-      --yumia-radius-md: 4px;
-      --yumia-radius-lg: 6px;
-      --yumia-radius-default: 4px;
-      --yumia-radius-card: 4px;
-      --yumia-shadow-glow: none;
+      --yumia-letter-spacing-tight: -0.02em;
+      --yumia-radius-sm: 6px;
+      --yumia-radius-md: 12px;
+      --yumia-radius-lg: 20px;
+      --yumia-radius-default: 12px;
+      --yumia-radius-card: 16px;
+      --yumia-shadow-glow: 0 0 20px rgba(255, 46, 136, 0.45);
       --yumia-ratio: 16 / 9;
       --yumia-ratio-w: 16;
       --yumia-ratio-h: 9;
@@ -1238,528 +1238,543 @@
   <div id="deck-container">
     <div id="yumia-deck">
       
-    <div class="yumia-slide-wrapper active transition-fade" id="slide-1" data-notes="">
+    <div class="yumia-slide-wrapper active transition-fade" id="slide-1" data-notes="Benvenuti a questa presentazione su Yumia.&lt;br&gt;Oggi esploreremo come Yumia ridefinisce la creazione di presentazioni tecniche introducendo il concetto di Design Compiler: un approccio dichiarativo in cui l&#039;autore descrive l&#039;intento comunicativo e il compilatore genera output multipiattaforma garantiti e coerenti.">
       
         <div class="yumia-hero" data-align="center" data-yumia-role="hero" style="display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; flex:1; width:100%; margin:auto 0;">
-          <div class="yumia-hero-tagline" style="display:inline-flex; align-items:center; padding:4px 14px; border-radius:999px; background:rgba(255,255,255,0.08); border:1px solid var(--yumia-primary); color:var(--yumia-primary); font-size:0.85rem; font-weight:700; margin-bottom:1rem; letter-spacing:0.06em; text-transform:uppercase;">Computer Science &amp; Systems Lab</div>
-          <h1 class="yumia-hero-title" style="font-size:clamp(2.4rem, 4.5vw, 4rem); font-weight:800; line-height:1.1; color:var(--yumia-text); margin-bottom:0.8rem;">Quantum Neural Architecture</h1>
-          <p class="yumia-hero-subtitle" style="font-size:clamp(1.1rem, 1.8vw, 1.5rem); color:var(--yumia-muted); max-width:800px; margin-bottom:1.5rem; line-height:1.5;">Formal Specification of Hybrid Classical-Quantum Distributed Ingestion &amp; Vector Processing Pipelines</p>
+          <div class="yumia-hero-badge" style="display:inline-flex; align-items:center; padding:4px 14px; border-radius:999px; background:rgba(255,255,255,0.08); border:1px solid var(--yumia-primary); color:var(--yumia-primary); font-size:0.85rem; font-weight:700; margin-bottom:1rem; letter-spacing:0.06em; text-transform:uppercase;">Design Compiler</div>
+          
+          <h1 class="yumia-hero-title" style="font-size:clamp(2.4rem, 4.5vw, 4rem); font-weight:800; line-height:1.1; color:var(--yumia-text); margin-bottom:0.8rem;">Yumia</h1>
+          <p class="yumia-hero-subtitle" style="font-size:clamp(1.1rem, 1.8vw, 1.5rem); color:var(--yumia-muted); max-width:800px; margin-bottom:1.5rem; line-height:1.5;">Un linguaggio dichiarativo per documenti visivi</p>
+          <p class="yumia-hero-tagline-text" style="color:var(--yumia-muted); font-size:0.95rem; margin-top:0.5rem;">[Classe / Corso] • [Data della presentazione]</p>
           
         </div>
-<span class="yumia-badge variant-primary">v2.4 Production Specification</span>
-      <div class="yumia-watermark">Yumia v0.1.26 • Confidential</div>
-      <div class="yumia-progress-bar" style="width: 10%;"></div>
+<p>[Nome e Cognome]</p>
+      <div class="yumia-watermark">Yumia • Design Compiler</div>
+      <div class="yumia-progress-bar" style="width: 7%;"></div>
     </div>
 
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-2" data-notes="">
-      <h1>Agenda &amp; Table of Contents</h1>
-
-        <div class="yumia-toc-container">
-          <h2 style="margin-bottom:1.5rem;">Presentation Outline</h2>
-          <div class="yumia-toc-grid">
-            
-          <div class="yumia-toc-item">
-            <div class="yumia-toc-num">2</div>
-            <div>
-              <div class="yumia-toc-title">Agenda &amp; Table of Contents</div>
-              
-            </div>
-          </div>
-
-          <div class="yumia-toc-item">
-            <div class="yumia-toc-num">3</div>
-            <div>
-              <div class="yumia-toc-title">System Topology &amp; Neural Dispatch</div>
-              
-            </div>
-          </div>
-
-          <div class="yumia-toc-item">
-            <div class="yumia-toc-num">4</div>
-            <div>
-              <div class="yumia-toc-title">Empirical Performance Evaluation</div>
-              
-            </div>
-          </div>
-
-          <div class="yumia-toc-item">
-            <div class="yumia-toc-num">5</div>
-            <div>
-              <div class="yumia-toc-title">Comparative Analysis &amp; Mathematical Model</div>
-              
-            </div>
-          </div>
-
-          <div class="yumia-toc-item">
-            <div class="yumia-toc-num">6</div>
-            <div>
-              <div class="yumia-toc-title">Cluster Analytics &amp; Telemetry</div>
-              
-            </div>
-          </div>
-
-          <div class="yumia-toc-item">
-            <div class="yumia-toc-num">7</div>
-            <div>
-              <div class="yumia-toc-title">Implementation &amp; Runtime Kernel</div>
-              
-            </div>
-          </div>
-
-          <div class="yumia-toc-item">
-            <div class="yumia-toc-num">8</div>
-            <div>
-              <div class="yumia-toc-title">Protocol Handshake &amp; Sequence Verification</div>
-              
-            </div>
-          </div>
-
-          <div class="yumia-toc-item">
-            <div class="yumia-toc-num">9</div>
-            <div>
-              <div class="yumia-toc-title">Multi-Dimensional Capabilities &amp; Realtime SLA</div>
-              
-            </div>
-          </div>
-
-          <div class="yumia-toc-item">
-            <div class="yumia-toc-num">10</div>
-            <div>
-              <div class="yumia-toc-title">Object Model &amp; Core Domain Contracts</div>
-              
-            </div>
-          </div>
-          </div>
-        </div>
-      <div class="yumia-watermark">Yumia v0.1.26 • Confidential</div>
-      <div class="yumia-progress-bar" style="width: 20%;"></div>
-    </div>
-
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-3" data-notes="">
-      <h1>System Topology &amp; Neural Dispatch</h1>
-<h2>Vector-Compiled Distributed Ingestion Mesh</h2>
-
-      <div class="yumia-diagram-container">
-        <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-primary); margin-bottom:0.4rem; text-align:center;">Multi-Tier Distributed Neural Processing Pipeline</div>
-        <svg class="yumia-diagram" viewBox="0 0 1180 211" preserveAspectRatio="xMidYMid meet">
-          <defs>
-            <marker id="arrow-zxo1kn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#C29B38" />
-            </marker>
-          </defs>
-          <path d="M 200 105.5 C 237.5 105.5, 237.5 105.5, 275 105.5" fill="none" stroke="#C29B38" stroke-width="2"  marker-end="url(#arrow-zxo1kn)" /><path d="M 435 105.5 C 472.5 105.5, 472.5 105.5, 510 105.5" fill="none" stroke="#C29B38" stroke-width="2"  marker-end="url(#arrow-zxo1kn)" /><g transform="translate(472.5, 105.5)">
-          <rect x="-30.75" y="-11" width="61.5" height="22" rx="6" fill="#F5F2EB" stroke="#E0DACD" stroke-width="1.2"/>
-          <text x="0" y="4" text-anchor="middle" fill="#6B6862" font-size="10" font-weight="600" font-family="sans-serif">TLS 1.3</text>
-        </g><path d="M 670 105.5 C 707.5 105.5, 707.5 105.5, 745 105.5" fill="none" stroke="#C29B38" stroke-width="2"  marker-end="url(#arrow-zxo1kn)" /><g transform="translate(707.5, 105.5)">
-          <rect x="-53.5" y="-11" width="107" height="22" rx="6" fill="#F5F2EB" stroke="#E0DACD" stroke-width="1.2"/>
-          <text x="0" y="4" text-anchor="middle" fill="#6B6862" font-size="10" font-weight="600" font-family="sans-serif">gRPC Streaming</text>
-        </g><path d="M 905 105.5 C 942.5 105.5, 942.5 64, 980 64" fill="none" stroke="#C29B38" stroke-width="2"  marker-end="url(#arrow-zxo1kn)" /><path d="M 905 105.5 C 942.5 105.5, 942.5 147, 980 147" fill="none" stroke="#C29B38" stroke-width="2"  marker-end="url(#arrow-zxo1kn)" /><g transform="translate(942.5, 126.25)">
-          <rect x="-37.25" y="-11" width="74.5" height="22" rx="6" fill="#F5F2EB" stroke="#E0DACD" stroke-width="1.2"/>
-          <text x="0" y="4" text-anchor="middle" fill="#6B6862" font-size="10" font-weight="600" font-family="sans-serif">Hot Cache</text>
-        </g>
-          
-        <g class="yumia-diag-node" data-id="edge_sensors">
-          <rect x="40" y="81.5" width="160" height="48" rx="10" fill="#F5F2EB" stroke="#8B0000" stroke-width="2" />
-          <text x="120" y="109.5" text-anchor="middle" fill="#2C2B29" font-size="11.5" font-weight="700" font-family="sans-serif">Edge Sensors</text>
-        </g>
-      
-        <g class="yumia-diag-node" data-id="ingestion_broker">
-          <rect x="275" y="81.5" width="160" height="48" rx="10" fill="#F5F2EB" stroke="#C29B38" stroke-width="2" />
-          <text x="355" y="109.5" text-anchor="middle" fill="#2C2B29" font-size="11.5" font-weight="700" font-family="sans-serif">Ingestion Broker</text>
-        </g>
-      
-        <g class="yumia-diag-node" data-id="neural_dispatcher">
-          <rect x="510" y="81.5" width="160" height="48" rx="10" fill="#F5F2EB" stroke="#C29B38" stroke-width="2" />
-          <text x="590" y="109.5" text-anchor="middle" fill="#2C2B29" font-size="11.5" font-weight="700" font-family="sans-serif">Neural Dispatcher</text>
-        </g>
-      
-        <g class="yumia-diag-node" data-id="quantum_tensor_cores">
-          <rect x="745" y="81.5" width="160" height="48" rx="10" fill="#F5F2EB" stroke="#C29B38" stroke-width="2" />
-          <text x="825" y="109.5" text-anchor="middle" fill="#2C2B29" font-size="11.5" font-weight="700" font-family="sans-serif">Quantum Tensor Cores</text>
-        </g>
-      
-        <g class="yumia-diag-node" data-id="vector_knowledge_base">
-          
-          <rect x="980" y="40" width="160" height="48" rx="8" fill="#F5F2EB" stroke="#8B0000" stroke-width="2" />
-          <path d="M 980 51 C 1060 58, 1060 58, 1140 51" fill="none" stroke="#8B0000" stroke-width="1.5"/>
-        
-          <text x="1060" y="68" text-anchor="middle" fill="#2C2B29" font-size="11.5" font-weight="700" font-family="sans-serif">Vector Knowledge Base</text>
-        </g>
-      
-        <g class="yumia-diag-node" data-id="redis_semantic_cache">
-          
-          <rect x="980" y="123" width="160" height="48" rx="8" fill="#F5F2EB" stroke="#2E7D32" stroke-width="2" />
-          <path d="M 980 134 C 1060 141, 1060 141, 1140 134" fill="none" stroke="#2E7D32" stroke-width="1.5"/>
-        
-          <text x="1060" y="151" text-anchor="middle" fill="#2C2B29" font-size="11.5" font-weight="700" font-family="sans-serif">Redis Semantic Cache</text>
-        </g>
-      
-        </svg>
-      </div>
-    
-      <div class="yumia-watermark">Yumia v0.1.26 • Confidential</div>
-      <div class="yumia-progress-bar" style="width: 30%;"></div>
-    </div>
-
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-4" data-notes="">
-      <h1>Empirical Performance Evaluation</h1>
-<h2>Measured Benchmarks Across Compute Clusters</h2>
-<div class="yumia-grid" style="grid-template-columns:repeat(2, minmax(0, 1fr)); gap:20;">
-        <div class="yumia-card" data-variant="success">
-          <div class="yumia-card-title">Inference Latency</div>
-          
-        <div class="yumia-metric" data-variant="success">
-          <span class="yumia-metric-label">Benchmarked Speedup</span>
-          <span class="yumia-metric-value">1.42ms</span>
-          
-        </div>
-<p>End-to-end latency reduction under heavy concurrent load.</p>
-        </div>
-
-        <div class="yumia-card" data-variant="accent">
-          <div class="yumia-card-title">Throughput Capacity</div>
-          
-        <div class="yumia-metric" data-variant="accent">
-          <span class="yumia-metric-label">Benchmarked Speedup</span>
-          <span class="yumia-metric-value">450k op/s</span>
-          
-        </div>
-<p>Peak distributed operations sustained without buffer degradation.</p>
-        </div></div>
-      <div class="yumia-watermark">Yumia v0.1.26 • Confidential</div>
-      <div class="yumia-progress-bar" style="width: 40%;"></div>
-    </div>
-
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-5" data-notes="">
-      <h1>Comparative Analysis &amp; Mathematical Model</h1>
-<h2>Formal Energy Convergence Formulation</h2>
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-2" data-notes="I tool tradizionali come PowerPoint o Canva costringono gli sviluppatori a gestire manualmente pixel, forme e coordinate. Questo genera file binari pesanti e non versionabili con Git.&lt;br&gt;Inoltre, quando chiediamo a un&#039;intelligenza artificiale di creare una slide in HTML/CSS grezzo, i risultati visivi sono spesso rotti o disallineati perché il modello non controlla la geometria finale.">
+      <h1>Il problema delle presentazioni tecniche</h1>
+<h2>Perché creare slide tecniche è complesso e inefficiente</h2>
 
     <div class="yumia-compare">
       <div class="yumia-compare-col left">
-        <div class="yumia-compare-title">Legacy Classical CPU / GPU Pipeline</div>
-        <span class="yumia-badge variant-warning">Legacy Infrastructure</span>
-<p>Linear memory scaling with quadratic communication overhead during multi-node synchronization.</p>
-
-        <div class="yumia-metric" data-variant="warning">
-          <span class="yumia-metric-label">Avg Convergence Time</span>
-          <span class="yumia-metric-value">68ms</span>
-          
-        </div>
+        <div class="yumia-compare-title">Approccio Tradizionale (WYSIWYG / Manuale)</div>
+        <span class="yumia-badge variant-warning">Tool Visuali &amp; Slide Editor</span>
+<p>• Disposizione manuale di box di testo e forme</p>
+<p>• Formattazione incoerente che degrada nel tempo</p>
+<p>• File binari opachi non versionabili con Git</p>
+<p>• Rischio costante di disallineamenti tra formati</p>
       </div>
       <div class="yumia-compare-divider">VS</div>
       <div class="yumia-compare-col right">
-        <div class="yumia-compare-title">Yumia Neural Tensor Pipeline</div>
-        <span class="yumia-badge variant-success">Distributed Tensor Core</span>
-<p>Logarithmic latency scaling leveraging quantum sparse tensor compression.</p>
-
-        <div class="yumia-metric" data-variant="success">
-          <span class="yumia-metric-label">Avg Convergence Time</span>
-          <span class="yumia-metric-value">4.1ms</span>
-          
-        </div>
+        <div class="yumia-compare-title">Problemi &amp; Limiti Strutturali</div>
+        <span class="yumia-badge variant-danger">Attriti di Sviluppo &amp; AI</span>
+<p>• Zero riutilizzabilità tra documentazione e slide</p>
+<p>• Frammentazione tra Markdown, HTML e PPTX</p>
+<p>• Gli LLM faticano a generare layout geometrici stabili</p>
+<p>• Nessun test automatico di qualità visiva</p>
       </div>
     </div>
-
-        <div class="yumia-math-container">
-          <div class="yumia-math-equation" data-expr="\mathcal{L}(\theta) = \mathbb{E}_{x \sim \mathcal{D}} \left[ \| f_\theta(x) - y \|_2^2 \right] + \lambda \sum_{i=1}^N \Omega(W_i)">$$\mathcal{L}(\theta) = \mathbb{E}_{x \sim \mathcal{D}} \left[ \| f_\theta(x) - y \|_2^2 \right] + \lambda \sum_{i=1}^N \Omega(W_i)$$</div>
-        </div>
-      <div class="yumia-watermark">Yumia v0.1.26 • Confidential</div>
-      <div class="yumia-progress-bar" style="width: 50%;"></div>
+      <div class="yumia-watermark">Yumia • Design Compiler</div>
+      <div class="yumia-progress-bar" style="width: 13%;"></div>
     </div>
 
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-6" data-notes="">
-      <h1>Cluster Analytics &amp; Telemetry</h1>
-<h2>Resource Allocation &amp; Workload Distribution</h2>
-<div class="yumia-grid" style="grid-template-columns:repeat(2, minmax(0, 1fr)); gap:24;">
-    <div class="yumia-chart-container">
-      <div class="yumia-chart-title">Inference Acceleration (x Baseline)</div>
-      <svg viewBox="0 0 640 240" style="width:100%; height:100%; max-height:280px;">
-        
-        <line x1="45" y1="157.5" x2="595" y2="157.5" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
-        <text x="37" y="161.5" text-anchor="end" fill="#6B6862" font-size="10" font-family="sans-serif">4</text>
-        <line x1="45" y1="120" x2="595" y2="120" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
-        <text x="37" y="124" text-anchor="end" fill="#6B6862" font-size="10" font-family="sans-serif">7</text>
-        <line x1="45" y1="82.5" x2="595" y2="82.5" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
-        <text x="37" y="86.5" text-anchor="end" fill="#6B6862" font-size="10" font-family="sans-serif">11</text>
-        <line x1="45" y1="45" x2="595" y2="45" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
-        <text x="37" y="49" text-anchor="end" fill="#6B6862" font-size="10" font-family="sans-serif">14</text>
-        <line x1="45" y1="195" x2="595" y2="195" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" />
-        
-        <rect x="85.75" y="160.95744680851064" width="56" height="34.04255319148937" rx="6" fill="#8B0000" opacity="0.95" />
-        <text x="113.75" y="152.95744680851064" text-anchor="middle" fill="#8B0000" font-size="12" font-weight="700" font-family="sans-serif">3.2</text>
-        <text x="113.75" y="228" text-anchor="middle" fill="#2C2B29" font-size="11" font-weight="600" font-family="sans-serif">ResNet-50</text>
-        <rect x="223.25" y="133.29787234042553" width="56" height="61.702127659574465" rx="6" fill="#C29B38" opacity="0.95" />
-        <text x="251.25" y="125.29787234042553" text-anchor="middle" fill="#C29B38" font-size="12" font-weight="700" font-family="sans-serif">5.8</text>
-        <text x="251.25" y="228" text-anchor="middle" fill="#2C2B29" font-size="11" font-weight="600" font-family="sans-serif">BERT-Large</text>
-        <rect x="360.75" y="105.63829787234042" width="56" height="89.36170212765958" rx="6" fill="#1C3F60" opacity="0.95" />
-        <text x="388.75" y="97.63829787234042" text-anchor="middle" fill="#1C3F60" font-size="12" font-weight="700" font-family="sans-serif">8.4</text>
-        <text x="388.75" y="228" text-anchor="middle" fill="#2C2B29" font-size="11" font-weight="600" font-family="sans-serif">LLaMA-7B</text>
-        <rect x="498.25" y="45" width="56" height="150" rx="6" fill="#2E7D32" opacity="0.95" />
-        <text x="526.25" y="37" text-anchor="middle" fill="#2E7D32" font-size="12" font-weight="700" font-family="sans-serif">14.1</text>
-        <text x="526.25" y="228" text-anchor="middle" fill="#2C2B29" font-size="11" font-weight="600" font-family="sans-serif">QuantumNet</text>
-      </svg>
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-3" data-notes="Yumia introduce il concetto di Design Intent. Invece di posizionare pixel a mano, usiamo blocchi semantici come hero, card, compare o chart.&lt;br&gt;Il motore di layout si occupa di calcolare spazi, allineamenti e palette cromatiche, garantendo che il risultato finale sia sempre professionale e privo di difetti visivi.">
+      <h1>La soluzione: Il Design Compiler</h1>
+<h2>Dall&#039;intento comunicativo alla composizione automatica</h2>
+<div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16;">
+        <div class="yumia-card" data-variant="primary">
+          <div class="yumia-card-title">Intento vs Geometria</div>
+          <p>Non diciamo al computer &#039;disegna un rettangolo a coordinate (x,y)&#039;, ma &#039;crea una Card per evidenziare una funzionalità&#039;.</p>
+        </div>
+
+        <div class="yumia-card" data-variant="accent">
+          <div class="yumia-card-title">Componenti Semantici</div>
+          <p>Primitive di alto livello: hero, metric, card, grid, compare, timeline, chart e diagram.</p>
+        </div>
+
+        <div class="yumia-card" data-variant="success">
+          <div class="yumia-card-title">Layout Deterministico</div>
+          <p>Un motore di calcolo automatico distribuisce spazi, gap, contrasti e gerarchie visive senza overflow.</p>
+        </div></div>
+
+        <div class="yumia-callout" data-severity="info" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-info); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
+          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-info); margin-bottom:4px;">Cambio di paradigma</div>
+          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">Yumia separa radicalmente il contenuto dal rendering visivo: lo sviluppatore scrive la semantica, il compilatore applica il design system.</div>
+        </div>
+      <div class="yumia-watermark">Yumia • Design Compiler</div>
+      <div class="yumia-progress-bar" style="width: 20%;"></div>
     </div>
 
-      <div class="yumia-chart-container">
-        <div class="yumia-chart-title">Cluster Resource Utilization</div>
-        <div style="display:flex; align-items:center; justify-content:center; gap:36px; width:100%; padding:10px 0;">
-          <svg viewBox="0 0 220 220" style="width:180px; height:180px; transform: rotate(-90deg);">
-            <circle cx="110" cy="110" r="65" fill="none" stroke="#8B0000" stroke-width="26" stroke-dasharray="204.20352248333654 408.4070449666731" stroke-dashoffset="0" /><circle cx="110" cy="110" r="65" fill="none" stroke="#C29B38" stroke-width="26" stroke-dasharray="102.10176124166827 408.4070449666731" stroke-dashoffset="-204.20352248333654" /><circle cx="110" cy="110" r="65" fill="none" stroke="#1C3F60" stroke-width="26" stroke-dasharray="61.26105674500096 408.4070449666731" stroke-dashoffset="-306.3052837250048" /><circle cx="110" cy="110" r="65" fill="none" stroke="#2E7D32" stroke-width="26" stroke-dasharray="40.840704496667314 408.4070449666731" stroke-dashoffset="-367.5663404700058" />
-          </svg>
-          <div style="display:flex; flex-direction:column; justify-content:center;"><div style="display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; margin:6px 0;"><span style="width:12px; height:12px; border-radius:50%; background:#8B0000; box-shadow:0 0 6px #8B0000;"></span><span style="color:var(--yumia-text);">Tensor Cores <strong style="color:var(--yumia-primary);">(50%)</strong></span></div><div style="display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; margin:6px 0;"><span style="width:12px; height:12px; border-radius:50%; background:#C29B38; box-shadow:0 0 6px #C29B38;"></span><span style="color:var(--yumia-text);">Ingestion Mesh <strong style="color:var(--yumia-primary);">(25%)</strong></span></div><div style="display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; margin:6px 0;"><span style="width:12px; height:12px; border-radius:50%; background:#1C3F60; box-shadow:0 0 6px #1C3F60;"></span><span style="color:var(--yumia-text);">Vector DB <strong style="color:var(--yumia-primary);">(15%)</strong></span></div><div style="display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; margin:6px 0;"><span style="width:12px; height:12px; border-radius:50%; background:#2E7D32; box-shadow:0 0 6px #2E7D32;"></span><span style="color:var(--yumia-text);">Reserve <strong style="color:var(--yumia-primary);">(10%)</strong></span></div></div>
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-4" data-notes="Con un solo file sorgente possiamo compilare verso tre formati completamente diversi:&lt;br&gt;1) HTML interattivo con navigazione e speaker view per presentare direttamente da browser;&lt;br&gt;2) PowerPoint con forme native e testo modificabile per i colleghi o clienti;&lt;br&gt;3) PDF vettoriale pronto per la stampa o la condivisione formale.&lt;br&gt;Nessun bisogno di riscrivere o ricreare le slide da zero.">
+      <h1>Un&#039;unica sorgente, più formati</h1>
+<h2>Compilazione Multi-Target da una Singola Sorgente</h2>
+
+      <div class="yumia-diagram-container">
+        <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-primary); margin-bottom:0.4rem; text-align:center;">Flusso di Trasformazione Multi-Target</div>
+        <svg class="yumia-diagram" viewBox="0 0 945 626" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <marker id="arrow-c2jyu6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#7B61FF" />
+            </marker>
+          </defs>
+          <path d="M 200 64 C 237.5 64, 237.5 313, 275 313" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-c2jyu6)" /><path d="M 435 313 C 472.5 313, 472.5 313, 510 313" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-c2jyu6)" /><path d="M 670 313 C 707.5 313, 707.5 230, 745 230" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-c2jyu6)" /><path d="M 670 313 C 707.5 313, 707.5 313, 745 313" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-c2jyu6)" /><path d="M 670 313 C 707.5 313, 707.5 396, 745 396" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-c2jyu6)" />
+          
+        <g class="yumia-diag-node" data-id="sorgente_yumia">
+          <rect x="40" y="40" width="160" height="48" rx="10" fill="#151522" stroke="#FF2E88" stroke-width="2" />
+          <text x="120" y="68" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Sorgente Yumia</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="ast_semantico">
+          <rect x="275" y="289" width="160" height="48" rx="10" fill="#151522" stroke="#7B61FF" stroke-width="2" />
+          <text x="355" y="317" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">AST Semantico</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="design_system">
+          <rect x="510" y="289" width="160" height="48" rx="10" fill="#151522" stroke="#7B61FF" stroke-width="2" />
+          <text x="590" y="317" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Design System</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="html_interattivo">
+          <rect x="745" y="206" width="160" height="48" rx="10" fill="#151522" stroke="#7B61FF" stroke-width="2" />
+          <text x="825" y="234" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">HTML Interattivo</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="powerpoint_pptx">
+          <rect x="745" y="289" width="160" height="48" rx="10" fill="#151522" stroke="#7B61FF" stroke-width="2" />
+          <text x="825" y="317" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">PowerPoint PPTX</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="pdf_vettoriale">
+          <rect x="745" y="372" width="160" height="48" rx="10" fill="#151522" stroke="#7B61FF" stroke-width="2" />
+          <text x="825" y="400" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">PDF Vettoriale</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="sorgente">
+          <rect x="40" y="123" width="160" height="48" rx="10" fill="#151522" stroke="#FF2E88" stroke-width="2" />
+          <text x="120" y="151" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Sorgente</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="ast">
+          <rect x="40" y="206" width="160" height="48" rx="10" fill="#151522" stroke="#7B61FF" stroke-width="2" />
+          <text x="120" y="234" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">AST</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="design">
+          <rect x="40" y="289" width="160" height="48" rx="10" fill="#151522" stroke="#FFE600" stroke-width="2" />
+          <text x="120" y="317" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Design</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="html">
+          <rect x="40" y="372" width="160" height="48" rx="10" fill="#151522" stroke="#00FF9F" stroke-width="2" />
+          <text x="120" y="400" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">HTML</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="powerpoint">
+          <rect x="40" y="455" width="160" height="48" rx="10" fill="#151522" stroke="#FF2E88" stroke-width="2" />
+          <text x="120" y="483" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">PowerPoint</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="pdf">
+          <rect x="40" y="538" width="160" height="48" rx="10" fill="#151522" stroke="#FF0055" stroke-width="2" />
+          <text x="120" y="566" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">PDF</text>
+        </g>
+      
+        </svg>
+      </div>
+    
+
+        <div class="yumia-callout" data-severity="success" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-success); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
+          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-success); margin-bottom:4px;">Principio Single Source of Truth</div>
+          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">Un unico file di testo (.yumia) compilabile istantaneamente per il web, per presentazioni aziendali modificabili e per la stampa/distribuzione fissa.</div>
         </div>
-      </div></div>
-      <div class="yumia-watermark">Yumia v0.1.26 • Confidential</div>
+      <div class="yumia-watermark">Yumia • Design Compiler</div>
+      <div class="yumia-progress-bar" style="width: 27%;"></div>
+    </div>
+
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-5" data-notes="La pipeline di Yumia si ispira ai compilatori tradizionali:&lt;br&gt;1. Il Parser analizza il file sorgente e genera l&#039;AST;&lt;br&gt;2. Il Design Linter controlla contrasti, densità e accessibilità;&lt;br&gt;3. Il Theme Engine risolve palette, font e icone;&lt;br&gt;4. Il Layout Engine calcola bounding box e posizioni in coordinate assolute;&lt;br&gt;5. I Renderer emettono il codice nativo per ciascun formato di output.">
+      <h1>Architettura della Pipeline</h1>
+<h2>Dalla sintassi al rendering finale: la pipeline a 7 stadi</h2>
+
+      <div class="yumia-diagram-container">
+        <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-primary); margin-bottom:0.4rem; text-align:center;">Pipeline di Compilazione Deterministica</div>
+        <svg class="yumia-diagram" viewBox="0 0 1415 626" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <marker id="arrow-3eswoy" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#7B61FF" />
+            </marker>
+          </defs>
+          <path d="M 200 64 C 237.5 64, 237.5 313, 275 313" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-3eswoy)" /><path d="M 435 313 C 472.5 313, 472.5 313, 510 313" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-3eswoy)" /><path d="M 670 313 C 707.5 313, 707.5 313, 745 313" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-3eswoy)" /><path d="M 905 313 C 942.5 313, 942.5 313, 980 313" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-3eswoy)" /><path d="M 1140 313 C 1177.5 313, 1177.5 313, 1215 313" fill="none" stroke="#7B61FF" stroke-width="2"  marker-end="url(#arrow-3eswoy)" />
+          
+        <g class="yumia-diag-node" data-id="sorgente_dsl">
+          <rect x="40" y="40" width="160" height="48" rx="10" fill="#151522" stroke="#FF2E88" stroke-width="2" />
+          <text x="120" y="68" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Sorgente DSL</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="parser_ast">
+          <rect x="275" y="289" width="160" height="48" rx="10" fill="#151522" stroke="#7B61FF" stroke-width="2" />
+          <text x="355" y="317" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Parser AST</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="design_linter">
+          <rect x="510" y="289" width="160" height="48" rx="10" fill="#151522" stroke="#7B61FF" stroke-width="2" />
+          <text x="590" y="317" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Design Linter</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="theme_engine">
+          <rect x="745" y="289" width="160" height="48" rx="10" fill="#151522" stroke="#7B61FF" stroke-width="2" />
+          <text x="825" y="317" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Theme Engine</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="layout_engine">
+          <rect x="980" y="289" width="160" height="48" rx="10" fill="#151522" stroke="#7B61FF" stroke-width="2" />
+          <text x="1060" y="317" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Layout Engine</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="renderer_multipli">
+          <rect x="1215" y="289" width="160" height="48" rx="10" fill="#151522" stroke="#7B61FF" stroke-width="2" />
+          <text x="1295" y="317" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Renderer Multipli</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="sorgente">
+          <rect x="40" y="123" width="160" height="48" rx="10" fill="#151522" stroke="#FF2E88" stroke-width="2" />
+          <text x="120" y="151" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Sorgente</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="parser">
+          <rect x="40" y="206" width="160" height="48" rx="10" fill="#151522" stroke="#7B61FF" stroke-width="2" />
+          <text x="120" y="234" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Parser</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="design">
+          <rect x="40" y="289" width="160" height="48" rx="10" fill="#151522" stroke="#FFE600" stroke-width="2" />
+          <text x="120" y="317" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Design</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="theme">
+          <rect x="40" y="372" width="160" height="48" rx="10" fill="#151522" stroke="#FF2E88" stroke-width="2" />
+          <text x="120" y="400" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Theme</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="layout">
+          <rect x="40" y="455" width="160" height="48" rx="10" fill="#151522" stroke="#FF2E88" stroke-width="2" />
+          <text x="120" y="483" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Layout</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="renderer">
+          <rect x="40" y="538" width="160" height="48" rx="10" fill="#151522" stroke="#00FF9F" stroke-width="2" />
+          <text x="120" y="566" text-anchor="middle" fill="#FFFFFF" font-size="11.5" font-weight="700" font-family="sans-serif">Renderer</text>
+        </g>
+      
+        </svg>
+      </div>
+    
+
+        <div class="yumia-callout" data-severity="info" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-info); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
+          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-info); margin-bottom:4px;">Pipeline deterministica a passate isolate</div>
+          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">Ogni stadio trasforma il modello dati in modo puro: dal parsing sintattico all&#039;AST, dal controllo qualità al calcolo geometrico e all&#039;emissione su DOM, OpenXML o PDFKit.</div>
+        </div>
+      <div class="yumia-watermark">Yumia • Design Compiler</div>
+      <div class="yumia-progress-bar" style="width: 33%;"></div>
+    </div>
+
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-6" data-notes="L&#039;AST non memorizza &#039;rettangolo blu a x=100 y=200&#039;, ma memorizza &#039;Elemento Card con variante Accent e ruolo primario&#039;.&lt;br&gt;Questo disaccoppiamento permette ai renderer di interpretare lo stesso elemento semantico nel modo più efficace per ogni formato di destinazione.">
+      <h1>L&#039;AST e il Design Intent</h1>
+<h2>Rappresentazione intermedia del significato e della struttura</h2>
+<div class="yumia-columns" style="grid-template-columns: 50fr 50fr;"><div class="yumia-column">
+        <div class="yumia-card" data-variant="accent">
+          <div class="yumia-card-title">AST: Abstract Syntax Tree</div>
+          <p>Struttura dati intermedia ad albero che incapsula il contenuto, la gerarchia logica e i vincoli semantici di presentazione.</p>
+<span class="yumia-badge variant-primary">emphasis</span>
+<span class="yumia-badge variant-accent">density</span>
+<span class="yumia-badge variant-warning">hierarchy</span>
+<span class="yumia-badge variant-info">align</span>
+        </div></div>
+<div class="yumia-column">
+        <div class="yumia-card" data-variant="primary">
+          <div class="yumia-card-title">Componenti Semantici Astratti</div>
+          <p>• Struttura: Hero, Heading, Paragraph, Columns, Grid</p>
+<p>• Dati &amp; Logica: Metric, Card, Compare, Timeline</p>
+<p>• Visuali: Diagram, Sequence, Class, Chart, Table</p>
+<p>• Annotazioni: Badge, Callout, Math, Notes</p>
+        </div></div></div>
+      <div class="yumia-watermark">Yumia • Design Compiler</div>
+      <div class="yumia-progress-bar" style="width: 40%;"></div>
+    </div>
+
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-7" data-notes="Come potete vedere da questo frammento, il codice Native Yumia è essenziale e intuitivo.&lt;br&gt;Con poche righe dichiariamo il documento, il tema, una slide con titolo hero e una griglia con tre metriche.&lt;br&gt;Non c&#039;è bisogno di scrivere codice CSS, div annidati o coordinate numeriche.">
+      <h1>Esempio di Codice Native Yumia</h1>
+<h2>Sintassi pulita, dichiarativa e basata su indentazione</h2>
+<div class="yumia-columns" style="grid-template-columns: 55fr 45fr;"><div class="yumia-column"><pre><code class="language-yumia">document &quot;Yumia Demo&quot;
+theme &quot;cyberpunk&quot;
+aspectRatio &quot;16:9&quot;
+slide &quot;Yumia in azione&quot;
+hero title=&quot;Design Compiler&quot; subtitle=&quot;Dall&#039;intento al documento visivo&quot; badge=&quot;Demo&quot;
+grid columns=3 gap=20
+metric &quot;1&quot; label=&quot;Sorgente&quot;
+metric &quot;3&quot; label=&quot;Formati&quot;
+metric &quot;0&quot; label=&quot;Layout manuale&quot;</code></pre></div>
+<div class="yumia-column">
+        <div class="yumia-card" data-variant="primary">
+          <div class="yumia-card-title">Caratteristiche del linguaggio</div>
+          <p>• Struttura gerarchica pulita basata sull&#039;indentazione</p>
+<p>• Componenti semantici senza CSS a basso livello</p>
+<p>• Nessun tag HTML di chiusura o sintassi verbosa</p>
+<p>• Perfettamente leggibile e modificabile in qualsiasi editor</p>
+        </div></div></div>
+      <div class="yumia-watermark">Yumia • Design Compiler</div>
+      <div class="yumia-progress-bar" style="width: 47%;"></div>
+    </div>
+
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-8" data-notes="È fondamentale sottolineare come lavorano i tre renderer:&lt;br&gt;L&#039;HTML offre interattività e speaker view;&lt;br&gt;Il renderer PPTX non incolla immagini, ma genera veri oggetti e forme vettoriali OpenXML modificabili all&#039;interno di Microsoft PowerPoint;&lt;br&gt;Il renderer PDF produce documenti vettoriali perfetti per la stampa e l&#039;archiviazione.">
+      <h1>I Tre Output Principali</h1>
+<h2>Generazione nativa e specializzata per ogni ecosistema</h2>
+<div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16;">
+        <div class="yumia-card" data-variant="primary">
+          <div class="yumia-card-title">HtmlRenderer</div>
+          <p>• Presentazione web interattiva SPA</p>
+<p>• Navigazione da tastiera e fullscreen</p>
+<p>• Modalità Speaker View con note</p>
+<p>• Inspector visuale in tempo reale</p>
+        </div>
+
+        <div class="yumia-card" data-variant="accent">
+          <div class="yumia-card-title">PptxRenderer</div>
+          <p>• Forme OpenXML native e testo modificabile</p>
+<p>• Tabelle, card e grafici nativi Office</p>
+<p>• Zero screenshot o immagini statiche</p>
+<p>• Modificabile su PowerPoint / Keynote</p>
+        </div>
+
+        <div class="yumia-card" data-variant="success">
+          <div class="yumia-card-title">PdfRenderer</div>
+          <p>• Rendering vettoriale ad alta definizione</p>
+<p>• Layout e tipografia rigorosamente fissati</p>
+<p>• Ideale per dispense, esami e stampa</p>
+<p>• Dimensioni del file ottimizzate</p>
+        </div></div>
+      <div class="yumia-watermark">Yumia • Design Compiler</div>
+      <div class="yumia-progress-bar" style="width: 53%;"></div>
+    </div>
+
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-9" data-notes="Proprio come usiamo ESLint o i compilatori per trovare errori logici nel codice sorgente, il Design Linter di Yumia analizza le slide per individuare problemi di design: testo troppo denso, scarso contrasto cromatico o sovrapposizioni, restituendo suggerimenti operativi.">
+      <h1>Design Linter e Qualità Visiva</h1>
+<h2>Static Analysis per la leggibilità e l&#039;accessibilità</h2>
+<div class="yumia-columns" style="grid-template-columns: 50fr 50fr;"><div class="yumia-column">
+        <div class="yumia-card" data-variant="primary">
+          <div class="yumia-card-title">Controlli Automatici di Design</div>
+          <p>• Densità informativa e carico cognitivo</p>
+<p>• Verifica slide vuote o incomplete</p>
+<p>• Contrasto testo/sfondo secondo standard WCAG</p>
+<p>• Rispetto della Safe Area e margini</p>
+<p>• Calcolo del Visual Score da 0 a 100</p>
+        </div></div>
+<div class="yumia-column">
+        <div class="yumia-card" data-variant="warning">
+          <div class="yumia-card-title">Esempio di Diagnostica CLI</div>
+          <pre><code class="language-text">[YUM004] Alta densità informativa
+La slide contiene troppi elementi complessi.
+Suggerimento: dividere la slide o usare
+una griglia di metriche.</code></pre>
+        </div></div></div>
+
+        <div class="yumia-callout" data-severity="info" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-info); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
+          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-info); margin-bottom:4px;">Prevenzione prima della build</div>
+          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">Il linter intercetta difetti grafici, errori tipografici e problemi di leggibilità prima di distribuire la presentazione.</div>
+        </div>
+      <div class="yumia-watermark">Yumia • Design Compiler</div>
       <div class="yumia-progress-bar" style="width: 60%;"></div>
     </div>
 
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-7" data-notes="">
-      <h1>Implementation &amp; Runtime Kernel</h1>
-<h2>Zero-Trust Mesh &amp; Compiler Directives</h2>
-<div class="yumia-columns" style="grid-template-columns: 60fr 40fr;"><div class="yumia-column"><pre><code class="language-typescript">import { YumiaCompiler, createEngine } from &#039;@yumiamd/core&#039;;
-const engine = createEngine({ target: &#039;multi-target&#039; });
-const result = await engine.compile(&#039;presentation.yumia&#039;);</code></pre></div>
-<div class="yumia-column">
-        <div class="yumia-callout" data-severity="success" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-success); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
-          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-success); margin-bottom:4px;">Production Verified</div>
-          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">All cluster nodes reporting optimal throughput with zero memory leaks.</div>
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-10" data-notes="La CLI di Yumia offre un set completo di comandi:&lt;br&gt;- validate ed explain per analizzare sintassi e ritmo visivo;&lt;br&gt;- dev per avere un server locale con hot-reload e inspector;&lt;br&gt;- check per eseguire l&#039;audit di contrasto e densità;&lt;br&gt;- build e deploy per compilare e pubblicare in automatico nei pipeline CI/CD.">
+      <h1>CLI e Workflow di Sviluppo</h1>
+<h2>L&#039;esperienza di sviluppo pensata per sviluppatori e CI/CD</h2>
+<div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16;">
+        <div class="yumia-card" data-variant="primary">
+          <div class="yumia-card-title">1. Scrittura &amp; Validazione</div>
+          <pre><code class="language-bash">yumia validate pres.yumia
+yumia explain pres.yumia</code></pre>
         </div>
-<span class="yumia-badge variant-success">Zero-Trust mTLS</span>
-<span class="yumia-badge variant-primary">WCAG AAA Verified</span></div></div>
-      <div class="yumia-watermark">Yumia v0.1.26 • Confidential</div>
-      <div class="yumia-progress-bar" style="width: 70%;"></div>
+
+        <div class="yumia-card" data-variant="accent">
+          <div class="yumia-card-title">2. Live Dev &amp; Audit</div>
+          <pre><code class="language-bash">yumia dev pres.yumia --open
+yumia check --optimize</code></pre>
+        </div>
+
+        <div class="yumia-card" data-variant="success">
+          <div class="yumia-card-title">3. Build &amp; Deploy</div>
+          <pre><code class="language-bash">yumia build --format pptx
+yumia deploy --provider gh-pages</code></pre>
+        </div></div>
+
+        <div class="yumia-callout" data-severity="success" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-success); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
+          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-success); margin-bottom:4px;">Workflow integrabile in CI/CD</div>
+          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">Ogni commit su Git può validare le slide, generare la documentazione HTML e pubblicare la versione aggiornata su GitHub Pages.</div>
+        </div>
+      <div class="yumia-watermark">Yumia • Design Compiler</div>
+      <div class="yumia-progress-bar" style="width: 67%;"></div>
     </div>
 
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-8" data-notes="">
-      <h1>Protocol Handshake &amp; Sequence Verification</h1>
-<h2>Cryptographic Key &amp; State Negotiation</h2>
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-11" data-notes="Gli LLM hanno difficoltà a calcolare geometrie esatte e layout CSS complessi. Con Yumia, il modello di AI deve solo generare blocchi semantici concisi come card o compare.&lt;br&gt;Il compilatore si fa carico di renderizzare tutto alla perfezione, riducendo drasticamente il tasso di allucinazioni e codice malformato.">
+      <h1>Yumia e Intelligenza Artificiale</h1>
+<h2>Perché i linguaggi dichiarativi semantici superano l&#039;HTML grezzo</h2>
 
-      <div class="yumia-sequence-container" style="width:100%; display:flex; flex-direction:column; align-items:center; margin:0.4rem 0;">
-        <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-primary); margin-bottom:0.4rem; text-align:center;">Distributed Quantum State Handshake</div>
-        <svg viewBox="0 0 800 410" style="width:100%; max-height:460px;" preserveAspectRatio="xMidYMid meet">
-          <defs>
-            <marker id="seq-arr-64udbc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#8B0000" />
-            </marker>
-          </defs>
-          <line x1="100" y1="66" x2="100" y2="390" stroke="#8B0000" stroke-width="1.8" stroke-dasharray="6,6" opacity="0.45" /><line x1="300" y1="66" x2="300" y2="390" stroke="#8B0000" stroke-width="1.8" stroke-dasharray="6,6" opacity="0.45" /><line x1="500" y1="66" x2="500" y2="390" stroke="#8B0000" stroke-width="1.8" stroke-dasharray="6,6" opacity="0.45" /><line x1="700" y1="66" x2="700" y2="390" stroke="#8B0000" stroke-width="1.8" stroke-dasharray="6,6" opacity="0.45" />
-          <line x1="100" y1="84" x2="300" y2="84" stroke="#8B0000" stroke-width="2"  marker-end="url(#seq-arr-64udbc)" />
-        <g transform="translate(200, 72)">
-          <rect x="-93" y="-9" width="186" height="18" rx="5" fill="#F5F2EB" stroke="#E0DACD" stroke-width="1" />
-          <text x="0" y="4" text-anchor="middle" fill="#2C2B29" font-size="10" font-weight="600" font-family="sans-serif">Secure TLS Request + PKCE</text>
-        </g>
-      <line x1="300" y1="134" x2="500" y2="134" stroke="#8B0000" stroke-width="2"  marker-end="url(#seq-arr-64udbc)" />
-        <g transform="translate(400, 122)">
-          <rect x="-72.6" y="-9" width="145.2" height="18" rx="5" fill="#F5F2EB" stroke="#E0DACD" stroke-width="1" />
-          <text x="0" y="4" text-anchor="middle" fill="#2C2B29" font-size="10" font-weight="600" font-family="sans-serif">/oauth/v2/handshake</text>
-        </g>
-      <line x1="500" y1="184" x2="700" y2="184" stroke="#8B0000" stroke-width="2"  marker-end="url(#seq-arr-64udbc)" />
-        <g transform="translate(600, 172)">
-          <rect x="-69.19999999999999" y="-9" width="138.39999999999998" height="18" rx="5" fill="#F5F2EB" stroke="#E0DACD" stroke-width="1" />
-          <text x="0" y="4" text-anchor="middle" fill="#2C2B29" font-size="10" font-weight="600" font-family="sans-serif">Fetch Session Keys</text>
-        </g>
-      <line x1="700" y1="234" x2="500" y2="234" stroke="#C29B38" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#seq-arr-64udbc)" />
-        <g transform="translate(600, 222)">
-          <rect x="-65.8" y="-9" width="131.6" height="18" rx="5" fill="#F5F2EB" stroke="#E0DACD" stroke-width="1" />
-          <text x="0" y="4" text-anchor="middle" fill="#2C2B29" font-size="10" font-weight="600" font-family="sans-serif">Ephemeral Keypair</text>
-        </g>
-      <line x1="500" y1="284" x2="300" y2="284" stroke="#C29B38" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#seq-arr-64udbc)" />
-        <g transform="translate(400, 272)">
-          <rect x="-110" y="-9" width="220" height="18" rx="5" fill="#F5F2EB" stroke="#E0DACD" stroke-width="1" />
-          <text x="0" y="4" text-anchor="middle" fill="#2C2B29" font-size="10" font-weight="600" font-family="sans-serif">Verified Token &amp; Signature</text>
-        </g>
-      <line x1="300" y1="334" x2="100" y2="334" stroke="#C29B38" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#seq-arr-64udbc)" />
-        <g transform="translate(200, 322)">
-          <rect x="-69.19999999999999" y="-9" width="138.39999999999998" height="18" rx="5" fill="#F5F2EB" stroke="#E0DACD" stroke-width="1" />
-          <text x="0" y="4" text-anchor="middle" fill="#2C2B29" font-size="10" font-weight="600" font-family="sans-serif">200 OK + JWT Proof</text>
-        </g>
-      
-          
-          <g class="yumia-seq-note">
-            <rect x="440" y="92" width="120" height="32" rx="6" fill="#FFFFFF" stroke="#C29B38" stroke-width="1.2" stroke-dasharray="3,3" />
-            <text x="500" y="111" text-anchor="middle" fill="#C29B38" font-size="9" font-weight="500" font-family="sans-serif">Token validity window: 3600s</text>
-          </g>
-        
-          
-        <g class="yumia-seq-participant">
-          
-          <circle cx="100" cy="40" r="7" fill="#F5F2EB" stroke="#C29B38" stroke-width="2" />
-          <path d="M 100 47 L 100 58 M 93 51 L 107 51 M 100 58 L 94 68 M 100 58 L 106 68" stroke="#C29B38" stroke-width="1.6" fill="none" />
-        
-          <text x="100" y="80" text-anchor="middle" fill="#2C2B29" font-size="10.5" font-weight="700" font-family="sans-serif">Client Node</text>
-        </g>
-      
-        <g class="yumia-seq-participant">
-          
-          <rect x="230" y="30" width="140" height="36" rx="8" fill="#F5F2EB" stroke="#8B0000" stroke-width="1.8" />
-        
-          <text x="300" y="52" text-anchor="middle" fill="#2C2B29" font-size="11" font-weight="700" font-family="sans-serif">API Mesh Gateway</text>
-        </g>
-      
-        <g class="yumia-seq-participant">
-          
-          <rect x="430" y="30" width="140" height="36" rx="8" fill="#F5F2EB" stroke="#8B0000" stroke-width="1.8" />
-        
-          <text x="500" y="52" text-anchor="middle" fill="#2C2B29" font-size="11" font-weight="700" font-family="sans-serif">Identity Authority</text>
-        </g>
-      
-        <g class="yumia-seq-participant">
-          
-          <rect x="630" y="30" width="140" height="36" rx="8" fill="#F5F2EB" stroke="#8B0000" stroke-width="1.8" />
-          <path d="M 630 38 C 700 44, 700 44, 770 38" fill="none" stroke="#8B0000" stroke-width="1.4"/>
-        
-          <text x="700" y="52" text-anchor="middle" fill="#2C2B29" font-size="11" font-weight="700" font-family="sans-serif">HSM Vault</text>
-        </g>
-      
-        </svg>
+    <div class="yumia-compare">
+      <div class="yumia-compare-col left">
+        <div class="yumia-compare-title">AI con HTML / CSS Grezzo</div>
+        <span class="yumia-badge variant-danger">Fragile &amp; Imprevedibile</span>
+<p>• Allucinazioni di coordinate pixel e layout rotti</p>
+<p>• Codice verboso con rischio di sintassi non valida</p>
+<p>• Difficile da vincolare a un design system coerente</p>
+<p>• Revisione manuale complessa per l&#039;utente</p>
       </div>
-    
-      <div class="yumia-watermark">Yumia v0.1.26 • Confidential</div>
+      <div class="yumia-compare-divider">VS</div>
+      <div class="yumia-compare-col right">
+        <div class="yumia-compare-title">AI con Yumia DSL</div>
+        <span class="yumia-badge variant-success">Robusto &amp; Strutturato</span>
+<p>• Generazione guidata da JSON Schema (yumia schema)</p>
+<p>• Sintassi concisa focalizzata sul contenuto semantico</p>
+<p>• Il motore garantisce allineamenti e layout perfetti</p>
+<p>• Validazione deterministica automatica post-generazione</p>
+      </div>
+    </div>
+      <div class="yumia-watermark">Yumia • Design Compiler</div>
+      <div class="yumia-progress-bar" style="width: 73%;"></div>
+    </div>
+
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-12" data-notes="Yumia integra direttamente nella sintassi diagrammi di flusso, diagrammi di sequenza, grafici di dati, timeline e formule matematiche LaTeX.&lt;br&gt;Questo elimina la necessità di fare screenshot da tool esterni o incollare immagini a bassa risoluzione.">
+      <h1>Funzionalità e Componenti Avanzati</h1>
+<h2>Un ricco ecosistema integrato senza dipendenze esterne</h2>
+<div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16;">
+        <div class="yumia-card" data-variant="primary">
+          <div class="yumia-card-title">Icon Provider Multipli</div>
+          <p>Supporto nativo a oltre 10.000 icone da Lucide, Material, Tabler e FontAwesome.</p>
+        </div>
+
+        <div class="yumia-card" data-variant="accent">
+          <div class="yumia-card-title">Diagrammi Integrati</div>
+          <p>Flowchart direzionali, Sequence diagram, architetture e diagrammi di classi UML.</p>
+        </div>
+
+        <div class="yumia-card" data-variant="warning">
+          <div class="yumia-card-title">Grafici &amp; Timeline</div>
+          <p>Grafici a barre, ciambella, radar, gauge e timeline storiche generate nativamente.</p>
+        </div>
+
+        <div class="yumia-card" data-variant="info">
+          <div class="yumia-card-title">Componenti &amp; Macro</div>
+          <p>Creazione di blocchi riutilizzabili parametrici con la direttiva component.</p>
+        </div>
+
+        <div class="yumia-card" data-variant="success">
+          <div class="yumia-card-title">Data Binding </div>
+          <p>Iterazione dinamica su dataset JSON o CSV per reportistica automatica.</p>
+        </div>
+
+        <div class="yumia-card" data-variant="danger">
+          <div class="yumia-card-title">Formule Matematiche</div>
+          <p>Rendering di formule scientifiche complesse in sintassi LaTeX / KaTeX.</p>
+        </div></div>
+      <div class="yumia-watermark">Yumia • Design Compiler</div>
       <div class="yumia-progress-bar" style="width: 80%;"></div>
     </div>
 
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-9" data-notes="">
-      <h1>Multi-Dimensional Capabilities &amp; Realtime SLA</h1>
-<h2>Dynamic Telemetry &amp; Capability Radar</h2>
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-13" data-notes="Yumia offre una doppia compatibilità:&lt;br&gt;supporta sia file Markdown standard con blocchi di direttive, sia la nuova sintassi Native Yumia, più concisa e priva di boilerplate.&lt;br&gt;Un tool di migrazione integrato consente di convertire i file in modo completamente trasparente.">
+      <h1>Compatibilità e Percorso di Migrazione</h1>
+<h2>Continuità garantita tra ecosistema Markdown e Native DSL</h2>
 <div class="yumia-columns" style="grid-template-columns: 50fr 50fr;"><div class="yumia-column">
-      <div class="yumia-chart-container">
-        <div class="yumia-chart-title">Engine Capability Radar</div>
-        <svg viewBox="0 0 520 280" style="width:100%; height:100%; max-height:290px;">
-          <polygon points="260,116.25 282.5875922620099,132.660846383595 273.95989974194623,159.214153616405 246.04010025805377,159.214153616405 237.4124077379901,132.66084638359501" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.2" /><polygon points="260,92.5 305.1751845240198,125.32169276719 287.91979948389246,178.42830723281 232.08020051610754,178.42830723281 214.8248154759802,125.32169276719" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.2" /><polygon points="260,68.75 327.7627767860297,117.982539150785 301.8796992258387,197.642460849215 218.1203007741613,197.642460849215 192.2372232139703,117.982539150785" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.2" /><polygon points="260,45 350.35036904803957,110.64338553438 315.8395989677849,216.85661446562 204.16040103221508,216.85661446562 169.6496309519604,110.64338553438" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="1.2" />
-          <line x1="260" y1="140" x2="260" y2="45" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="2,3" /><line x1="260" y1="140" x2="350.35036904803957" y2="110.64338553438" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="2,3" /><line x1="260" y1="140" x2="315.8395989677849" y2="216.85661446562" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="2,3" /><line x1="260" y1="140" x2="204.16040103221508" y2="216.85661446562" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="2,3" /><line x1="260" y1="140" x2="169.6496309519604" y2="110.64338553438" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="2,3" />
-          
-          <polygon points="260,46.93877551020408 344.81871380020044,112.44072927717306 315.8395989677849,216.85661446562 208.71873564183016,210.58260512148775 172.41545857588,111.54205740577655" fill="#8B0000" fill-opacity="0.28" stroke="#8B0000" stroke-width="2.5" stroke-linejoin="round" />
-          <circle cx="260" cy="46.93877551020408" r="4" fill="#8B0000" stroke="var(--yumia-surface)" stroke-width="2"/><circle cx="344.81871380020044" cy="112.44072927717306" r="4" fill="#8B0000" stroke="var(--yumia-surface)" stroke-width="2"/><circle cx="315.8395989677849" cy="216.85661446562" r="4" fill="#8B0000" stroke="var(--yumia-surface)" stroke-width="2"/><circle cx="208.71873564183016" cy="210.58260512148775" r="4" fill="#8B0000" stroke="var(--yumia-surface)" stroke-width="2"/><circle cx="172.41545857588" cy="111.54205740577655" r="4" fill="#8B0000" stroke="var(--yumia-surface)" stroke-width="2"/>
-        
-          <polygon points="260,76.98979591836735 324.53597789145687,119.03098966741427 302.73438696514154,198.8188376012398 225.81249042788676,187.05507008099184 197.3079071911562,119.6301042483453" fill="#C29B38" fill-opacity="0.28" stroke="#C29B38" stroke-width="2.5" stroke-linejoin="round" />
-          <circle cx="260" cy="76.98979591836735" r="4" fill="#C29B38" stroke="var(--yumia-surface)" stroke-width="2"/><circle cx="324.53597789145687" cy="119.03098966741427" r="4" fill="#C29B38" stroke="var(--yumia-surface)" stroke-width="2"/><circle cx="302.73438696514154" cy="198.8188376012398" r="4" fill="#C29B38" stroke="var(--yumia-surface)" stroke-width="2"/><circle cx="225.81249042788676" cy="187.05507008099184" r="4" fill="#C29B38" stroke="var(--yumia-surface)" stroke-width="2"/><circle cx="197.3079071911562" cy="119.6301042483453" r="4" fill="#C29B38" stroke="var(--yumia-surface)" stroke-width="2"/>
-        
-          <text x="260" y="29" text-anchor="middle" fill="#6B6862" font-size="10.5" font-weight="600" font-family="sans-serif">Throughput</text><text x="369.37149937394264" y="108.46304564688106" text-anchor="middle" fill="#6B6862" font-size="10.5" font-weight="600" font-family="sans-serif">Low Latency</text><text x="327.5953040136344" y="237.03695435311897" text-anchor="middle" fill="#6B6862" font-size="10.5" font-weight="600" font-family="sans-serif">Scalability</text><text x="192.4046959863656" y="237.03695435311897" text-anchor="middle" fill="#6B6862" font-size="10.5" font-weight="600" font-family="sans-serif">Memory Efficiency</text><text x="150.62850062605733" y="108.46304564688106" text-anchor="middle" fill="#6B6862" font-size="10.5" font-weight="600" font-family="sans-serif">Resilience</text>
-        </svg>
-      </div></div>
-<div class="yumia-column">
-      <div class="yumia-chart-container">
-        <div class="yumia-chart-title">Real-time Cluster SLA</div>
-        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; width:100%;">
-          <svg viewBox="0 0 360 210" style="width:260px; height:170px;">
-            <path d="M 95 145 A 85 85 0 0 1 265 145" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="18" stroke-linecap="round" />
-            <path d="M 95 145 A 85 85 0 0 1 265 145" fill="none" stroke="#8B0000" stroke-width="18" stroke-linecap="round" stroke-dasharray="267.0353755551324" stroke-dashoffset="0.0534070751110206" style="filter:drop-shadow(0 0 8px #8B0000);" />
-            <text x="180" y="135" text-anchor="middle" fill="#2C2B29" font-size="32" font-weight="800" font-family="sans-serif">99.98%</text>
-            <text x="180" y="167" text-anchor="middle" fill="#6B6862" font-size="12" font-weight="600" font-family="sans-serif">High Availability Uptime</text>
-          </svg>
+        <div class="yumia-card" data-variant="primary">
+          <div class="yumia-card-title">Markdown Yumia (.yumia.md)</div>
+          <pre><code class="language-markdown">:::metric value=&quot;99%&quot; label=&quot;Uptime&quot; change=&quot;+1%&quot; :::</code></pre>
         </div>
-      </div>
+<p>Compatibile con lettori Markdown standard, esteso tramite direttive semantiche.</p></div>
+<div class="yumia-column">
+        <div class="yumia-card" data-variant="success">
+          <div class="yumia-card-title">Native Yumia (.yumia)</div>
+          <pre><code class="language-yumia">metric &quot;99%&quot; label=&quot;Uptime&quot; diff=&quot;+1%&quot;</code></pre>
+        </div>
+<p>Sintassi nativa più concisa, pulita e ottimizzata per i Design Compiler.</p></div></div>
 
-      <div class="yumia-chart-container">
-        <div class="yumia-chart-title">Bandwidth Ingestion (GB/s)</div>
-        <svg viewBox="0 0 640 240" style="width:100%; height:100%; max-height:280px;">
-          <defs>
-            <linearGradient id="area-grad-o15m4e" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#8B0000" stop-opacity="0.65" />
-              <stop offset="100%" stop-color="#8B0000" stop-opacity="0.05" />
-            </linearGradient>
-          </defs>
-          
-          <line x1="45" y1="157.5" x2="595" y2="157.5" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
-          <text x="37" y="161.5" text-anchor="end" fill="#6B6862" font-size="10" font-family="sans-serif">23</text>
-          <line x1="45" y1="120" x2="595" y2="120" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
-          <text x="37" y="124" text-anchor="end" fill="#6B6862" font-size="10" font-family="sans-serif">46</text>
-          <line x1="45" y1="82.5" x2="595" y2="82.5" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
-          <text x="37" y="86.5" text-anchor="end" fill="#6B6862" font-size="10" font-family="sans-serif">69</text>
-          <line x1="45" y1="45" x2="595" y2="45" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
-          <text x="37" y="49" text-anchor="end" fill="#6B6862" font-size="10" font-family="sans-serif">92</text>
-          <line x1="45" y1="195" x2="595" y2="195" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" />
-          
-        <polygon points="45,172.17391304347825 155,159.1304347826087 265,100.43478260869564 375,45 485,74.34782608695652 595,133.04347826086956 595,195 45,195" fill="url(#area-grad-o15m4e)" opacity="0.4" />
-        <polyline fill="none" stroke="#8B0000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="45,172.17391304347825 155,159.1304347826087 265,100.43478260869564 375,45 485,74.34782608695652 595,133.04347826086956" />
-        <circle cx="45" cy="172.17391304347825" r="4.5" fill="#8B0000" stroke="var(--yumia-surface)" stroke-width="2" /><circle cx="155" cy="159.1304347826087" r="4.5" fill="#8B0000" stroke="var(--yumia-surface)" stroke-width="2" /><circle cx="265" cy="100.43478260869564" r="4.5" fill="#8B0000" stroke="var(--yumia-surface)" stroke-width="2" /><circle cx="375" cy="45" r="4.5" fill="#8B0000" stroke="var(--yumia-surface)" stroke-width="2" /><circle cx="485" cy="74.34782608695652" r="4.5" fill="#8B0000" stroke="var(--yumia-surface)" stroke-width="2" /><circle cx="595" cy="133.04347826086956" r="4.5" fill="#8B0000" stroke="var(--yumia-surface)" stroke-width="2" />
-        <polygon points="45,180.32608695652175 155,172.17391304347825 265,142.82608695652175 375,90.65217391304348 485,116.73913043478261 595,152.6086956521739 595,195 45,195" fill="url(#area-grad-o15m4e)" opacity="0.4" />
-        <polyline fill="none" stroke="#C29B38" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="45,180.32608695652175 155,172.17391304347825 265,142.82608695652175 375,90.65217391304348 485,116.73913043478261 595,152.6086956521739" />
-        <circle cx="45" cy="180.32608695652175" r="4.5" fill="#C29B38" stroke="var(--yumia-surface)" stroke-width="2" /><circle cx="155" cy="172.17391304347825" r="4.5" fill="#C29B38" stroke="var(--yumia-surface)" stroke-width="2" /><circle cx="265" cy="142.82608695652175" r="4.5" fill="#C29B38" stroke="var(--yumia-surface)" stroke-width="2" /><circle cx="375" cy="90.65217391304348" r="4.5" fill="#C29B38" stroke="var(--yumia-surface)" stroke-width="2" /><circle cx="485" cy="116.73913043478261" r="4.5" fill="#C29B38" stroke="var(--yumia-surface)" stroke-width="2" /><circle cx="595" cy="152.6086956521739" r="4.5" fill="#C29B38" stroke="var(--yumia-surface)" stroke-width="2" />
-          <text x="45" y="228" text-anchor="middle" fill="#6B6862" font-size="11" font-weight="600" font-family="sans-serif">00:00</text><text x="155" y="228" text-anchor="middle" fill="#6B6862" font-size="11" font-weight="600" font-family="sans-serif">04:00</text><text x="265" y="228" text-anchor="middle" fill="#6B6862" font-size="11" font-weight="600" font-family="sans-serif">08:00</text><text x="375" y="228" text-anchor="middle" fill="#6B6862" font-size="11" font-weight="600" font-family="sans-serif">12:00</text><text x="485" y="228" text-anchor="middle" fill="#6B6862" font-size="11" font-weight="600" font-family="sans-serif">16:00</text><text x="595" y="228" text-anchor="middle" fill="#6B6862" font-size="11" font-weight="600" font-family="sans-serif">20:00</text>
-        </svg>
-      </div></div></div>
-      <div class="yumia-watermark">Yumia v0.1.26 • Confidential</div>
-      <div class="yumia-progress-bar" style="width: 90%;"></div>
+        <div class="yumia-callout" data-severity="info" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-info); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
+          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-info); margin-bottom:4px;">Utility di Migrazione Automatica</div>
+          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">Il compilatore include tool di migrazione bidirezionale per consentire un passaggio progressivo senza perdere i contenuti esistenti.</div>
+        </div>
+      <div class="yumia-watermark">Yumia • Design Compiler</div>
+      <div class="yumia-progress-bar" style="width: 87%;"></div>
     </div>
 
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-10" data-notes="">
-      <h1>Object Model &amp; Core Domain Contracts</h1>
-<h2>Compiler &amp; Tensor Architecture Hierarchy</h2>
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-14" data-notes="È importante mantenere uno sguardo critico e trasparente sullo stato del progetto:&lt;br&gt;Yumia ha già solidi punti di forza nella versionabilità e nella compilazione multi-target.&lt;br&gt;I prossimi passi si concentreranno sull&#039;affinamento dei casi limite nei renderer e sullo sviluppo di estensioni IDE e funzionalità di collaborazione in tempo reale.">
+      <h1>Vantaggi, Limiti e Sviluppi Futuri</h1>
+<h2>Valutazione dello stato attuale e roadmap del progetto</h2>
+<div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16;">
+        <div class="yumia-card" data-variant="success">
+          <div class="yumia-card-title">Vantaggi Attuali</div>
+          <p>• Sorgente 100% versionabile con Git</p>
+<p>• Tre output compilati da un unico file</p>
+<p>• Layout e gerarchia visiva garantiti</p>
+<p>• Linter automatico per design e WCAG</p>
+<p>• Integrazione nativa con workflow AI</p>
+        </div>
 
-      <div class="yumia-class-diagram" style="width:100%; display:flex; flex-direction:column; margin:0.4rem 0;">
-        <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-primary); margin-bottom:0.6rem; text-align:center;">Distributed Processing Engine Architecture</div>
-        <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px; width:100%; align-items:start;">
+        <div class="yumia-card" data-variant="warning">
+          <div class="yumia-card-title">Aspetti da Consolidare</div>
+          <p>• Parità totale di rendering su edge case</p>
+<p>• Estensione della copertura dei test</p>
+<p>• Supporto a font e asset esterni complessi</p>
+<p>• Documentazione di scenari avanzati</p>
+        </div>
+
+        <div class="yumia-card" data-variant="primary">
+          <div class="yumia-card-title">Sviluppi Futuri</div>
+          <p>• Editor visuale WYSIWYG bidirezionale</p>
+<p>• Collaborazione in tempo reale su browser</p>
+<p>• Integrazione con modelli LLM in locale</p>
+<p>• Plugin per VS Code ed estensioni IDE</p>
+        </div></div>
+      <div class="yumia-watermark">Yumia • Design Compiler</div>
+      <div class="yumia-progress-bar" style="width: 93%;"></div>
+    </div>
+
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-15" data-notes="In conclusione, Yumia dimostra come i principi dell&#039;ingegneria del software — compilatori, AST, linter e separazione delle responsabilità — possano essere applicati con successo alla comunicazione visiva.&lt;br&gt;Grazie per l&#039;attenzione: sono a vostra completa disposizione per domande e approfondimenti tecnici.">
+      
+        <div class="yumia-hero" data-align="center" data-yumia-role="hero" style="display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; flex:1; width:100%; margin:auto 0;">
+          <div class="yumia-hero-badge" style="display:inline-flex; align-items:center; padding:4px 14px; border-radius:999px; background:rgba(255,255,255,0.08); border:1px solid var(--yumia-primary); color:var(--yumia-primary); font-size:0.85rem; font-weight:700; margin-bottom:1rem; letter-spacing:0.06em; text-transform:uppercase;">Design as Code</div>
           
-        <div class="yumia-class-card" style="background:var(--yumia-surface); border:1.8px solid var(--yumia-border); border-radius:10px; overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,0.2); display:flex; flex-direction:column;">
-          <div style="background:rgba(255,255,255,0.03); padding:8px 12px; text-align:center; border-bottom:1.5px solid var(--yumia-primary);">
-            <div style="font-size:10px; color:var(--yumia-secondary); font-style:italic; text-align:center;">&lt;&lt;interface&gt;&gt;</div>
-            <div style="font-weight:700; font-size:13.5px; color:var(--yumia-primary); letter-spacing:0.02em;">INeuralKernel</div>
-          </div>
+          <h1 class="yumia-hero-title" style="font-size:clamp(2.4rem, 4.5vw, 4rem); font-weight:800; line-height:1.1; color:var(--yumia-text); margin-bottom:0.8rem;">Descrivere ciò che si vuole comunicare,</h1>
+          <p class="yumia-hero-subtitle" style="font-size:clamp(1.1rem, 1.8vw, 1.5rem); color:var(--yumia-muted); max-width:800px; margin-bottom:1.5rem; line-height:1.5;">lasciare al compilatore il compito di comporlo.</p>
           
-          <div style="padding:6px 10px; font-family:var(--yumia-font-code); font-size:10.5px; color:var(--yumia-text); line-height:1.5; border-top:1px solid var(--yumia-border);">
-            <div><span style="color:var(--yumia-secondary); font-weight:700; margin-right:4px;">+</span>executeTensor(ctx: Context): <span style="color:var(--yumia-accent);">TensorResult</span></div><div><span style="color:var(--yumia-secondary); font-weight:700; margin-right:4px;">+</span>syncGradients(): <span style="color:var(--yumia-accent);">void</span></div>
-          </div>
+          
         </div>
-      
+<div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16;">
+        <div class="yumia-card" data-variant="primary">
+          <div class="yumia-card-title">1. Separazione</div>
+          <p>Il contenuto è completamente disaccoppiato dalle coordinate grafiche.</p>
+        </div>
 
-        <div class="yumia-class-card" style="background:var(--yumia-surface); border:1.8px solid var(--yumia-border); border-radius:10px; overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,0.2); display:flex; flex-direction:column;">
-          <div style="background:rgba(255,255,255,0.03); padding:8px 12px; text-align:center; border-bottom:1.5px solid var(--yumia-primary);">
-            
-            <div style="font-weight:700; font-size:13.5px; color:var(--yumia-primary); letter-spacing:0.02em;">QuantumCore</div>
-          </div>
-          <div style="padding:6px 10px; font-family:var(--yumia-font-code); font-size:10.5px; color:var(--yumia-text); line-height:1.5; border-top:1px solid var(--yumia-border);">
-            <div><span style="color:var(--yumia-primary); font-weight:700; margin-right:4px;">+</span>stateVector: <span style="color:var(--yumia-accent);">ComplexMatrix</span></div><div><span style="color:var(--yumia-primary); font-weight:700; margin-right:4px;">-</span>qubitCount: <span style="color:var(--yumia-accent);">number</span></div>
-          </div>
-          <div style="padding:6px 10px; font-family:var(--yumia-font-code); font-size:10.5px; color:var(--yumia-text); line-height:1.5; border-top:1px solid var(--yumia-border);">
-            <div><span style="color:var(--yumia-secondary); font-weight:700; margin-right:4px;">+</span>executeTensor(ctx: Context): <span style="color:var(--yumia-accent);">TensorResult</span></div>
-          </div>
+        <div class="yumia-card" data-variant="accent">
+          <div class="yumia-card-title">2. Flessibilità</div>
+          <p>Un singolo sorgente produce Web interattivo, PowerPoint nativo e PDF.</p>
         </div>
-      
 
-        <div class="yumia-class-card" style="background:var(--yumia-surface); border:1.8px solid var(--yumia-border); border-radius:10px; overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,0.2); display:flex; flex-direction:column;">
-          <div style="background:rgba(255,255,255,0.03); padding:8px 12px; text-align:center; border-bottom:1.5px solid var(--yumia-primary);">
-            
-            <div style="font-weight:700; font-size:13.5px; color:var(--yumia-primary); letter-spacing:0.02em;">DispatchEngine</div>
-          </div>
-          <div style="padding:6px 10px; font-family:var(--yumia-font-code); font-size:10.5px; color:var(--yumia-text); line-height:1.5; border-top:1px solid var(--yumia-border);">
-            <div><span style="color:var(--yumia-primary); font-weight:700; margin-right:4px;">-</span>kernel: <span style="color:var(--yumia-accent);">INeuralKernel</span></div>
-          </div>
-          <div style="padding:6px 10px; font-family:var(--yumia-font-code); font-size:10.5px; color:var(--yumia-text); line-height:1.5; border-top:1px solid var(--yumia-border);">
-            <div><span style="color:var(--yumia-secondary); font-weight:700; margin-right:4px;">+</span>schedule(batch: IngestionBatch): <span style="color:var(--yumia-accent);">void</span></div>
-          </div>
+        <div class="yumia-card" data-variant="success">
+          <div class="yumia-card-title">3. Futuro</div>
+          <p>Un ponte naturale tra sviluppatori, designer e intelligenza artificiale.</p>
+        </div></div>
+
+        <div class="yumia-callout" data-severity="info" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-info); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
+          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-info); margin-bottom:4px;">Sessione Q&amp;A</div>
+          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">Grazie per l&#039;attenzione. Spazio per domande, chiarimenti e feedback della commissione.</div>
         </div>
-      
-        </div>
-        
-        <div style="display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-top:10px; padding:6px 14px; background:rgba(255,255,255,0.02); border-radius:8px;">
-          <div style="font-size:11px; font-weight:600; color:var(--yumia-muted); display:flex; align-items:center; gap:6px;">
-              <span style="color:var(--yumia-text); font-weight:700;">quantumcore</span>
-              
-              <span style="color:var(--yumia-primary); font-family:monospace; font-size:12px;">──▶</span>
-              
-              <span style="color:var(--yumia-text); font-weight:700;">ineuralkernel</span>
-              <span style="color:var(--yumia-secondary); font-style:italic;">: implements</span>
-            </div><div style="font-size:11px; font-weight:600; color:var(--yumia-muted); display:flex; align-items:center; gap:6px;">
-              <span style="color:var(--yumia-text); font-weight:700;">dispatchengine</span>
-              
-              <span style="color:var(--yumia-primary); font-family:monospace; font-size:12px;">──▶</span>
-              
-              <span style="color:var(--yumia-text); font-weight:700;">ineuralkernel</span>
-              <span style="color:var(--yumia-secondary); font-style:italic;">: orchestrates</span>
-            </div>
-        </div>
-      
-      </div>
-    
-      <div class="yumia-watermark">Yumia v0.1.26 • Confidential</div>
+      <div class="yumia-watermark">Yumia • Design Compiler</div>
       <div class="yumia-progress-bar" style="width: 100%;"></div>
     </div>
     </div>
 
     <div class="yumia-controls" id="deck-controls">
       <button class="yumia-btn" id="btn-prev" title="Previous Slide (←)">◀</button>
-      <span id="slide-indicator">1 / 10</span>
+      <span id="slide-indicator">1 / 15</span>
       <button class="yumia-btn" id="btn-next" title="Next Slide (→)">▶</button>
       <button class="yumia-btn" id="btn-overview" title="Slide Overview (ESC / O)">▦</button>
       <button class="yumia-btn" id="btn-speaker" title="Speaker View (S)">🎤</button>
