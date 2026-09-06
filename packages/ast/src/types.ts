@@ -90,6 +90,8 @@ export interface HeroElement extends BaseElement {
   title: string;
   subtitle?: string | undefined;
   tagline?: string | undefined;
+  /** Optional pill label shown above the title (distinct from tagline). */
+  badge?: string | undefined;
   elements?: SlideElement[] | undefined;
   align?: 'left' | 'center' | 'right' | string | undefined;
 }

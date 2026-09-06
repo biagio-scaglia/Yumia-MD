@@ -380,6 +380,7 @@ export function createHero(
   elements?: SlideElement[] | undefined,
   options?: {
     tagline?: string | undefined;
+    badge?: string | undefined;
     align?: 'left' | 'center' | 'right' | undefined;
     emphasis?: string | undefined;
     density?: string | undefined;

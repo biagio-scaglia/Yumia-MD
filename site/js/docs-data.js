@@ -351,7 +351,7 @@ slide "Cluster Node Topology"
             <tr>
               <td><code>class</code></td>
               <td>PlantUML-style class diagrams with interfaces, members, and relationships</td>
-              <td><code>title</code>, classes, interfaces, attributes, methods, relationships (<code>&lt;\|--</code>, <code>&lt;\|..</code>)</td>
+              <td><code>title</code>, classes, interfaces, attributes, methods, relationships (<code>&lt;|--</code>, <code>&lt;|..</code>)</td>
               <td>PPTX, PDF, HTML</td>
             </tr>
             <tr>

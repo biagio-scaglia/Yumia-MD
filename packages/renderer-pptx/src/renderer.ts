@@ -26,7 +26,7 @@ import {
   TocElement,
 } from '@yumiamd/ast';
 import { DefaultLayoutEngine, LayoutNode, Rect, Size, SlideLayoutResult } from '@yumiamd/layout';
-import { RenderContext, YumiaRenderer } from '@yumiamd/renderer';
+import { RenderContext, YumiaRenderer, resolveSlideGeometry, themeSizeToPptxPoints, resolveLocalAsset } from '@yumiamd/renderer';
 import { resolveTheme, YumiaTheme } from '@yumiamd/theme';
 
 export interface PptxRenderOptions {
@@ -185,18 +185,16 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     pptx.title = title;
     pptx.author = author;
 
-    // Define 16:9 widescreen canvas (13.333 x 7.5 inches) or 4:3 canvas (10 x 7.5 inches)
-    const is43 = presentation.metadata.aspectRatio === '4:3';
-    const slideWidthInches = is43 ? 10.0 : 13.333;
-    const slideHeightInches = 7.5;
-    const layoutName = is43 ? 'YUMIA_4_3' : 'YUMIA_16_9';
+    // Define slide canvas from shared aspect-ratio geometry (16:9 / 4:3 / 16:10)
+    const geometry = resolveSlideGeometry(presentation.metadata.aspectRatio);
+    const slideWidthInches = geometry.inches.width;
+    const slideHeightInches = geometry.inches.height;
+    const layoutName = geometry.layoutName;
 
     pptx.defineLayout({ name: layoutName, width: slideWidthInches, height: slideHeightInches });
     pptx.layout = layoutName;
 
-    const pixelViewport: Size = is43
-      ? { width: 1440, height: 1080 }
-      : { width: 1920, height: 1080 };
+    const pixelViewport: Size = geometry.pixelViewport;
     const scaleX = slideWidthInches / pixelViewport.width;
     const scaleY = slideHeightInches / pixelViewport.height;
 
@@ -384,7 +382,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       w: rect.w,
       h: rect.h,
       align: heading.align || 'left',
-      valign: 'middle',
+      valign: 'top',
       margin: 0,
     });
   }
@@ -395,7 +393,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     rect: { x: number; y: number; w: number; h: number },
     theme: YumiaTheme
   ): void {
-    const fontSize = theme.typography.sizes?.body || 18;
+    const fontSize = themeSizeToPptxPoints(theme.typography.sizes?.body, 18);
     const color = this.cleanHexColor(theme.colors.text);
 
     const chunks = parseInlineMarkdown(paragraph.text, {
@@ -421,7 +419,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     rect: { x: number; y: number; w: number; h: number },
     theme: YumiaTheme
   ): void {
-    const fontSize = theme.typography.sizes?.body || 18;
+    const fontSize = themeSizeToPptxPoints(theme.typography.sizes?.body, 18) - 0.5;
     const color = this.cleanHexColor(theme.colors.text);
     const allChunks: InlineChunk[] = [];
 
@@ -431,7 +429,7 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         color,
         fontFace: cleanFontFace(theme.typography.bodyFont),
         indentLevel: item.depth || 0,
-        paraSpaceAfter: 8,
+        paraSpaceAfter: 4,
       });
 
       if (itemChunks.length > 0) {
@@ -528,15 +526,8 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     image: ImageElement,
     rect: { x: number; y: number; w: number; h: number }
   ): void {
-    try {
-      pptxSlide.addImage({
-        path: image.src,
-        x: rect.x,
-        y: rect.y,
-        w: rect.w,
-        h: rect.h,
-      });
-    } catch {
+    const resolved = resolveLocalAsset(image.src);
+    const drawPlaceholder = () => {
       pptxSlide.addShape('rect', {
         x: rect.x,
         y: rect.y,
@@ -555,6 +546,23 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         align: 'center',
         valign: 'middle',
       });
+    };
+
+    if (!resolved || !resolved.exists) {
+      drawPlaceholder();
+      return;
+    }
+
+    try {
+      pptxSlide.addImage({
+        path: resolved.absolutePath,
+        x: rect.x,
+        y: rect.y,
+        w: rect.w,
+        h: rect.h,
+      });
+    } catch {
+      drawPlaceholder();
     }
   }
 
@@ -697,10 +705,10 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     if (card.title) {
       pptxSlide.addText(card.title, {
         x: rect.x + 0.25,
-        y: rect.y + 0.18,
+        y: rect.y + 0.12,
         w: rect.w - 0.5,
-        h: 0.35,
-        fontSize: 20,
+        h: 0.3,
+        fontSize: themeSizeToPptxPoints(theme.typography.sizes?.h4, 22),
         bold: true,
         color: titleColor,
         fontFace: cleanFontFace(theme.typography.headingFont),
@@ -997,25 +1005,57 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       h: node.bounds.height * scaleY,
     };
 
-    let curY = rect.y;
-    if (hero.tagline) {
+    const align = (hero.align as 'left' | 'center' | 'right') || 'center';
+    let curY = rect.y + 0.3;
+    if (hero.badge) {
+      const badgeW = Math.min(3.2, Math.max(1.4, hero.badge.length * 0.11 + 0.6));
+      const badgeX =
+        align === 'left'
+          ? rect.x
+          : align === 'right'
+            ? rect.x + rect.w - badgeW
+            : rect.x + (rect.w - badgeW) / 2;
+      pptxSlide.addShape(pptx.ShapeType.roundRect, {
+        x: badgeX,
+        y: curY,
+        w: badgeW,
+        h: 0.32,
+        fill: { color: this.cleanHexColor(theme.colors.surface) },
+        line: { color: this.cleanHexColor(theme.colors.primary), width: 1.5 },
+        rectRadius: 0.16,
+      });
+      pptxSlide.addText(hero.badge.toUpperCase(), {
+        x: badgeX,
+        y: curY,
+        w: badgeW,
+        h: 0.32,
+        fontSize: 10,
+        bold: true,
+        color: this.cleanHexColor(theme.colors.primary),
+        fontFace: cleanFontFace(theme.typography.headingFont),
+        align: 'center',
+        valign: 'middle',
+      });
+      curY += 0.48;
+    } else if (hero.tagline) {
       pptxSlide.addText(hero.tagline.toUpperCase(), {
         x: rect.x,
         y: curY,
         w: rect.w,
-        h: 0.35,
+        h: 0.32,
         fontSize: 11,
         bold: true,
         color: this.cleanHexColor(theme.colors.primary),
         fontFace: cleanFontFace(theme.typography.headingFont),
-        align: (hero.align as 'left' | 'center' | 'right') || 'center',
+        align,
       });
       curY += 0.42;
     }
 
     const titleLines = Math.max(1, Math.ceil(hero.title.length / 38));
-    const titleH = Math.max(0.7, titleLines * 0.52 + 0.12);
-    const titleFontSize = titleLines > 2 ? 26 : titleLines > 1 ? 29 : 33;
+    const titleH = Math.max(0.7, titleLines * 0.55 + 0.1);
+    const displaySize = themeSizeToPptxPoints(theme.typography.sizes?.display, 56);
+    const titleFontSize = titleLines > 2 ? displaySize - 10 : titleLines > 1 ? displaySize - 6 : displaySize;
 
     pptxSlide.addText(hero.title, {
       x: rect.x,
@@ -1026,14 +1066,15 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       bold: true,
       color: this.cleanHexColor(theme.colors.text),
       fontFace: cleanFontFace(theme.typography.headingFont),
-      align: (hero.align as 'left' | 'center' | 'right') || 'center',
+      align,
     });
     curY += titleH + 0.08;
 
     if (hero.subtitle) {
       const subLines = Math.max(1, Math.ceil(hero.subtitle.length / 56));
-      const subH = Math.max(0.38, subLines * 0.3 + 0.1);
-      const subFontSize = subLines > 2 ? 14 : 16;
+      const subH = Math.max(0.38, subLines * 0.3 + 0.08);
+      const bodySize = themeSizeToPptxPoints(theme.typography.sizes?.body, 18);
+      const subFontSize = subLines > 2 ? bodySize - 1 : bodySize + 1;
       pptxSlide.addText(hero.subtitle, {
         x: rect.x,
         y: curY,
@@ -1042,9 +1083,23 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         fontSize: subFontSize,
         color: this.cleanHexColor(theme.colors.muted || theme.colors.text),
         fontFace: cleanFontFace(theme.typography.bodyFont),
-        align: (hero.align as 'left' | 'center' | 'right') || 'center',
+        align,
       });
       curY += subH + 0.12;
+    }
+
+    if (hero.tagline && hero.badge) {
+      pptxSlide.addText(hero.tagline, {
+        x: rect.x,
+        y: curY,
+        w: rect.w,
+        h: 0.3,
+        fontSize: 12,
+        color: this.cleanHexColor(theme.colors.muted || theme.colors.text),
+        fontFace: cleanFontFace(theme.typography.bodyFont),
+        align,
+      });
+      curY += 0.35;
     }
 
     if (node.children) {
@@ -1661,19 +1716,19 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     };
   }
 
-  private getHeadingFontSize(level: number, theme: YumiaTheme): number {
-    const sizes = theme.typography.sizes;
+  private getHeadingFontSize(level: number, theme?: YumiaTheme): number {
+    const sizes = theme?.typography?.sizes;
     switch (level) {
       case 1:
-        return sizes?.h1 || 40;
+        return themeSizeToPptxPoints(sizes?.h1, 44);
       case 2:
-        return sizes?.h2 || 32;
+        return themeSizeToPptxPoints(sizes?.h2, 36);
       case 3:
-        return sizes?.h3 || 26;
+        return themeSizeToPptxPoints(sizes?.h3, 28);
       case 4:
-        return sizes?.h4 || 20;
+        return themeSizeToPptxPoints(sizes?.h4, 22);
       default:
-        return 18;
+        return themeSizeToPptxPoints(sizes?.body, 18);
     }
   }
 

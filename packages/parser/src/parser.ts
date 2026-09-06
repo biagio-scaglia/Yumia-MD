@@ -619,12 +619,13 @@ export class DefaultYumiaParser implements YumiaParser {
         } else if (directiveName === 'hero') {
           const subMatch = directiveArg.match(/subtitle=['"](.*?)['"]/);
           const tagMatch = directiveArg.match(/tagline=['"](.*?)['"]/);
+          const badgeMatch = directiveArg.match(/badge=['"](.*?)['"]/);
           const alignMatch = directiveArg.match(/align=['"](.*?)['"]/);
           const emphMatch = directiveArg.match(/emphasis=['"](.*?)['"]/);
           const densMatch = directiveArg.match(/density=['"](.*?)['"]/);
           const title =
             directiveArg
-              .replace(/(?:subtitle|tagline|align|emphasis|density)=['"].*?['"]/g, '')
+              .replace(/(?:subtitle|tagline|badge|align|emphasis|density)=['"].*?['"]/g, '')
               .trim()
               .replace(/^['"](.*)['"]$/, '$1') || 'Hero';
           const { elements: heroElements } = this.parseLines(blockLines, blockBaseLine);
@@ -634,6 +635,7 @@ export class DefaultYumiaParser implements YumiaParser {
             heroElements.length > 0 ? heroElements : undefined,
             {
               tagline: tagMatch ? tagMatch[1] : undefined,
+              badge: badgeMatch ? badgeMatch[1] : undefined,
               align: alignMatch ? (alignMatch[1] as 'left' | 'center' | 'right') : undefined,
               emphasis: emphMatch ? emphMatch[1] : undefined,
               density: densMatch ? densMatch[1] : undefined,

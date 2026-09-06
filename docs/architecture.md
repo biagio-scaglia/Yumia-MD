@@ -150,7 +150,11 @@ Presentations rendered to HTML include an on-demand Design Inspector:
 2. **PowerPoint (`PptxRenderer`)**:
    - Maps AST nodes to native Microsoft PowerPoint OpenXML shapes, text boxes, and tables.
    - Charts are rendered as genuine editable OpenXML charts.
-   - Supports `.potx` corporate templates and custom font embedding.
+   - Uses the shared layout engine (`@yumiamd/layout`) scaled to inches.
+   - POTX templates and `embedFonts` are **not implemented yet** (see [limitations.md](./limitations.md)).
 
 3. **PDF (`PdfRenderer`)**:
-   - Vector graphics rendering via PDFKit with precise DPI scaling, page breaks, and embedded vector icons.
+   - Vector graphics rendering via PDFKit with a sequential page layout.
+   - Embeds local raster images (PNG/JPEG) with aspect-preserving fit.
+   - Registers a system Unicode TTF when available; otherwise falls back to PDF core fonts.
+   - Icons are currently text stubs (not embedded SVG). Full capability matrix: [limitations.md](./limitations.md).
