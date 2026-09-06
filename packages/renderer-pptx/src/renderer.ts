@@ -1664,11 +1664,20 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       const x2 = isLR ? p2.x : p2.x + nodeW / 2;
       const y2 = isLR ? p2.y + nodeH / 2 : p2.y;
 
+      const minX = Math.min(x1, x2);
+      const minY = Math.min(y1, y2);
+      const lineW = Math.max(0.01, Math.abs(x2 - x1));
+      const lineH = Math.max(0.01, Math.abs(y2 - y1));
+      const flipH = x2 < x1;
+      const flipV = y2 < y1;
+
       pptxSlide.addShape(pptx.ShapeType.line, {
-        x: x1,
-        y: y1,
-        w: x2 - x1,
-        h: y2 - y1,
+        x: minX,
+        y: minY,
+        w: lineW,
+        h: lineH,
+        flipH,
+        flipV,
         line: {
           color: arrowColor,
           width: 2,
@@ -1681,8 +1690,8 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
         const midX = (x1 + x2) / 2;
         const midY = (y1 + y2) / 2;
         pptxSlide.addText(e.label, {
-          x: midX - 0.4,
-          y: midY - 0.15,
+          x: Math.max(0, midX - 0.4),
+          y: Math.max(0, midY - 0.15),
           w: 0.8,
           h: 0.3,
           fontSize: 9,
@@ -1729,8 +1738,8 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       pptxSlide.addText(n.label, {
         x: p.x + 0.05,
         y: p.y + 0.05,
-        w: nodeW - 0.1,
-        h: nodeH - 0.1,
+        w: Math.max(0.1, nodeW - 0.1),
+        h: Math.max(0.1, nodeH - 0.1),
         align: 'center',
         valign: 'middle',
         fontSize: 11,
@@ -1756,6 +1765,20 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
 
     if (CSS_NAMED_COLORS[trimmed]) {
       return CSS_NAMED_COLORS[trimmed]!;
+    }
+
+    const rgbMatch = trimmed.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+    if (rgbMatch && rgbMatch[1] && rgbMatch[2] && rgbMatch[3]) {
+      const r = Math.min(255, Math.max(0, parseInt(rgbMatch[1], 10)))
+        .toString(16)
+        .padStart(2, '0');
+      const g = Math.min(255, Math.max(0, parseInt(rgbMatch[2], 10)))
+        .toString(16)
+        .padStart(2, '0');
+      const b = Math.min(255, Math.max(0, parseInt(rgbMatch[3], 10)))
+        .toString(16)
+        .padStart(2, '0');
+      return `${r}${g}${b}`;
     }
 
     const hexMatch = trimmed.match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);

@@ -1,143 +1,14 @@
-import {
-  BadgeElement,
-  CalloutElement,
-  CardElement,
-  ChartElement,
-  CodeElement,
-  ColumnElement,
-  ColumnsElement,
-  CompareElement,
-  DiagramElement,
-  GridElement,
-  HeadingElement,
-  HeroElement,
-  IconElement,
-  ImageElement,
-  ListElement,
-  MathElement,
-  MermaidElement,
-  MetricElement,
-  ParagraphElement,
-  Presentation,
-  QuoteElement,
-  SectionElement,
-  Slide,
-  SlideElement,
-  StackElement,
-  TableElement,
-  TimelineElement,
-  TocElement,
-} from '@yumiamd/ast';
-import { RenderContext, YumiaRenderer, defaultIconResolver } from '@yumiamd/renderer';
-import { defaultTheme, resolveTheme, ThemeOverrides, YumiaTheme } from '@yumiamd/theme';
-
-export interface HtmlRenderOptions {
-  liveReload?: boolean;
-  liveReloadPort?: number;
-  author?: string;
-  title?: string;
-}
-
-export interface HtmlOutput {
-  format: 'html';
-  html: string;
-  slideCount: number;
-}
-
-export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
-  readonly name = 'HtmlRenderer';
-  readonly targetFormat = 'html';
-
-  async render(presentation: Presentation, context: RenderContext = {}): Promise<HtmlOutput> {
-    const colorOverrides = presentation.metadata.colors
-      ? ({ colors: presentation.metadata.colors } as ThemeOverrides)
-      : undefined;
-    const resolvedTheme = resolveTheme(presentation.metadata.theme, colorOverrides);
-    const theme = context.theme || resolvedTheme || defaultTheme;
-
-    const title = presentation.metadata.title || 'YumiaMD Presentation';
-    const aspectRatio = presentation.metadata.aspectRatio || '16:9';
-    const is43 = aspectRatio === '4:3';
-    const ratioAspect = is43 ? '4 / 3' : '16 / 9';
-    const ratioW = is43 ? 4 : 16;
-    const ratioH = is43 ? 3 : 9;
-
-    const options = (context.options || {}) as HtmlRenderOptions;
-    const liveReloadScript = options.liveReload
-      ? `
-    <!-- YumiaMD Live Reload -->
-    <script>
-      (function() {
-        const port = ${options.liveReloadPort || 3000};
-        const evtSource = new EventSource('/__yumia_live_reload');
-        evtSource.onmessage = function(event) {
-          if (event.data === 'reload') {
-            const currentHash = window.location.hash;
-            fetch(window.location.href)
-              .then(res => res.text())
-              .then(html => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const newDeck = doc.getElementById('yumia-deck');
-                const oldDeck = document.getElementById('yumia-deck');
-                if (newDeck && oldDeck) {
-                  oldDeck.innerHTML = newDeck.innerHTML;
-                  window.deckController.init();
-                  if (currentHash) window.location.hash = currentHash;
-                } else {
-                  window.location.reload();
-                }
-              })
-              .catch(() => window.location.reload());
-          }
-        };
-      })();
-    </script>
-`
-      : '';
-
-    const slidesHtml = presentation.slides
-      .map((slide, idx) =>
-        this.renderSlide(
-          slide,
-          idx + 1,
-          presentation.slides.length,
-          theme,
-          presentation.metadata.watermark,
-          presentation
-        )
-      )
-      .join('\n');
-
-    const customStyles = presentation.metadata.styles
-      ? (Array.isArray(presentation.metadata.styles)
-          ? presentation.metadata.styles
-          : [presentation.metadata.styles]
-        )
-          .map((url) => `<link rel="stylesheet" href="${url}">`)
-          .join('\n  ')
-      : '';
-
-    const customScripts = presentation.metadata.scripts
-      ? (Array.isArray(presentation.metadata.scripts)
-          ? presentation.metadata.scripts
-          : [presentation.metadata.scripts]
-        )
-          .map((url) => `<script src="${url}"></script>`)
-          .join('\n  ')
-      : '';
-
-    const html = `<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${this.escapeHtml(title)}</title>
+  <title>Quantum Neural Processing &amp; Distributed Visual Intelligence</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Orbitron:wght@500;700;900&family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,400;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;600;700&display=swap">
-  ${customStyles}
-  ${customScripts}
+  
+  
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
@@ -150,13 +21,13 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
         securityLevel: 'loose',
         themeVariables: {
           darkMode: true,
-          background: '${theme.colors.background}',
-          primaryColor: '${theme.colors.primary}',
+          background: '#FCFBF7',
+          primaryColor: '#8B0000',
           primaryTextColor: '#ffffff',
-          primaryBorderColor: '${theme.colors.primary}',
-          lineColor: '${theme.colors.accent || theme.colors.primary}',
-          secondaryColor: '${theme.colors.surface}',
-          tertiaryColor: '${theme.colors.surface}'
+          primaryBorderColor: '#8B0000',
+          lineColor: '#C29B38',
+          secondaryColor: '#F5F2EB',
+          tertiaryColor: '#F5F2EB'
         }
       });
       window.mermaid = mermaid;
@@ -180,37 +51,37 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
   </script>
   <style>
     :root {
-      --yumia-bg: ${theme.colors.background};
-      --yumia-surface: ${theme.colors.surface};
-      --yumia-elevated-surface: ${theme.colors.elevatedSurface || theme.colors.surface};
-      --yumia-text: ${theme.colors.text};
-      --yumia-muted: ${theme.colors.muted || '#94a3b8'};
-      --yumia-primary: ${theme.colors.primary};
-      --yumia-secondary: ${theme.colors.secondary || theme.colors.primary};
-      --yumia-accent: ${theme.colors.accent || theme.colors.primary};
-      --yumia-border: ${theme.colors.border || 'rgba(255,255,255,0.1)'};
-      --yumia-divider: ${theme.colors.divider || 'rgba(255,255,255,0.12)'};
-      --yumia-success: ${theme.colors.success || '#10b981'};
-      --yumia-warning: ${theme.colors.warning || '#f59e0b'};
-      --yumia-danger: ${theme.colors.danger || '#ef4444'};
-      --yumia-info: ${theme.colors.info || '#3b82f6'};
-      --yumia-font-heading: ${theme.typography.headingFont};
-      --yumia-font-body: ${theme.typography.bodyFont};
-      --yumia-font-code: ${theme.typography.codeFont || 'monospace'};
-      --yumia-line-height-tight: ${theme.typography.lineHeights?.tight || 1.15};
-      --yumia-line-height-normal: ${theme.typography.lineHeights?.normal || 1.55};
-      --yumia-line-height-relaxed: ${theme.typography.lineHeights?.relaxed || 1.7};
-      --yumia-line-height-body: ${theme.typography.lineHeights?.normal || 1.55};
-      --yumia-letter-spacing-tight: ${theme.typography.letterSpacing?.tight || '-0.02em'};
-      --yumia-radius-sm: ${theme.radius.sm || 4}px;
-      --yumia-radius-md: ${theme.radius.md || 8}px;
-      --yumia-radius-lg: ${theme.radius.lg || 16}px;
-      --yumia-radius-default: ${theme.radius.default}px;
-      --yumia-radius-card: ${theme.components?.card?.borderRadius ?? theme.radius.default}px;
-      --yumia-shadow-glow: ${theme.shadows?.glow || 'none'};
-      --yumia-ratio: ${ratioAspect};
-      --yumia-ratio-w: ${ratioW};
-      --yumia-ratio-h: ${ratioH};
+      --yumia-bg: #FCFBF7;
+      --yumia-surface: #F5F2EB;
+      --yumia-elevated-surface: #FFFFFF;
+      --yumia-text: #2C2B29;
+      --yumia-muted: #6B6862;
+      --yumia-primary: #8B0000;
+      --yumia-secondary: #1C3F60;
+      --yumia-accent: #C29B38;
+      --yumia-border: #E0DACD;
+      --yumia-divider: #D5CDBE;
+      --yumia-success: #2E7D32;
+      --yumia-warning: #E65100;
+      --yumia-danger: #C62828;
+      --yumia-info: #1565C0;
+      --yumia-font-heading: Georgia, Times New Roman, serif;
+      --yumia-font-body: Georgia, Times New Roman, serif;
+      --yumia-font-code: Courier New, monospace;
+      --yumia-line-height-tight: 1.15;
+      --yumia-line-height-normal: 1.55;
+      --yumia-line-height-relaxed: 1.75;
+      --yumia-line-height-body: 1.55;
+      --yumia-letter-spacing-tight: -0.01em;
+      --yumia-radius-sm: 2px;
+      --yumia-radius-md: 4px;
+      --yumia-radius-lg: 6px;
+      --yumia-radius-default: 4px;
+      --yumia-radius-card: 4px;
+      --yumia-shadow-glow: none;
+      --yumia-ratio: 16 / 9;
+      --yumia-ratio-w: 16;
+      --yumia-ratio-h: 9;
     }
 
     * {
@@ -1361,12 +1232,288 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
 <body>
   <div id="deck-container">
     <div id="yumia-deck">
-      ${slidesHtml}
+      
+    <div class="yumia-slide-wrapper active transition-fade" id="slide-1" data-notes="">
+      <h1>Research Overview</h1>
+
+        <div class="yumia-hero" data-align="center" data-yumia-role="hero" style="display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; flex:1; width:100%; margin:auto 0;">
+          <div class="yumia-hero-tagline" style="display:inline-flex; align-items:center; padding:4px 14px; border-radius:999px; background:rgba(255,255,255,0.08); border:1px solid var(--yumia-primary); color:var(--yumia-primary); font-size:0.85rem; font-weight:700; margin-bottom:1rem; letter-spacing:0.06em; text-transform:uppercase;">Computer Science &amp; Systems Lab</div>
+          <h1 class="yumia-hero-title" style="font-size:clamp(2.4rem, 4.5vw, 4rem); font-weight:800; line-height:1.1; color:var(--yumia-text); margin-bottom:0.8rem;">Quantum Neural Architecture</h1>
+          <p class="yumia-hero-subtitle" style="font-size:clamp(1.1rem, 1.8vw, 1.5rem); color:var(--yumia-muted); max-width:800px; margin-bottom:1.5rem; line-height:1.5;">Formal Specification of Hybrid Classical-Quantum Distributed Ingestion &amp; Vector Processing Pipelines</p>
+          
+        </div>
+<span class="yumia-badge variant-primary">v2.4 Production Specification</span>
+      <div class="yumia-watermark">Yumia v0.1.26 • Confidential</div>
+      <div class="yumia-progress-bar" style="width: 14%;"></div>
+    </div>
+
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-2" data-notes="">
+      <h1>Agenda &amp; Table of Contents</h1>
+
+        <div class="yumia-toc-container">
+          <h2 style="margin-bottom:1.5rem;">Presentation Outline</h2>
+          <div class="yumia-toc-grid">
+            
+          <div class="yumia-toc-item">
+            <div class="yumia-toc-num">1</div>
+            <div>
+              <div class="yumia-toc-title">Research Overview</div>
+              
+            </div>
+          </div>
+
+          <div class="yumia-toc-item">
+            <div class="yumia-toc-num">2</div>
+            <div>
+              <div class="yumia-toc-title">Agenda &amp; Table of Contents</div>
+              
+            </div>
+          </div>
+
+          <div class="yumia-toc-item">
+            <div class="yumia-toc-num">3</div>
+            <div>
+              <div class="yumia-toc-title">System Topology &amp; Neural Dispatch</div>
+              
+            </div>
+          </div>
+
+          <div class="yumia-toc-item">
+            <div class="yumia-toc-num">4</div>
+            <div>
+              <div class="yumia-toc-title">Empirical Performance Evaluation</div>
+              
+            </div>
+          </div>
+
+          <div class="yumia-toc-item">
+            <div class="yumia-toc-num">5</div>
+            <div>
+              <div class="yumia-toc-title">Comparative Analysis &amp; Mathematical Model</div>
+              
+            </div>
+          </div>
+
+          <div class="yumia-toc-item">
+            <div class="yumia-toc-num">6</div>
+            <div>
+              <div class="yumia-toc-title">Cluster Analytics &amp; Telemetry</div>
+              
+            </div>
+          </div>
+
+          <div class="yumia-toc-item">
+            <div class="yumia-toc-num">7</div>
+            <div>
+              <div class="yumia-toc-title">Implementation &amp; Runtime Kernel</div>
+              
+            </div>
+          </div>
+          </div>
+        </div>
+      <div class="yumia-watermark">Yumia v0.1.26 • Confidential</div>
+      <div class="yumia-progress-bar" style="width: 29%;"></div>
+    </div>
+
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-3" data-notes="">
+      <h1>System Topology &amp; Neural Dispatch</h1>
+<h2>Vector-Compiled Distributed Ingestion Mesh</h2>
+
+      <div class="yumia-diagram-container">
+        <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-primary); margin-bottom:0.4rem; text-align:center;">Multi-Tier Distributed Neural Processing Pipeline</div>
+        <svg class="yumia-diagram" viewBox="0 0 1095 206" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <marker id="arrow-0w7898" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#C29B38" />
+            </marker>
+          </defs>
+          <path d="M 195 103 C 225 103, 225 103, 255 103" fill="none" stroke="#C29B38" stroke-width="2"  marker-end="url(#arrow-0w7898)" /><path d="M 410 103 C 440 103, 440 103, 470 103" fill="none" stroke="#C29B38" stroke-width="2"  marker-end="url(#arrow-0w7898)" /><g transform="translate(440, 103)">
+          <rect x="-42" y="-11" width="84" height="22" rx="6" fill="#F5F2EB" stroke="#E0DACD" stroke-width="1.2"/>
+          <text x="0" y="4" text-anchor="middle" fill="#6B6862" font-size="10.5" font-weight="600" font-family="sans-serif">TLS 1.3</text>
+        </g><path d="M 625 103 C 655 103, 655 103, 685 103" fill="none" stroke="#C29B38" stroke-width="2"  marker-end="url(#arrow-0w7898)" /><g transform="translate(655, 103)">
+          <rect x="-42" y="-11" width="84" height="22" rx="6" fill="#F5F2EB" stroke="#E0DACD" stroke-width="1.2"/>
+          <text x="0" y="4" text-anchor="middle" fill="#6B6862" font-size="10.5" font-weight="600" font-family="sans-serif">gRPC Streaming</text>
+        </g><path d="M 840 103 C 870 103, 870 64, 900 64" fill="none" stroke="#C29B38" stroke-width="2"  marker-end="url(#arrow-0w7898)" /><path d="M 840 103 C 870 103, 870 142, 900 142" fill="none" stroke="#C29B38" stroke-width="2"  marker-end="url(#arrow-0w7898)" /><g transform="translate(870, 122.5)">
+          <rect x="-42" y="-11" width="84" height="22" rx="6" fill="#F5F2EB" stroke="#E0DACD" stroke-width="1.2"/>
+          <text x="0" y="4" text-anchor="middle" fill="#6B6862" font-size="10.5" font-weight="600" font-family="sans-serif">Hot Cache</text>
+        </g>
+          
+        <g class="yumia-diag-node" data-id="edge_sensors">
+          <rect x="40" y="79" width="155" height="48" rx="10" fill="#F5F2EB" stroke="#8B0000" stroke-width="2" />
+          <text x="117.5" y="107" text-anchor="middle" fill="#2C2B29" font-size="11.5" font-weight="700" font-family="sans-serif">Edge Sensors</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="ingestion_broker">
+          <rect x="255" y="79" width="155" height="48" rx="10" fill="#F5F2EB" stroke="#C29B38" stroke-width="2" />
+          <text x="332.5" y="107" text-anchor="middle" fill="#2C2B29" font-size="11.5" font-weight="700" font-family="sans-serif">Ingestion Broker</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="neural_dispatcher">
+          <rect x="470" y="79" width="155" height="48" rx="10" fill="#F5F2EB" stroke="#C29B38" stroke-width="2" />
+          <text x="547.5" y="107" text-anchor="middle" fill="#2C2B29" font-size="11.5" font-weight="700" font-family="sans-serif">Neural Dispatcher</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="quantum_tensor_cores">
+          <rect x="685" y="79" width="155" height="48" rx="10" fill="#F5F2EB" stroke="#C29B38" stroke-width="2" />
+          <text x="762.5" y="107" text-anchor="middle" fill="#2C2B29" font-size="11.5" font-weight="700" font-family="sans-serif">Quantum Tensor Cores</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="vector_knowledge_base">
+          
+          <rect x="900" y="40" width="155" height="48" rx="8" fill="#F5F2EB" stroke="#8B0000" stroke-width="2" />
+          <path d="M 900 51 C 977.5 58, 977.5 58, 1055 51" fill="none" stroke="#8B0000" stroke-width="1.5"/>
+        
+          <text x="977.5" y="68" text-anchor="middle" fill="#2C2B29" font-size="11.5" font-weight="700" font-family="sans-serif">Vector Knowledge Base</text>
+        </g>
+      
+        <g class="yumia-diag-node" data-id="redis_semantic_cache">
+          
+          <rect x="900" y="118" width="155" height="48" rx="8" fill="#F5F2EB" stroke="#2E7D32" stroke-width="2" />
+          <path d="M 900 129 C 977.5 136, 977.5 136, 1055 129" fill="none" stroke="#2E7D32" stroke-width="1.5"/>
+        
+          <text x="977.5" y="146" text-anchor="middle" fill="#2C2B29" font-size="11.5" font-weight="700" font-family="sans-serif">Redis Semantic Cache</text>
+        </g>
+      
+        </svg>
+      </div>
+    
+      <div class="yumia-watermark">Yumia v0.1.26 • Confidential</div>
+      <div class="yumia-progress-bar" style="width: 43%;"></div>
+    </div>
+
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-4" data-notes="">
+      <h1>Empirical Performance Evaluation</h1>
+<h2>Measured Benchmarks Across Compute Clusters</h2>
+<div class="yumia-grid" style="grid-template-columns:repeat(2, minmax(0, 1fr)); gap:20;">
+        <div class="yumia-card" data-variant="success">
+          <div class="yumia-card-title">Inference Latency</div>
+          
+        <div class="yumia-metric" data-variant="success">
+          <span class="yumia-metric-label">Benchmarked Speedup</span>
+          <span class="yumia-metric-value">1.42ms</span>
+          
+        </div>
+<p>End-to-end latency reduction under heavy concurrent load.</p>
+        </div>
+
+        <div class="yumia-card" data-variant="accent">
+          <div class="yumia-card-title">Throughput Capacity</div>
+          
+        <div class="yumia-metric" data-variant="accent">
+          <span class="yumia-metric-label">Benchmarked Speedup</span>
+          <span class="yumia-metric-value">450k op/s</span>
+          
+        </div>
+<p>Peak distributed operations sustained without buffer degradation.</p>
+        </div></div>
+      <div class="yumia-watermark">Yumia v0.1.26 • Confidential</div>
+      <div class="yumia-progress-bar" style="width: 57%;"></div>
+    </div>
+
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-5" data-notes="">
+      <h1>Comparative Analysis &amp; Mathematical Model</h1>
+<h2>Formal Energy Convergence Formulation</h2>
+
+    <div class="yumia-compare">
+      <div class="yumia-compare-col left">
+        <div class="yumia-compare-title">Legacy Classical CPU / GPU Pipeline</div>
+        <span class="yumia-badge variant-warning">Legacy Infrastructure</span>
+<p>Linear memory scaling with quadratic communication overhead during multi-node synchronization.</p>
+
+        <div class="yumia-metric" data-variant="warning">
+          <span class="yumia-metric-label">Avg Convergence Time</span>
+          <span class="yumia-metric-value">68ms</span>
+          
+        </div>
+      </div>
+      <div class="yumia-compare-divider">VS</div>
+      <div class="yumia-compare-col right">
+        <div class="yumia-compare-title">Yumia Neural Tensor Pipeline</div>
+        <span class="yumia-badge variant-success">Distributed Tensor Core</span>
+<p>Logarithmic latency scaling leveraging quantum sparse tensor compression.</p>
+
+        <div class="yumia-metric" data-variant="success">
+          <span class="yumia-metric-label">Avg Convergence Time</span>
+          <span class="yumia-metric-value">4.1ms</span>
+          
+        </div>
+      </div>
+    </div>
+
+        <div class="yumia-math-container">
+          <div class="yumia-math-equation" data-expr="\mathcal{L}(\theta) = \mathbb{E}_{x \sim \mathcal{D}} \left[ \| f_\theta(x) - y \|_2^2 \right] + \lambda \sum_{i=1}^N \Omega(W_i)">$$\mathcal{L}(\theta) = \mathbb{E}_{x \sim \mathcal{D}} \left[ \| f_\theta(x) - y \|_2^2 \right] + \lambda \sum_{i=1}^N \Omega(W_i)$$</div>
+        </div>
+      <div class="yumia-watermark">Yumia v0.1.26 • Confidential</div>
+      <div class="yumia-progress-bar" style="width: 71%;"></div>
+    </div>
+
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-6" data-notes="">
+      <h1>Cluster Analytics &amp; Telemetry</h1>
+<h2>Resource Allocation &amp; Workload Distribution</h2>
+<div class="yumia-grid" style="grid-template-columns:repeat(2, minmax(0, 1fr)); gap:24;">
+    <div class="yumia-chart-container">
+      <div class="yumia-chart-title">Inference Acceleration (x Baseline)</div>
+      <svg viewBox="0 0 640 240" style="width:100%; height:100%; max-height:280px;">
+        
+        <line x1="45" y1="157.5" x2="595" y2="157.5" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
+        <text x="37" y="161.5" text-anchor="end" fill="#6B6862" font-size="10" font-family="sans-serif">4</text>
+        <line x1="45" y1="120" x2="595" y2="120" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
+        <text x="37" y="124" text-anchor="end" fill="#6B6862" font-size="10" font-family="sans-serif">7</text>
+        <line x1="45" y1="82.5" x2="595" y2="82.5" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
+        <text x="37" y="86.5" text-anchor="end" fill="#6B6862" font-size="10" font-family="sans-serif">11</text>
+        <line x1="45" y1="45" x2="595" y2="45" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
+        <text x="37" y="49" text-anchor="end" fill="#6B6862" font-size="10" font-family="sans-serif">14</text>
+        <line x1="45" y1="195" x2="595" y2="195" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" />
+        
+        <rect x="85.75" y="160.95744680851064" width="56" height="34.04255319148937" rx="6" fill="#8B0000" opacity="0.95" />
+        <text x="113.75" y="152.95744680851064" text-anchor="middle" fill="#8B0000" font-size="12" font-weight="700" font-family="sans-serif">3.2</text>
+        <text x="113.75" y="228" text-anchor="middle" fill="#2C2B29" font-size="11" font-weight="600" font-family="sans-serif">ResNet-50</text>
+        <rect x="223.25" y="133.29787234042553" width="56" height="61.702127659574465" rx="6" fill="#C29B38" opacity="0.95" />
+        <text x="251.25" y="125.29787234042553" text-anchor="middle" fill="#C29B38" font-size="12" font-weight="700" font-family="sans-serif">5.8</text>
+        <text x="251.25" y="228" text-anchor="middle" fill="#2C2B29" font-size="11" font-weight="600" font-family="sans-serif">BERT-Large</text>
+        <rect x="360.75" y="105.63829787234042" width="56" height="89.36170212765958" rx="6" fill="#1C3F60" opacity="0.95" />
+        <text x="388.75" y="97.63829787234042" text-anchor="middle" fill="#1C3F60" font-size="12" font-weight="700" font-family="sans-serif">8.4</text>
+        <text x="388.75" y="228" text-anchor="middle" fill="#2C2B29" font-size="11" font-weight="600" font-family="sans-serif">LLaMA-7B</text>
+        <rect x="498.25" y="45" width="56" height="150" rx="6" fill="#2E7D32" opacity="0.95" />
+        <text x="526.25" y="37" text-anchor="middle" fill="#2E7D32" font-size="12" font-weight="700" font-family="sans-serif">14.1</text>
+        <text x="526.25" y="228" text-anchor="middle" fill="#2C2B29" font-size="11" font-weight="600" font-family="sans-serif">QuantumNet</text>
+      </svg>
+    </div>
+
+      <div class="yumia-chart-container">
+        <div class="yumia-chart-title">Cluster Resource Utilization</div>
+        <div style="display:flex; align-items:center; justify-content:center; gap:36px; width:100%; padding:10px 0;">
+          <svg viewBox="0 0 220 220" style="width:180px; height:180px; transform: rotate(-90deg);">
+            <circle cx="110" cy="110" r="65" fill="none" stroke="#8B0000" stroke-width="26" stroke-dasharray="204.20352248333654 408.4070449666731" stroke-dashoffset="0" /><circle cx="110" cy="110" r="65" fill="none" stroke="#C29B38" stroke-width="26" stroke-dasharray="102.10176124166827 408.4070449666731" stroke-dashoffset="-204.20352248333654" /><circle cx="110" cy="110" r="65" fill="none" stroke="#1C3F60" stroke-width="26" stroke-dasharray="61.26105674500096 408.4070449666731" stroke-dashoffset="-306.3052837250048" /><circle cx="110" cy="110" r="65" fill="none" stroke="#2E7D32" stroke-width="26" stroke-dasharray="40.840704496667314 408.4070449666731" stroke-dashoffset="-367.5663404700058" />
+          </svg>
+          <div style="display:flex; flex-direction:column; justify-content:center;"><div style="display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; margin:6px 0;"><span style="width:12px; height:12px; border-radius:50%; background:#8B0000; box-shadow:0 0 6px #8B0000;"></span><span style="color:var(--yumia-text);">Tensor Cores <strong style="color:var(--yumia-primary);">(50%)</strong></span></div><div style="display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; margin:6px 0;"><span style="width:12px; height:12px; border-radius:50%; background:#C29B38; box-shadow:0 0 6px #C29B38;"></span><span style="color:var(--yumia-text);">Ingestion Mesh <strong style="color:var(--yumia-primary);">(25%)</strong></span></div><div style="display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; margin:6px 0;"><span style="width:12px; height:12px; border-radius:50%; background:#1C3F60; box-shadow:0 0 6px #1C3F60;"></span><span style="color:var(--yumia-text);">Vector DB <strong style="color:var(--yumia-primary);">(15%)</strong></span></div><div style="display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; margin:6px 0;"><span style="width:12px; height:12px; border-radius:50%; background:#2E7D32; box-shadow:0 0 6px #2E7D32;"></span><span style="color:var(--yumia-text);">Reserve <strong style="color:var(--yumia-primary);">(10%)</strong></span></div></div>
+        </div>
+      </div></div>
+      <div class="yumia-watermark">Yumia v0.1.26 • Confidential</div>
+      <div class="yumia-progress-bar" style="width: 86%;"></div>
+    </div>
+
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-7" data-notes="">
+      <h1>Implementation &amp; Runtime Kernel</h1>
+<h2>Zero-Trust Mesh &amp; Compiler Directives</h2>
+<div class="yumia-columns" style="grid-template-columns: 60fr 40fr;"><div class="yumia-column"><pre><code class="language-typescript">import { YumiaCompiler, createEngine } from &#039;@yumiamd/core&#039;;
+const engine = createEngine({ target: &#039;multi-target&#039; });
+const result = await engine.compile(&#039;presentation.yumia&#039;);</code></pre></div>
+<div class="yumia-column">
+        <div class="yumia-callout" data-severity="success" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-success); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
+          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-success); margin-bottom:4px;">Production Verified</div>
+          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">All cluster nodes reporting optimal throughput with zero memory leaks.</div>
+        </div>
+<span class="yumia-badge variant-success">Zero-Trust mTLS</span>
+<span class="yumia-badge variant-primary">WCAG AAA Verified</span></div></div>
+      <div class="yumia-watermark">Yumia v0.1.26 • Confidential</div>
+      <div class="yumia-progress-bar" style="width: 100%;"></div>
+    </div>
     </div>
 
     <div class="yumia-controls" id="deck-controls">
       <button class="yumia-btn" id="btn-prev" title="Previous Slide (←)">◀</button>
-      <span id="slide-indicator">1 / ${presentation.slides.length}</span>
+      <span id="slide-indicator">1 / 7</span>
       <button class="yumia-btn" id="btn-next" title="Next Slide (→)">▶</button>
       <button class="yumia-btn" id="btn-overview" title="Slide Overview (ESC / O)">▦</button>
       <button class="yumia-btn" id="btn-speaker" title="Speaker View (S)">🎤</button>
@@ -1526,7 +1673,7 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       }
 
       function initSpeakerLayout() {
-        document.body.innerHTML = \`
+        document.body.innerHTML = `
           <div class="speaker-layout">
             <div class="speaker-topbar">
               <div style="font-weight:700; color:var(--yumia-primary); display:flex; align-items:center; gap:8px;">
@@ -1540,7 +1687,7 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
                 <button class="speaker-timer-btn" id="btn-timer-reset">Reset</button>
               </div>
               <div>
-                <span id="speaker-slide-num" style="font-weight:600;">1 / \${slides.length}</span>
+                <span id="speaker-slide-num" style="font-weight:600;">1 / ${slides.length}</span>
               </div>
             </div>
             <div class="speaker-main-grid">
@@ -1560,7 +1707,7 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
               </div>
             </div>
           </div>
-        \`;
+        `;
 
         // Live Clock
         setInterval(() => {
@@ -1578,7 +1725,7 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
           const mins = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
           const secs = String(elapsedSeconds % 60).padStart(2, '0');
           const timerEl = document.getElementById('speaker-timer');
-          if (timerEl) timerEl.textContent = \`\${mins}:\${secs}\`;
+          if (timerEl) timerEl.textContent = `${mins}:${secs}`;
         }, 1000);
 
         document.getElementById('btn-timer-toggle')?.addEventListener('click', (e) => {
@@ -1728,12 +1875,12 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
           const role = target.getAttribute('data-yumia-role') || target.tagName.toLowerCase();
           const variant = target.getAttribute('data-variant') || target.getAttribute('data-severity') || 'default';
           const loc = target.getAttribute('data-yumia-loc') || 'slide ' + (currentIdx + 1);
-          popup.innerHTML = \`
-            <div style="color:var(--yumia-primary); font-weight:800; font-size:14px; margin-bottom:4px;">🔍 \${role.toUpperCase()}</div>
-            <div><strong>Variant:</strong> <span style="color:var(--yumia-accent);">\${variant}</span></div>
-            <div><strong>Location:</strong> \${loc}</div>
+          popup.innerHTML = `
+            <div style="color:var(--yumia-primary); font-weight:800; font-size:14px; margin-bottom:4px;">🔍 ${role.toUpperCase()}</div>
+            <div><strong>Variant:</strong> <span style="color:var(--yumia-accent);">${variant}</span></div>
+            <div><strong>Location:</strong> ${loc}</div>
             <div style="margin-top:6px; font-size:11px; color:var(--yumia-muted);">Press 'I' to exit inspector</div>
-          \`;
+          `;
           popup.classList.add('open');
         }
       });
@@ -1793,842 +1940,6 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       init();
     })();
   </script>
-  ${liveReloadScript}
+  
 </body>
-</html>`;
-
-    return {
-      format: 'html',
-      html,
-      slideCount: presentation.slides.length,
-    };
-  }
-
-  private renderSlide(
-    slide: Slide,
-    slideNum: number,
-    totalSlides: number,
-    theme: YumiaTheme,
-    watermarkOpt?: boolean | string,
-    presentation?: Presentation
-  ): string {
-    const activeClass = slideNum === 1 ? 'active' : '';
-    const notesAttr = slide.notes ? this.escapeHtml(slide.notes.replace(/\n/g, '<br>')) : '';
-    const progressPercent = Math.round((slideNum / totalSlides) * 100);
-
-    const transition = slide.transition || 'fade';
-    const transType = typeof transition === 'string' ? transition : transition.type;
-    const transClass = `transition-${transType || 'fade'}`;
-
-    const isWatermarkEnabled =
-      watermarkOpt !== undefined &&
-      watermarkOpt !== false &&
-      watermarkOpt !== 'none' &&
-      watermarkOpt !== 'false' &&
-      watermarkOpt !== 'off';
-    const watermarkText =
-      typeof watermarkOpt === 'string' &&
-      watermarkOpt.trim().length > 0 &&
-      watermarkOpt !== 'true' &&
-      watermarkOpt !== 'yes' &&
-      watermarkOpt !== 'on'
-        ? watermarkOpt
-        : 'Yumia';
-    const watermarkHtml = isWatermarkEnabled
-      ? `<div class="yumia-watermark">${this.escapeHtml(watermarkText)}</div>`
-      : '';
-
-    const elementsHtml = slide.elements
-      .map((el) => this.renderElement(el, theme, presentation))
-      .join('\n');
-
-    return `
-    <div class="yumia-slide-wrapper ${activeClass} ${transClass}" id="slide-${slideNum}" data-notes="${notesAttr}">
-      ${elementsHtml}
-      ${watermarkHtml}
-      <div class="yumia-progress-bar" style="width: ${progressPercent}%;"></div>
-    </div>`;
-  }
-
-  private renderElement(
-    element: SlideElement,
-    theme: YumiaTheme,
-    presentation?: Presentation
-  ): string {
-    switch (element.type) {
-      case 'hero': {
-        const hero = element as HeroElement;
-        const align = hero.align || 'center';
-        const tagHtml = hero.tagline
-          ? `<div class="yumia-hero-tagline" style="display:inline-flex; align-items:center; padding:4px 14px; border-radius:999px; background:rgba(255,255,255,0.08); border:1px solid var(--yumia-primary); color:var(--yumia-primary); font-size:0.85rem; font-weight:700; margin-bottom:1rem; letter-spacing:0.06em; text-transform:uppercase;">${this.formatInline(hero.tagline)}</div>`
-          : '';
-        const titleHtml = `<h1 class="yumia-hero-title" style="font-size:clamp(2.4rem, 4.5vw, 4rem); font-weight:800; line-height:1.1; color:var(--yumia-text); margin-bottom:0.8rem;">${this.formatInline(hero.title)}</h1>`;
-        const subHtml = hero.subtitle
-          ? `<p class="yumia-hero-subtitle" style="font-size:clamp(1.1rem, 1.8vw, 1.5rem); color:var(--yumia-muted); max-width:800px; margin-bottom:1.5rem; line-height:1.5;">${this.formatInline(hero.subtitle)}</p>`
-          : '';
-        const innerHtml = hero.elements
-          ? hero.elements.map((child) => this.renderElement(child, theme, presentation)).join('\n')
-          : '';
-
-        return `
-        <div class="yumia-hero" data-align="${align}" data-yumia-role="hero" style="display:flex; flex-direction:column; align-items:${align === 'center' ? 'center' : align === 'right' ? 'flex-end' : 'flex-start'}; text-align:${align}; justify-content:center; flex:1; width:100%; margin:auto 0;">
-          ${tagHtml}
-          ${titleHtml}
-          ${subHtml}
-          ${innerHtml ? `<div style="width:100%; margin-top:1rem;">${innerHtml}</div>` : ''}
-        </div>`;
-      }
-
-      case 'callout': {
-        const c = element as CalloutElement;
-        const sev = c.severity || 'info';
-        const colorVar =
-          sev === 'warning'
-            ? 'var(--yumia-warning)'
-            : sev === 'danger'
-              ? 'var(--yumia-danger)'
-              : sev === 'success'
-                ? 'var(--yumia-success)'
-                : 'var(--yumia-info)';
-        const titleHtml = c.title
-          ? `<div style="font-weight:700; font-size:1.05rem; color:${colorVar}; margin-bottom:4px;">${this.formatInline(c.title)}</div>`
-          : '';
-
-        return `
-        <div class="yumia-callout" data-severity="${sev}" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid ${colorVar}; border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
-          ${titleHtml}
-          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">${this.formatInline(c.text)}</div>
-        </div>`;
-      }
-
-      case 'heading': {
-        const h = element as HeadingElement;
-        const tag = `h${Math.min(4, Math.max(1, h.level))}`;
-        return `<${tag}>${this.formatInline(h.text)}</${tag}>`;
-      }
-      case 'paragraph': {
-        const p = element as ParagraphElement;
-        return `<p>${this.formatInline(p.text)}</p>`;
-      }
-      case 'list': {
-        const l = element as ListElement;
-        const tag = l.ordered ? 'ol' : 'ul';
-        const items = l.items.map((i) => `<li>${this.formatInline(i.text)}</li>`).join('\n');
-        return `<${tag}>${items}</${tag}>`;
-      }
-      case 'code': {
-        const c = element as CodeElement;
-        const langClass = c.language ? `class="language-${c.language}"` : '';
-        const lines = c.code.split('\n');
-        if (c.highlight) {
-          const highlightSet = new Set<number>();
-          const parts = c.highlight.split(',');
-          for (const part of parts) {
-            const trimmed = part.trim();
-            if (!trimmed) continue;
-            if (trimmed.includes('-')) {
-              const [startStr, endStr] = trimmed.split('-');
-              const start = parseInt(startStr || '0', 10);
-              const end = parseInt(endStr || '0', 10);
-              if (!isNaN(start) && !isNaN(end) && start <= end) {
-                for (let n = start; n <= end; n++) highlightSet.add(n);
-              }
-            } else {
-              const num = parseInt(trimmed, 10);
-              if (!isNaN(num)) highlightSet.add(num);
-            }
-          }
-          const linesHtml = lines
-            .map((line, idx) => {
-              const lineNum = idx + 1;
-              const isHl = highlightSet.has(lineNum);
-              const hlClass = isHl ? 'highlighted' : 'dimmed';
-              return `<div class="yumia-code-line ${hlClass}"><span class="line-num">${lineNum}</span><span class="line-text">${this.escapeHtml(line) || '&nbsp;'}</span></div>`;
-            })
-            .join('');
-          return `<pre class="yumia-code-block"><code ${langClass}>${linesHtml}</code></pre>`;
-        }
-        return `<pre><code ${langClass}>${this.escapeHtml(c.code)}</code></pre>`;
-      }
-      case 'section': {
-        const s = element as SectionElement;
-        const numStr =
-          s.number !== undefined
-            ? `<div class="yumia-section-pill">SECTION ${this.escapeHtml(String(s.number))}</div>`
-            : '';
-        const subStr = s.subtitle
-          ? `<div class="yumia-section-subtitle">${this.formatInline(s.subtitle)}</div>`
-          : '';
-        return `
-        <div class="yumia-section-card">
-          ${numStr}
-          <div class="yumia-section-title">${this.formatInline(s.title)}</div>
-          ${subStr}
-        </div>`;
-      }
-      case 'toc': {
-        const t = element as TocElement;
-        const items = t.items ? [...t.items] : [];
-        if (items.length === 0 && presentation) {
-          let autoSecIdx = 1;
-          for (const s of presentation.slides) {
-            for (const el of s.elements) {
-              if (el.type === 'section') {
-                const sec = el as SectionElement;
-                items.push({
-                  number: sec.number !== undefined ? String(sec.number) : String(autoSecIdx++),
-                  title: sec.title,
-                  description: sec.subtitle,
-                });
-              }
-            }
-          }
-          if (items.length === 0) {
-            presentation.slides.forEach((s, idx) => {
-              const heading = s.elements.find((el) => el.type === 'heading') as
-                HeadingElement | undefined;
-              if (heading) {
-                items.push({
-                  number: String(idx + 1),
-                  title: heading.text,
-                });
-              }
-            });
-          }
-        }
-        const titleHtml = t.title
-          ? `<h2 style="margin-bottom:1.5rem;">${this.escapeHtml(t.title)}</h2>`
-          : '';
-        const itemsHtml = items
-          .map((it, idx) => {
-            const num = it.number !== undefined ? String(it.number) : String(idx + 1);
-            const descText = it.description || it.subtitle;
-            const desc = descText
-              ? `<div style="font-size:0.85rem; color:var(--yumia-muted); margin-top:2px;">${this.formatInline(descText)}</div>`
-              : '';
-            return `
-          <div class="yumia-toc-item">
-            <div class="yumia-toc-num">${this.escapeHtml(num)}</div>
-            <div>
-              <div class="yumia-toc-title">${this.formatInline(it.title)}</div>
-              ${desc}
-            </div>
-          </div>`;
-          })
-          .join('\n');
-        return `
-        <div class="yumia-toc-container">
-          ${titleHtml}
-          <div class="yumia-toc-grid">
-            ${itemsHtml}
-          </div>
-        </div>`;
-      }
-      case 'quote': {
-        const q = element as QuoteElement;
-        const author = q.author ? `<br><small>— ${this.escapeHtml(q.author)}</small>` : '';
-        return `<blockquote>“${this.formatInline(q.text)}”${author}</blockquote>`;
-      }
-      case 'table': {
-        const t = element as TableElement;
-        let html = '<table>';
-        if (t.headers && t.headers.length > 0) {
-          html += '<thead><tr>';
-          html += t.headers
-            .map((h) => `<th>${this.formatInline(h.replace(/\*\*/g, ''))}</th>`)
-            .join('');
-          html += '</tr></thead>';
-        }
-        if (t.rows) {
-          html += '<tbody>';
-          for (const row of t.rows) {
-            html += '<tr>';
-            html += row
-              .map((c) => `<td>${this.formatInline(c.replace(/\*\*/g, ''))}</td>`)
-              .join('');
-            html += '</tr>';
-          }
-          html += '</tbody>';
-        }
-        html += '</table>';
-        return html;
-      }
-      case 'image': {
-        const img = element as ImageElement;
-        const alt = img.alt ? `alt="${this.escapeHtml(img.alt)}"` : '';
-        const width = img.width
-          ? typeof img.width === 'number'
-            ? `${img.width}px`
-            : img.width
-          : '100%';
-        const height = img.height
-          ? typeof img.height === 'number'
-            ? `${img.height}px`
-            : img.height
-          : 'auto';
-        const fit = img.fit || 'cover';
-        const radius =
-          img.radius !== undefined
-            ? typeof img.radius === 'number'
-              ? `${img.radius}px`
-              : img.radius
-            : 'var(--yumia-radius-card)';
-        const shadowStyle = img.shadow ? 'box-shadow: 0 12px 30px rgba(0,0,0,0.45);' : '';
-        const aspect = img.aspectRatio ? `aspect-ratio: ${img.aspectRatio};` : '';
-        const cap = img.caption
-          ? `<figcaption style="margin-top: 6px; font-size: 0.85rem; color: var(--yumia-muted); text-align: center;">${this.formatInline(img.caption)}</figcaption>`
-          : '';
-
-        return `
-        <figure class="yumia-image-wrapper" style="margin: 0.4rem 0; width: ${width}; max-width: 100%; display: flex; flex-direction: column; align-items: center;">
-          <img src="${this.escapeHtml(img.src)}" ${alt} style="width: 100%; height: ${height}; object-fit: ${fit}; border-radius: ${radius}; ${aspect} ${shadowStyle} border: 1.5px solid var(--yumia-border);">
-          ${cap}
-        </figure>`;
-      }
-      case 'metric': {
-        const m = element as MetricElement;
-        const variant = m.variant || 'primary';
-        const displayVal = m.unit ? `${m.value} ${m.unit}` : m.value;
-        const changeHtml = m.change
-          ? `<span class="yumia-metric-change ${m.change.startsWith('+') ? 'positive' : 'negative'}">${this.escapeHtml(m.change)}</span>`
-          : '';
-        return `
-        <div class="yumia-metric" data-variant="${variant}">
-          <span class="yumia-metric-label">${this.escapeHtml(m.label)}</span>
-          <span class="yumia-metric-value">${this.escapeHtml(displayVal)}</span>
-          ${changeHtml}
-        </div>`;
-      }
-      case 'card': {
-        const card = element as CardElement;
-        const variant = card.variant || 'default';
-        const titleHtml = card.title
-          ? `<div class="yumia-card-title">${this.escapeHtml(card.title)}</div>`
-          : '';
-        const innerHtml = card.elements
-          ? card.elements.map((child) => this.renderElement(child, theme)).join('\n')
-          : '';
-        return `
-        <div class="yumia-card" data-variant="${variant}">
-          ${titleHtml}
-          ${innerHtml}
-        </div>`;
-      }
-      case 'columns': {
-        const cols = element as ColumnsElement;
-        const colCount = cols.columns.length;
-        const ratioTemplate = cols.ratios
-          ? cols.ratios
-              .split(':')
-              .map((r) => `${r}fr`)
-              .join(' ')
-          : `repeat(${colCount}, 1fr)`;
-        const colsHtml = cols.columns
-          .map((col: ColumnElement) => {
-            const inner = col.elements.map((child) => this.renderElement(child, theme)).join('\n');
-            return `<div class="yumia-column">${inner}</div>`;
-          })
-          .join('\n');
-        return `<div class="yumia-columns" style="grid-template-columns: ${ratioTemplate};">${colsHtml}</div>`;
-      }
-      case 'badge': {
-        return this.renderBadge(element as BadgeElement);
-      }
-      case 'mermaid': {
-        const m = element as MermaidElement;
-        return `
-        <div class="mermaid-container">
-          <pre class="mermaid">${this.escapeHtml(m.code)}</pre>
-        </div>`;
-      }
-      case 'math': {
-        const mathEl = element as MathElement;
-        const expr = mathEl.expression;
-        return `
-        <div class="yumia-math-container">
-          <div class="yumia-math-equation" data-expr="${this.escapeHtml(expr)}">$$${this.escapeHtml(expr)}$$</div>
-        </div>`;
-      }
-      case 'chart': {
-        return this.renderChart(element as ChartElement, theme);
-      }
-      case 'timeline': {
-        return this.renderTimeline(element as TimelineElement);
-      }
-      case 'icon': {
-        const ic = element as IconElement;
-        const iconSvg = defaultIconResolver.toSvg(
-          ic.name,
-          ic.size || 28,
-          ic.color || 'currentColor',
-          'yumia-icon'
-        );
-        return `<span class="yumia-icon-wrapper" style="display:inline-flex; align-items:center; vertical-align:middle;">${iconSvg}</span>`;
-      }
-      case 'grid': {
-        const g = element as GridElement;
-        const cols =
-          typeof g.columns === 'number' ? `repeat(${g.columns}, minmax(0, 1fr))` : g.columns;
-        const gap =
-          g.gap !== undefined ? (typeof g.gap === 'number' ? `${g.gap}px` : g.gap) : '1.5rem';
-        const inner = g.elements
-          .map((child) => this.renderElement(child, theme, presentation))
-          .join('\n');
-        return `<div class="yumia-grid" style="grid-template-columns:${cols}; gap:${gap};">${inner}</div>`;
-      }
-      case 'stack': {
-        const st = element as StackElement;
-        const isHoriz = st.direction === 'horizontal';
-        const dir = isHoriz ? 'row' : 'column';
-        const gap =
-          st.gap !== undefined ? (typeof st.gap === 'number' ? `${st.gap}px` : st.gap) : '1.5rem';
-        const align = st.align ? `align-items:${st.align};` : '';
-        const justify = st.justify ? `justify-content:${st.justify};` : '';
-        const inner = st.elements
-          .map((child) => this.renderElement(child, theme, presentation))
-          .join('\n');
-        return `<div class="yumia-stack ${isHoriz ? 'stack-horizontal' : 'stack-vertical'}" style="flex-direction:${dir}; gap:${gap}; ${align} ${justify}">${inner}</div>`;
-      }
-      case 'compare': {
-        return this.renderCompare(element as CompareElement, theme);
-      }
-      case 'diagram': {
-        return this.renderDiagram(element as DiagramElement, theme);
-      }
-      default:
-        return '';
-    }
-  }
-
-  private renderDiagram(d: DiagramElement, theme: YumiaTheme): string {
-    const isLR = (d.direction || 'LR').toUpperCase() === 'LR';
-    const nodeW = 155;
-    const nodeH = 48;
-    const gapX = isLR ? 60 : 35;
-    const gapY = isLR ? 30 : 50;
-
-    // Build graph and calculate ranks
-    const nodeIds = d.nodes.map((n) => n.id);
-    const inDegree: Record<string, number> = {};
-    const adj: Record<string, string[]> = {};
-    nodeIds.forEach((id) => {
-      inDegree[id] = 0;
-      adj[id] = [];
-    });
-
-    d.edges.forEach((e) => {
-      if (adj[e.from]) adj[e.from]!.push(e.to);
-      if (inDegree[e.to] !== undefined) inDegree[e.to]!++;
-    });
-
-    const ranks: Record<string, number> = {};
-    const queue: string[] = [];
-    nodeIds.forEach((id) => {
-      if (inDegree[id] === 0) {
-        ranks[id] = 0;
-        queue.push(id);
-      }
-    });
-
-    // If cycle or no root, fallback sequence
-    if (queue.length === 0 && nodeIds.length > 0) {
-      ranks[nodeIds[0]!] = 0;
-      queue.push(nodeIds[0]!);
-    }
-
-    while (queue.length > 0) {
-      const u = queue.shift()!;
-      const r = ranks[u] ?? 0;
-      const neighbors = adj[u] || [];
-      for (const v of neighbors) {
-        const nextR = r + 1;
-        if (ranks[v] === undefined || ranks[v]! < nextR) {
-          ranks[v] = nextR;
-          queue.push(v);
-        }
-      }
-    }
-
-    // Assign any unvisited nodes
-    nodeIds.forEach((id, idx) => {
-      if (ranks[id] === undefined) ranks[id] = idx;
-    });
-
-    // Group nodes by rank
-    const rankGroups: Record<number, string[]> = {};
-    nodeIds.forEach((id) => {
-      const r = ranks[id] ?? 0;
-      if (!rankGroups[r]) rankGroups[r] = [];
-      rankGroups[r]!.push(id);
-    });
-
-    const sortedRanks = Object.keys(rankGroups)
-      .map(Number)
-      .sort((a, b) => a - b);
-    const positions: Record<string, { x: number; y: number }> = {};
-
-    let maxLaneIndex = 1;
-    sortedRanks.forEach((r) => {
-      maxLaneIndex = Math.max(maxLaneIndex, rankGroups[r]!.length);
-    });
-
-    const maxLaneHeight = isLR
-      ? maxLaneIndex * (nodeH + gapY) - gapY
-      : sortedRanks.length * (nodeH + gapY) - gapY;
-    const maxRankWidth = isLR
-      ? sortedRanks.length * (nodeW + gapX) - gapX
-      : maxLaneIndex * (nodeW + gapX) - gapX;
-
-    sortedRanks.forEach((r, rIdx) => {
-      const ids = rankGroups[r]!;
-      if (isLR) {
-        const colHeight = ids.length * (nodeH + gapY) - gapY;
-        const offsetY = (maxLaneHeight - colHeight) / 2;
-        ids.forEach((id, lIdx) => {
-          positions[id] = {
-            x: 40 + rIdx * (nodeW + gapX),
-            y: 40 + offsetY + lIdx * (nodeH + gapY),
-          };
-        });
-      } else {
-        const rowWidth = ids.length * (nodeW + gapX) - gapX;
-        const offsetX = (maxRankWidth - rowWidth) / 2;
-        ids.forEach((id, lIdx) => {
-          positions[id] = {
-            x: 40 + offsetX + lIdx * (nodeW + gapX),
-            y: 40 + rIdx * (nodeH + gapY),
-          };
-        });
-      }
-    });
-
-    const totalWidth = isLR
-      ? 80 + Math.max(1, sortedRanks.length) * (nodeW + gapX) - gapX
-      : 80 + Math.max(1, maxLaneIndex) * (nodeW + gapX) - gapX;
-    const totalHeight = isLR
-      ? 80 + maxLaneHeight
-      : 80 + Math.max(1, sortedRanks.length) * (nodeH + gapY) - gapY;
-
-    const arrowColor = theme.colors.accent || theme.colors.primary;
-    const markerId = `arrow-${Math.random().toString(36).slice(2, 8)}`;
-    const surfaceFill = theme.colors.surface || 'rgba(15, 23, 42, 0.85)';
-    const textFill = theme.colors.text || '#ffffff';
-    const mutedColor = theme.colors.muted || '#64748b';
-    const borderColor = theme.colors.border || 'rgba(255, 255, 255, 0.15)';
-
-    let edgesSvg = '';
-    d.edges.forEach((e) => {
-      const p1 = positions[e.from];
-      const p2 = positions[e.to];
-      if (!p1 || !p2) return;
-
-      let x1 = 0;
-      let y1 = 0;
-      let x2 = 0;
-      let y2 = 0;
-
-      if (isLR) {
-        x1 = p1.x + nodeW;
-        y1 = p1.y + nodeH / 2;
-        x2 = p2.x;
-        y2 = p2.y + nodeH / 2;
-      } else {
-        x1 = p1.x + nodeW / 2;
-        y1 = p1.y + nodeH;
-        x2 = p2.x + nodeW / 2;
-        y2 = p2.y;
-      }
-
-      const midX = (x1 + x2) / 2;
-      const midY = (y1 + y2) / 2;
-      const dash = e.style === 'dashed' ? 'stroke-dasharray="5,5"' : '';
-
-      edgesSvg += `<path d="M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}" fill="none" stroke="${arrowColor}" stroke-width="2" ${dash} marker-end="url(#${markerId})" />`;
-      if (e.label) {
-        edgesSvg += `<g transform="translate(${midX}, ${midY})">
-          <rect x="-42" y="-11" width="84" height="22" rx="6" fill="${surfaceFill}" stroke="${borderColor}" stroke-width="1.2"/>
-          <text x="0" y="4" text-anchor="middle" fill="${mutedColor}" font-size="10.5" font-weight="600" font-family="sans-serif">${this.escapeHtml(e.label)}</text>
-        </g>`;
-      }
-    });
-
-    let nodesSvg = '';
-    d.nodes.forEach((n) => {
-      const p = positions[n.id];
-      if (!p) return;
-      const variant = n.variant || 'primary';
-      let nodeColor = theme.colors.primary;
-      if (variant === 'accent')
-        nodeColor = theme.colors.accent || theme.colors.secondary || theme.colors.primary;
-      else if (variant === 'success') nodeColor = theme.colors.success || '#10b981';
-      else if (variant === 'warning') nodeColor = theme.colors.warning || '#f59e0b';
-      else if (variant === 'danger') nodeColor = theme.colors.danger || '#ef4444';
-
-      let shapeSvg = '';
-      if (n.shape === 'database') {
-        shapeSvg = `
-          <rect x="${p.x}" y="${p.y}" width="${nodeW}" height="${nodeH}" rx="8" fill="${surfaceFill}" stroke="${nodeColor}" stroke-width="2" />
-          <path d="M ${p.x} ${p.y + 11} C ${p.x + nodeW / 2} ${p.y + 18}, ${p.x + nodeW / 2} ${p.y + 18}, ${p.x + nodeW} ${p.y + 11}" fill="none" stroke="${nodeColor}" stroke-width="1.5"/>
-        `;
-      } else if (n.shape === 'diamond') {
-        const cx = p.x + nodeW / 2;
-        const cy = p.y + nodeH / 2;
-        shapeSvg = `<polygon points="${cx},${p.y} ${p.x + nodeW},${cy} ${cx},${p.y + nodeH} ${p.x},${cy}" fill="${surfaceFill}" stroke="${nodeColor}" stroke-width="2"/>`;
-      } else {
-        shapeSvg = `<rect x="${p.x}" y="${p.y}" width="${nodeW}" height="${nodeH}" rx="10" fill="${surfaceFill}" stroke="${nodeColor}" stroke-width="2" />`;
-      }
-
-      nodesSvg += `
-        <g class="yumia-diag-node" data-id="${n.id}">
-          ${shapeSvg}
-          <text x="${p.x + nodeW / 2}" y="${p.y + nodeH / 2 + 4}" text-anchor="middle" fill="${textFill}" font-size="11.5" font-weight="700" font-family="sans-serif">${this.escapeHtml(n.label)}</text>
-        </g>
-      `;
-    });
-
-    const titleHtml = d.title
-      ? `<div style="font-weight:700; font-size:1.05rem; color:var(--yumia-primary); margin-bottom:0.4rem; text-align:center;">${this.escapeHtml(d.title)}</div>`
-      : '';
-
-    return `
-      <div class="yumia-diagram-container">
-        ${titleHtml}
-        <svg class="yumia-diagram" viewBox="0 0 ${totalWidth} ${totalHeight}" preserveAspectRatio="xMidYMid meet">
-          <defs>
-            <marker id="${markerId}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="${arrowColor}" />
-            </marker>
-          </defs>
-          ${edgesSvg}
-          ${nodesSvg}
-        </svg>
-      </div>
-    `;
-  }
-
-  private renderBadge(b: BadgeElement): string {
-    const variant = b.variant || 'default';
-    return `<span class="yumia-badge variant-${variant}">${this.escapeHtml(b.text)}</span>`;
-  }
-
-  private renderTimeline(t: TimelineElement): string {
-    const layout = t.layout || 'horizontal';
-    const itemsHtml = t.items
-      .map((item) => {
-        const dateHtml = item.date
-          ? `<div class="yumia-timeline-date">${this.escapeHtml(item.date)}</div>`
-          : '';
-        const descHtml = item.description
-          ? `<div class="yumia-timeline-desc">${this.formatInline(item.description)}</div>`
-          : '';
-        return `
-        <div class="yumia-timeline-item">
-          <div class="yumia-timeline-dot"></div>
-          ${dateHtml}
-          <div class="yumia-timeline-title">${this.formatInline(item.title)}</div>
-          ${descHtml}
-        </div>`;
-      })
-      .join('\n');
-
-    return `<div class="yumia-timeline layout-${layout}">${itemsHtml}</div>`;
-  }
-
-  private renderCompare(c: CompareElement, theme: YumiaTheme): string {
-    const leftTitle = c.leftTitle
-      ? `<div class="yumia-compare-title">${this.escapeHtml(c.leftTitle)}</div>`
-      : '';
-    const rightTitle = c.rightTitle
-      ? `<div class="yumia-compare-title">${this.escapeHtml(c.rightTitle)}</div>`
-      : '';
-    const leftInner = c.left.map((el) => this.renderElement(el, theme)).join('\n');
-    const rightInner = c.right.map((el) => this.renderElement(el, theme)).join('\n');
-
-    return `
-    <div class="yumia-compare">
-      <div class="yumia-compare-col left">
-        ${leftTitle}
-        ${leftInner}
-      </div>
-      <div class="yumia-compare-divider">VS</div>
-      <div class="yumia-compare-col right">
-        ${rightTitle}
-        ${rightInner}
-      </div>
-    </div>`;
-  }
-
-  private renderChart(c: ChartElement, theme: YumiaTheme): string {
-    const titleHtml = c.title
-      ? `<div class="yumia-chart-title">${this.escapeHtml(c.title)}</div>`
-      : '';
-    const labels = c.labels || [];
-    const series = c.series || [];
-    const colors = [
-      theme.colors.primary || '#00F0FF',
-      theme.colors.accent || '#FF2E88',
-      theme.colors.secondary || '#7B2CBF',
-      theme.colors.success || '#10B981',
-      theme.colors.warning || '#F59E0B',
-    ];
-
-    if (c.chartType === 'line') {
-      const allValues = series.flatMap((s) => s.values);
-      const maxVal = Math.max(...allValues, 1);
-      const width = 640;
-      const height = 240;
-      const padding = 45;
-      const plotW = width - padding * 2;
-      const plotH = height - padding * 2;
-
-      const gridLines = [0.25, 0.5, 0.75, 1.0]
-        .map((ratio) => {
-          const y = height - padding - ratio * plotH;
-          const valLabel = Math.round(ratio * maxVal);
-          return `
-          <line x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
-          <text x="${padding - 8}" y="${y + 4}" text-anchor="end" fill="${theme.colors.muted || '#64748b'}" font-size="10" font-family="sans-serif">${valLabel}</text>`;
-        })
-        .join('');
-
-      let pathsHtml = '';
-      series.forEach((s, sIdx) => {
-        const sColor = s.color || colors[sIdx % colors.length]!;
-        const pts = s.values.map((v, i) => {
-          const x = padding + (i / Math.max(s.values.length - 1, 1)) * plotW;
-          const y = height - padding - (v / maxVal) * plotH;
-          return `${x},${y}`;
-        });
-        const pointsStr = pts.join(' ');
-        const circles = pts
-          .map(
-            (pt) =>
-              `<circle cx="${pt.split(',')[0]}" cy="${pt.split(',')[1]}" r="5" fill="${sColor}" stroke="var(--yumia-surface)" stroke-width="2" />`
-          )
-          .join('');
-        pathsHtml += `
-        <polyline fill="none" stroke="${sColor}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" points="${pointsStr}" />
-        ${circles}`;
-      });
-
-      const labelTexts = labels
-        .map((l, i) => {
-          const x = padding + (i / Math.max(labels.length - 1, 1)) * plotW;
-          return `<text x="${x}" y="${height - 12}" text-anchor="middle" fill="${theme.colors.muted || '#94a3b8'}" font-size="11" font-weight="600" font-family="sans-serif">${this.escapeHtml(l)}</text>`;
-        })
-        .join('');
-
-      return `
-      <div class="yumia-chart-container">
-        ${titleHtml}
-        <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:100%; max-height:280px;">
-          ${gridLines}
-          <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" />
-          ${pathsHtml}
-          ${labelTexts}
-        </svg>
-      </div>`;
-    }
-
-    if (c.chartType === 'pie' || c.chartType === 'doughnut') {
-      const values = series[0]?.values || [];
-      const total = values.reduce((a, b) => a + b, 0) || 1;
-      let cumulativePercent = 0;
-      const radius = 65;
-      const cx = 110;
-      const cy = 110;
-      const strokeWidth = c.chartType === 'doughnut' ? 26 : 65;
-      const circ = 2 * Math.PI * radius;
-
-      const slices = values
-        .map((val, i) => {
-          const percent = val / total;
-          const strokeDasharray = `${percent * circ} ${circ}`;
-          const strokeDashoffset = -cumulativePercent * circ;
-          cumulativePercent += percent;
-          const sColor = colors[i % colors.length]!;
-          return `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="${sColor}" stroke-width="${strokeWidth}" stroke-dasharray="${strokeDasharray}" stroke-dashoffset="${strokeDashoffset}" />`;
-        })
-        .join('');
-
-      const legend = labels
-        .map((l, i) => {
-          const sColor = colors[i % colors.length]!;
-          const pct = Math.round(((values[i] || 0) / total) * 100);
-          return `<div style="display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; margin:6px 0;"><span style="width:12px; height:12px; border-radius:50%; background:${sColor}; box-shadow:0 0 6px ${sColor};"></span><span style="color:var(--yumia-text);">${this.escapeHtml(l)} <strong style="color:var(--yumia-primary);">(${pct}%)</strong></span></div>`;
-        })
-        .join('');
-
-      return `
-      <div class="yumia-chart-container">
-        ${titleHtml}
-        <div style="display:flex; align-items:center; justify-content:center; gap:36px; width:100%; padding:10px 0;">
-          <svg viewBox="0 0 220 220" style="width:180px; height:180px; transform: rotate(-90deg);">
-            ${slices}
-          </svg>
-          <div style="display:flex; flex-direction:column; justify-content:center;">${legend}</div>
-        </div>
-      </div>`;
-    }
-
-    // Default: High-Res Bar Chart
-    const values = series[0]?.values || [];
-    const maxVal = Math.max(...values, 1);
-    const width = 640;
-    const height = 240;
-    const padding = 45;
-    const plotW = width - padding * 2;
-    const plotH = height - padding * 2;
-    const barWidth = Math.min(56, Math.max(20, (plotW / Math.max(values.length, 1)) * 0.55));
-
-    const gridLines = [0.25, 0.5, 0.75, 1.0]
-      .map((ratio) => {
-        const y = height - padding - ratio * plotH;
-        const valLabel = Math.round(ratio * maxVal);
-        return `
-        <line x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
-        <text x="${padding - 8}" y="${y + 4}" text-anchor="end" fill="${theme.colors.muted || '#64748b'}" font-size="10" font-family="sans-serif">${valLabel}</text>`;
-      })
-      .join('');
-
-    const bars = values
-      .map((val, i) => {
-        const x = padding + (i + 0.5) * (plotW / Math.max(values.length, 1)) - barWidth / 2;
-        const barH = (val / maxVal) * plotH;
-        const y = height - padding - barH;
-        const color = colors[i % colors.length]!;
-        const label = labels[i] || '';
-        return `
-        <rect x="${x}" y="${y}" width="${barWidth}" height="${barH}" rx="6" fill="${color}" opacity="0.95" />
-        <text x="${x + barWidth / 2}" y="${y - 8}" text-anchor="middle" fill="${color}" font-size="12" font-weight="700" font-family="sans-serif">${val}</text>
-        <text x="${x + barWidth / 2}" y="${height - 12}" text-anchor="middle" fill="${theme.colors.text || '#f8fafc'}" font-size="11" font-weight="600" font-family="sans-serif">${this.escapeHtml(label)}</text>`;
-      })
-      .join('');
-
-    return `
-    <div class="yumia-chart-container">
-      ${titleHtml}
-      <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:100%; max-height:280px;">
-        ${gridLines}
-        <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" />
-        ${bars}
-      </svg>
-    </div>`;
-  }
-
-  private formatInline(text: string): string {
-    return this.escapeHtml(text)
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/`(.*?)`/g, '<code>$1</code>');
-  }
-
-  private escapeHtml(str: string): string {
-    return str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-  }
-}
+</html>

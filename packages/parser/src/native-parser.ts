@@ -375,6 +375,21 @@ export class NativeYumiaParser {
         return { element: createCard(children, title, variant), nextIdx };
       }
 
+      case 'column': {
+        const children: SlideElement[] = [];
+        let nextIdx = idx + 1;
+        while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
+          const childRes = this.parseElement(tokens, nextIdx, components);
+          if (childRes) {
+            children.push(childRes.element);
+            nextIdx = childRes.nextIdx;
+          } else {
+            nextIdx++;
+          }
+        }
+        return { element: createColumn(children), nextIdx };
+      }
+
       case 'columns': {
         const ratios = tok.args || '50:50';
         const cols: SlideElement[] = [];
