@@ -1246,11 +1246,7 @@ export class DefaultYumiaParser implements YumiaParser {
     const dirMatch = directiveArg.match(/\b(?:direction|dir)=["']?([^"'\s]+)["']?/);
     const titleMatch = directiveArg.match(/\btitle=["']([^"']+)["']/);
     const diagType = typeMatch ? typeMatch[1] : 'flow';
-    const direction = (dirMatch ? dirMatch[1]!.toUpperCase() : 'LR') as
-      | 'LR'
-      | 'TB'
-      | 'RL'
-      | 'BT';
+    const direction = (dirMatch ? dirMatch[1]!.toUpperCase() : 'LR') as 'LR' | 'TB' | 'RL' | 'BT';
     const title = titleMatch ? titleMatch[1] : undefined;
 
     const nodes: DiagramNode[] = [];

@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  YumiaCompiler,
-  loadData,
-  evaluateInterpolation,
-  expandDataBindings,
-} from '@yumiamd/core';
+import { YumiaCompiler, loadData, evaluateInterpolation, expandDataBindings } from '@yumiamd/core';
 import { HtmlRenderer } from '@yumiamd/renderer-html';
 import { PptxRenderer } from '@yumiamd/renderer-pptx';
 import { PdfRenderer } from '@yumiamd/renderer-pdf';

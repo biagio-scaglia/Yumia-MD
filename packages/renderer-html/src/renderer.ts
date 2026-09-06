@@ -2296,7 +2296,8 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       if (!p) return;
       const variant = n.variant || 'primary';
       let nodeColor = theme.colors.primary;
-      if (variant === 'accent') nodeColor = theme.colors.accent || theme.colors.secondary || theme.colors.primary;
+      if (variant === 'accent')
+        nodeColor = theme.colors.accent || theme.colors.secondary || theme.colors.primary;
       else if (variant === 'success') nodeColor = theme.colors.success || '#10b981';
       else if (variant === 'warning') nodeColor = theme.colors.warning || '#f59e0b';
       else if (variant === 'danger') nodeColor = theme.colors.danger || '#ef4444';
@@ -2323,7 +2324,9 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       `;
     });
 
-    const titleHtml = d.title ? `<div style="font-weight:700; font-size:1.1rem; color:var(--yumia-primary); margin-bottom:0.6rem; text-align:center;">${this.escapeHtml(d.title)}</div>` : '';
+    const titleHtml = d.title
+      ? `<div style="font-weight:700; font-size:1.1rem; color:var(--yumia-primary); margin-bottom:0.6rem; text-align:center;">${this.escapeHtml(d.title)}</div>`
+      : '';
 
     return `
       <div class="yumia-diagram-container" style="width:100%; display:flex; flex-direction:column; align-items:center; margin:1rem 0;">

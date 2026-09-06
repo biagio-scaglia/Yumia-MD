@@ -154,7 +154,8 @@ export class NativeYumiaParser {
         flushSlide();
         const eachMatch = tok.args.match(/\b(?:each|for)=["']([^"']+)["']/);
         const cleanArgs = tok.args.replace(/\b(?:each|for)=["'][^"']+["']/g, '').trim();
-        const slideTitle = tok.command === 'slide' && cleanArgs ? this.stripQuotes(cleanArgs) : undefined;
+        const slideTitle =
+          tok.command === 'slide' && cleanArgs ? this.stripQuotes(cleanArgs) : undefined;
         currentSlide = createSlide([], {
           loc: {
             start: { line: tok.lineNum, column: 1 },
@@ -579,10 +580,7 @@ export class NativeYumiaParser {
         const titleMatch = tok.args.match(/\btitle=["']([^"']+)["']/);
         const diagType = typeMatch ? typeMatch[1] : 'flow';
         const direction = (dirMatch ? dirMatch[1]!.toUpperCase() : 'LR') as
-          | 'LR'
-          | 'TB'
-          | 'RL'
-          | 'BT';
+          'LR' | 'TB' | 'RL' | 'BT';
         const title = titleMatch ? titleMatch[1] : undefined;
 
         const nodes: DiagramNode[] = [];
@@ -791,9 +789,7 @@ export class NativeYumiaParser {
         // Check if command is a registered component macro
         const comp =
           components[tok.command.toLowerCase()] ||
-          Object.values(components).find(
-            (c) => c.name.toLowerCase() === tok.command.toLowerCase()
-          );
+          Object.values(components).find((c) => c.name.toLowerCase() === tok.command.toLowerCase());
 
         if (comp) {
           const rawArgs = this.parseArgumentsList(tok.args);
@@ -802,8 +798,7 @@ export class NativeYumiaParser {
             argMap[param] = rawArgs[pIdx] ?? '';
           });
           const expanded = this.expandComponentTemplate(comp.template, argMap);
-          const element =
-            expanded.length === 1 ? expanded[0]! : createStack(expanded, 'vertical');
+          const element = expanded.length === 1 ? expanded[0]! : createStack(expanded, 'vertical');
           return { element, nextIdx: idx + 1 };
         }
 

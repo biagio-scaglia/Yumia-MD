@@ -342,7 +342,8 @@ export interface DiagramNode {
   id: string;
   label: string;
   shape?: 'box' | 'round' | 'circle' | 'database' | 'diamond' | string | undefined;
-  variant?: 'primary' | 'secondary' | 'accent' | 'success' | 'warning' | 'danger' | string | undefined;
+  variant?:
+    'primary' | 'secondary' | 'accent' | 'success' | 'warning' | 'danger' | string | undefined;
   icon?: string | undefined;
 }
 

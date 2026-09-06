@@ -1045,7 +1045,9 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       maxLane = Math.max(maxLane, rankGroups[r]!.length);
     });
 
-    const nodeW = isLR ? Math.min(110, (width - 40) / (numRanks * 1.3)) : Math.min(120, (width - 40) / maxLane);
+    const nodeW = isLR
+      ? Math.min(110, (width - 40) / (numRanks * 1.3))
+      : Math.min(120, (width - 40) / maxLane);
     const nodeH = 40;
     const gapX = isLR ? 35 : 25;
     const gapY = isLR ? 25 : 35;
@@ -1105,8 +1107,14 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       doc.fillColor(arrowColor);
       doc
         .moveTo(x2, y2)
-        .lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6), y2 - headLen * Math.sin(angle - Math.PI / 6))
-        .lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6), y2 - headLen * Math.sin(angle + Math.PI / 6))
+        .lineTo(
+          x2 - headLen * Math.cos(angle - Math.PI / 6),
+          y2 - headLen * Math.sin(angle - Math.PI / 6)
+        )
+        .lineTo(
+          x2 - headLen * Math.cos(angle + Math.PI / 6),
+          y2 - headLen * Math.sin(angle + Math.PI / 6)
+        )
         .fill();
       doc.restore();
 
@@ -1128,7 +1136,8 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
       const variant = n.variant || 'primary';
       let nodeColor = theme.colors.primary;
-      if (variant === 'accent') nodeColor = theme.colors.accent || theme.colors.secondary || theme.colors.primary;
+      if (variant === 'accent')
+        nodeColor = theme.colors.accent || theme.colors.secondary || theme.colors.primary;
       else if (variant === 'success') nodeColor = theme.colors.success || '#10b981';
       else if (variant === 'warning') nodeColor = theme.colors.warning || '#f59e0b';
       else if (variant === 'danger') nodeColor = theme.colors.danger || '#ef4444';

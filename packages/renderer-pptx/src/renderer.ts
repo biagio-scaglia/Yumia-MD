@@ -1601,11 +1601,27 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       maxLane = Math.max(maxLane, rankGroups[r]!.length);
     });
 
-    const nodeW = isLR ? Math.min(1.8, (rect.w - 0.5) / (numRanks * 1.5)) : Math.min(2.0, (rect.w - 0.5) / maxLane);
-    const nodeH = isLR ? Math.min(0.65, (rect.h - 0.5) / maxLane) : Math.min(0.6, (rect.h - 0.5) / (numRanks * 1.4));
+    const nodeW = isLR
+      ? Math.min(1.8, (rect.w - 0.5) / (numRanks * 1.5))
+      : Math.min(2.0, (rect.w - 0.5) / maxLane);
+    const nodeH = isLR
+      ? Math.min(0.65, (rect.h - 0.5) / maxLane)
+      : Math.min(0.6, (rect.h - 0.5) / (numRanks * 1.4));
 
-    const gapX = isLR ? (numRanks > 1 ? (rect.w - numRanks * nodeW) / (numRanks - 1) : 0) : (maxLane > 1 ? (rect.w - maxLane * nodeW) / (maxLane - 1) : 0);
-    const gapY = isLR ? (maxLane > 1 ? (rect.h - maxLane * nodeH) / (maxLane - 1) : 0) : (numRanks > 1 ? (rect.h - numRanks * nodeH) / (numRanks - 1) : 0);
+    const gapX = isLR
+      ? numRanks > 1
+        ? (rect.w - numRanks * nodeW) / (numRanks - 1)
+        : 0
+      : maxLane > 1
+        ? (rect.w - maxLane * nodeW) / (maxLane - 1)
+        : 0;
+    const gapY = isLR
+      ? maxLane > 1
+        ? (rect.h - maxLane * nodeH) / (maxLane - 1)
+        : 0
+      : numRanks > 1
+        ? (rect.h - numRanks * nodeH) / (numRanks - 1)
+        : 0;
 
     const positions: Record<string, { x: number; y: number }> = {};
     sortedRanks.forEach((r, rIdx) => {
@@ -1675,10 +1691,16 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
 
       const variant = n.variant || 'primary';
       let nodeBorderColor = this.cleanHexColor(theme.colors.primary);
-      if (variant === 'accent') nodeBorderColor = this.cleanHexColor(theme.colors.accent || theme.colors.secondary || theme.colors.primary);
-      else if (variant === 'success') nodeBorderColor = this.cleanHexColor(theme.colors.success || '10b981');
-      else if (variant === 'warning') nodeBorderColor = this.cleanHexColor(theme.colors.warning || 'f59e0b');
-      else if (variant === 'danger') nodeBorderColor = this.cleanHexColor(theme.colors.danger || 'ef4444');
+      if (variant === 'accent')
+        nodeBorderColor = this.cleanHexColor(
+          theme.colors.accent || theme.colors.secondary || theme.colors.primary
+        );
+      else if (variant === 'success')
+        nodeBorderColor = this.cleanHexColor(theme.colors.success || '10b981');
+      else if (variant === 'warning')
+        nodeBorderColor = this.cleanHexColor(theme.colors.warning || 'f59e0b');
+      else if (variant === 'danger')
+        nodeBorderColor = this.cleanHexColor(theme.colors.danger || 'ef4444');
 
       let shapeType = pptx.ShapeType.roundRect;
       if (n.shape === 'diamond') shapeType = pptx.ShapeType.diamond;
