@@ -12,3 +12,4 @@ pnpm-lock.yaml
 .cache
 *.yumia
 *.yumia.md
+presentation.html

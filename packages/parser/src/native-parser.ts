@@ -263,18 +263,13 @@ export class NativeYumiaParser {
           }
         }
 
-        const heroEl = createHero(
-          title,
-          subVal,
-          children.length > 0 ? children : undefined,
-          {
-            tagline: tagVal,
-            badge: badgeVal,
-            align: alignVal as 'left' | 'center' | 'right' | undefined,
-            emphasis: emphVal,
-            density: densVal,
-          }
-        );
+        const heroEl = createHero(title, subVal, children.length > 0 ? children : undefined, {
+          tagline: tagVal,
+          badge: badgeVal,
+          align: alignVal as 'left' | 'center' | 'right' | undefined,
+          emphasis: emphVal,
+          density: densVal,
+        });
         heroEl.loc = {
           start: { line: tok.lineNum, column: 1 },
           end: { line: tok.lineNum, column: tok.text.length },
@@ -283,13 +278,14 @@ export class NativeYumiaParser {
       }
 
       case 'callout': {
-        const titleMatch = tok.args.match(/title=["']([^"']+)["']/);
-        const sevMatch = tok.args.match(/\b(?:severity|variant)=["']?([^"'\s]+)["']?/);
-        const iconMatch = tok.args.match(/\bicon=["']?([^"'\s]+)["']?/);
+        const titleVal = this.extractAttr(tok.args, 'title');
+        const sevVal =
+          this.extractAttr(tok.args, 'severity') ?? this.extractAttr(tok.args, 'variant');
+        const iconVal = this.extractAttr(tok.args, 'icon');
         let text = this.stripQuotes(
           tok.args
-            .replace(/title=["'][^"']+["']/, '')
-            .replace(/(?:severity|variant|icon)=["']?[^"'\s]+["']?/g, '')
+            .replace(/\btitle=(?:"[^"]*"|'[^']*'|\S+)/g, '')
+            .replace(/\b(?:severity|variant|icon)=(?:"[^"]*"|'[^']*'|\S+)/g, '')
         );
 
         let nextIdx = idx + 1;
@@ -304,9 +300,9 @@ export class NativeYumiaParser {
 
         const calloutEl = createCallout(
           text || 'Note',
-          (sevMatch ? sevMatch[1] : 'info') as CalloutElement['severity'],
-          titleMatch ? titleMatch[1] : undefined,
-          iconMatch ? iconMatch[1] : undefined
+          (sevVal ? sevVal : 'info') as CalloutElement['severity'],
+          titleVal,
+          iconVal
         );
         calloutEl.loc = {
           start: { line: tok.lineNum, column: 1 },
@@ -377,10 +373,10 @@ export class NativeYumiaParser {
       }
 
       case 'card': {
-        const titleMatch = tok.args.match(/title=["']([^"']+)["']/);
-        const variantMatch = tok.args.match(/variant=["']?([^"'\s]+)["']?/);
-        const title = titleMatch ? titleMatch[1] : this.stripQuotes(tok.args) || undefined;
-        const variant = (variantMatch ? variantMatch[1] : 'default') as CardElement['variant'];
+        const titleVal = this.extractAttr(tok.args, 'title');
+        const variantVal = this.extractAttr(tok.args, 'variant');
+        const title = titleVal ?? (this.stripQuotes(tok.args) || undefined);
+        const variant = (variantVal ? variantVal : 'default') as CardElement['variant'];
 
         const children: SlideElement[] = [];
         let nextIdx = idx + 1;
@@ -473,21 +469,21 @@ export class NativeYumiaParser {
       }
 
       case 'metric': {
-        const valMatch = tok.args.match(/^(?:value=)?["']([^"']+)["']/);
-        const labelMatch = tok.args.match(/\blabel=["']([^"']+)["']/);
-        const diffMatch = tok.args.match(/\bdiff=["']([^"']+)["']/);
-        const variantMatch = tok.args.match(/\bvariant=["']?([^"'\s]+)["']?/);
+        const valVal = this.extractAttr(tok.args, 'value') ?? this.extractAttr(tok.args);
+        const labelVal = this.extractAttr(tok.args, 'label');
+        const diffVal = this.extractAttr(tok.args, 'diff') ?? this.extractAttr(tok.args, 'change');
+        const variantVal = this.extractAttr(tok.args, 'variant');
 
-        const value = valMatch ? valMatch[1]! : '0';
-        const label = labelMatch ? labelMatch[1]! : 'Metric';
+        const value = valVal || '0';
+        const label = labelVal || 'Metric';
         return {
           element: createMetric(
             value,
             label,
-            variantMatch ? (variantMatch[1] as MetricElement['variant']) : 'primary',
+            (variantVal as MetricElement['variant']) || 'primary',
             undefined,
             undefined,
-            diffMatch ? diffMatch[1] : undefined
+            diffVal
           ),
           nextIdx: idx + 1,
         };
@@ -1056,10 +1052,10 @@ export class NativeYumiaParser {
       }
 
       case 'compare': {
-        const leftTitleMatch = tok.args.match(/\bleft(?:Title)?=["']([^"']+)["']/);
-        const rightTitleMatch = tok.args.match(/\bright(?:Title)?=["']([^"']+)["']/);
-        const leftTitle = leftTitleMatch ? leftTitleMatch[1] : undefined;
-        const rightTitle = rightTitleMatch ? rightTitleMatch[1] : undefined;
+        const leftTitle =
+          this.extractAttr(tok.args, 'left') ?? this.extractAttr(tok.args, 'leftTitle');
+        const rightTitle =
+          this.extractAttr(tok.args, 'right') ?? this.extractAttr(tok.args, 'rightTitle');
 
         const leftEls: SlideElement[] = [];
         const rightEls: SlideElement[] = [];
@@ -1100,13 +1096,14 @@ export class NativeYumiaParser {
         while (nextIdx < tokens.length && tokens[nextIdx]!.indent > baseIndent) {
           const sub = tokens[nextIdx]!;
           if (sub.command === 'item') {
-            const dateMatch = sub.args.match(/date=["']([^"']+)["']/);
-            const titleMatch = sub.args.match(/title=["']([^"']+)["']/);
-            const descMatch = sub.args.match(/desc(?:ription)?=["']([^"']+)["']/);
+            const dateVal = this.extractAttr(sub.args, 'date');
+            const titleVal = this.extractAttr(sub.args, 'title');
+            const descVal =
+              this.extractAttr(sub.args, 'desc') ?? this.extractAttr(sub.args, 'description');
             items.push({
-              date: dateMatch ? dateMatch[1]! : '2026',
-              title: titleMatch ? titleMatch[1]! : 'Milestone',
-              description: descMatch ? descMatch[1] : undefined,
+              date: dateVal || '2026',
+              title: titleVal || 'Milestone',
+              description: descVal,
             });
           }
           nextIdx++;
