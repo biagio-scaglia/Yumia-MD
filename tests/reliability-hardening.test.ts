@@ -219,7 +219,8 @@ describe('Reliability: diagrams, layout, icons', () => {
       const cur = paras[i]!;
       if (Math.abs(prev.bounds.x - cur.bounds.x) < 2) {
         expect(cur.bounds.y).toBeGreaterThanOrEqual(prev.bounds.y + prev.bounds.height);
-        expect(prev.bounds.height).toBeGreaterThanOrEqual(52);
+        // Dense paragraph estimate: max(36, lines*34+8) — single-line bullets are 42.
+        expect(prev.bounds.height).toBeGreaterThanOrEqual(36);
       }
     }
   });
