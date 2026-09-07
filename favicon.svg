@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <defs>
+    <!-- Vibrant Minimalist Gradients -->
+    <linearGradient id="layerTop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF4D94" />
+      <stop offset="100%" stop-color="#FF2E88" />
+    </linearGradient>
+
+    <linearGradient id="layerBottom" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F0FF" />
+      <stop offset="100%" stop-color="#3B82F6" />
+    </linearGradient>
+
+    <linearGradient id="coreSpark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#FFF4D0" />
+    </linearGradient>
+
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF2E88" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#00F0FF" stop-opacity="0.8" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Squircle Container -->
+  <rect x="3" y="3" width="58" height="58" rx="14" fill="#0B0B12" stroke="url(#borderGrad)" stroke-width="1.5" />
+
+  <!-- Layer 1: Back Document Plane (Cyan / Blue) -->
+  <rect x="22" y="14" width="28" height="20" rx="4" fill="url(#layerBottom)" opacity="0.85" />
+
+  <!-- Layer 2: Middle Document Plane (Translucent Base) -->
+  <rect x="14" y="22" width="28" height="20" rx="4" fill="#161626" stroke="rgba(255, 255, 255, 0.2)" stroke-width="1.2" />
+
+  <!-- Layer 3: Front Primary Visual Plane (Rose / Pink) -->
+  <rect x="14" y="30" width="28" height="20" rx="4" fill="url(#layerTop)" />
+
+  <!-- Geometric Content Blocks inside Front Document -->
+  <rect x="18" y="34" width="10" height="3" rx="1.5" fill="#FFFFFF" opacity="0.9" />
+  <rect x="18" y="39" width="20" height="2" rx="1" fill="#FFFFFF" opacity="0.4" />
+  <rect x="18" y="43" width="14" height="2" rx="1" fill="#FFFFFF" opacity="0.4" />
+
+  <!-- Visual Compiler Spark / Star Core (Top Right Intersection) -->
+  <path d="M 44 26 Q 44 31 39 31 Q 44 31 44 36 Q 44 31 49 31 Q 44 31 44 26 Z" fill="url(#coreSpark)" />
+  <circle cx="44" cy="31" r="1.5" fill="#FFFFFF" />
+</svg>
