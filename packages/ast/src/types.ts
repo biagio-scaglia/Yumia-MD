@@ -147,6 +147,7 @@ export interface CardElement extends BaseElement {
   title?: string;
   elements: SlideElement[];
   variant?: 'default' | 'outlined' | 'filled' | 'warning' | 'success' | 'info' | 'accent' | string;
+  icon?: string;
 }
 
 export interface MetricElement extends BaseElement {

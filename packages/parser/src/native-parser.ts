@@ -375,6 +375,7 @@ export class NativeYumiaParser {
       case 'card': {
         const titleVal = this.extractAttr(tok.args, 'title');
         const variantVal = this.extractAttr(tok.args, 'variant');
+        const iconVal = this.extractAttr(tok.args, 'icon');
         const title = titleVal ?? (this.stripQuotes(tok.args) || undefined);
         const variant = (variantVal ? variantVal : 'default') as CardElement['variant'];
 
@@ -389,7 +390,7 @@ export class NativeYumiaParser {
             nextIdx++;
           }
         }
-        return { element: createCard(children, title, variant), nextIdx };
+        return { element: createCard(children, title, variant, iconVal), nextIdx };
       }
 
       case 'column': {

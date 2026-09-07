@@ -1,5 +1,5 @@
 document "Yumia — Creare Presentazioni con Semplicità"
-  theme "cyberpunk"
+  theme "tokyonight"
   aspectRatio "16:9"
   author "Biagio Scaglia"
   watermark "Yumia • Corso Web Dev 25726"
@@ -119,7 +119,7 @@ slide "Esempio Pratico di Codice"
             metric "3" label="Formati generati"
             metric "0" label="Fatica grafica"
     column
-      card title="Perché è comodo?" variant="primary"
+      card title="Perché è comodo?" variant="primary" icon="lucide:code-2"
         text "• Si legge come una normale lista ordinata"
         text "• Nessun codice complicato o simboli strani"
         text "• Se vuoi cambiare una parola, ci metti 2 secondi"
@@ -145,7 +145,7 @@ slide "I Componenti Pronti all'Uso"
       text "Perfetti per mettere a paragone due idee (Prima vs Dopo)."
     card title="Tabelle e Liste" variant="success" icon="lucide:table"
       text "Per elenchi ordinati di informazioni e dati di sintesi."
-    card title="Icone Integrate" variant="danger" icon="lucide:smile"
+    card title="Icone Integrate" variant="danger" icon="lucide:shapes"
       text "Migliaia di icone moderne pronte senza dover scaricare immagini."
 
   notes
@@ -165,8 +165,8 @@ slide "Il Controllo Qualità Automatico"
         text "• Se ci sono slide vuote o incomplete"
     column
       card title="Esempio di Avviso Semplice" variant="warning" icon="lucide:alert-circle"
-        text "⚠️ Attenzione: hai inserito troppo testo in questa slide!"
-        text "💡 Suggerimento: dividi il contenuto in due schede o in una seconda slide per renderla più chiara."
+        text "• Avviso: Hai inserito troppo testo in questa slide!"
+        text "• Suggerimento: Dividi il contenuto in due schede o in una seconda slide per renderla più chiara."
 
   notes
     Proprio come quando scriviamo su Word c'è il correttore ortografico, in Yumia c'è un controllore visivo.
@@ -198,11 +198,11 @@ slide "I Grandi Vantaggi di Yumia"
   heading "Perché è utile per studenti, programmatori e professionisti"
 
   grid columns=3 gap=16
-    card title="⚡ Super Veloce" variant="primary" icon="lucide:zap"
+    card title="Super Veloce" variant="primary" icon="lucide:zap"
       text "Crei una presentazione completa in pochi minuti partendo dai tuoi appunti."
-    card title="🎨 Sempre Ordinato" variant="accent" icon="lucide:palette"
+    card title="Sempre Ordinato" variant="accent" icon="lucide:palette"
       text "Tutte le slide mantengono lo stesso stile coerente e moderno."
-    card title="📁 Tutto in un File" variant="success" icon="lucide:folder"
+    card title="Tutto in un File" variant="success" icon="lucide:folder"
       text "Facilissimo da salvare, inviare, condividere e aggiornare nel tempo."
 
   notes

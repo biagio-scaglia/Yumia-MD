@@ -1909,9 +1909,17 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
               : sev === 'success'
                 ? 'var(--yumia-success)'
                 : 'var(--yumia-info)';
-        const titleHtml = c.title
-          ? `<div style="font-weight:700; font-size:1.05rem; color:${colorVar}; margin-bottom:4px;">${this.formatInline(c.title)}</div>`
+        const iconSvg = c.icon
+          ? defaultIconResolver.toSvg(c.icon, 20, colorVar, 'yumia-callout-icon')
           : '';
+        const iconSpan = iconSvg
+          ? `<span style="display:inline-flex; align-items:center; margin-right:8px; vertical-align:middle;">${iconSvg}</span>`
+          : '';
+        const titleHtml = c.title
+          ? `<div style="font-weight:700; font-size:1.05rem; color:${colorVar}; margin-bottom:4px; display:flex; align-items:center;">${iconSpan}${this.formatInline(c.title)}</div>`
+          : iconSpan
+            ? `<div style="margin-bottom:4px;">${iconSpan}</div>`
+            : '';
 
         return `
         <div class="yumia-callout" data-severity="${sev}" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid ${colorVar}; border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
@@ -2121,9 +2129,17 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       case 'card': {
         const card = element as CardElement;
         const variant = card.variant || 'default';
-        const titleHtml = card.title
-          ? `<div class="yumia-card-title">${this.escapeHtml(card.title)}</div>`
+        const iconSvg = card.icon
+          ? defaultIconResolver.toSvg(card.icon, 20, 'currentColor', 'yumia-card-icon')
           : '';
+        const iconHtml = iconSvg
+          ? `<span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;">${iconSvg}</span>`
+          : '';
+        const titleHtml = card.title
+          ? `<div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;">${iconHtml}<span>${this.escapeHtml(card.title)}</span></div>`
+          : iconHtml
+            ? `<div class="yumia-card-title">${iconHtml}</div>`
+            : '';
         const innerHtml = card.elements
           ? card.elements.map((child) => this.renderElement(child, theme)).join('\n')
           : '';

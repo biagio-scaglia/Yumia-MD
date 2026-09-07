@@ -118,13 +118,15 @@ export function createImage(
 export function createCard(
   elements: SlideElement[],
   title?: string,
-  variant?: CardElement['variant']
+  variant?: CardElement['variant'],
+  icon?: string
 ): CardElement {
   return {
     type: 'card',
     elements,
     ...(title ? { title } : {}),
     ...(variant ? { variant } : {}),
+    ...(icon ? { icon } : {}),
   };
 }
 

@@ -592,9 +592,21 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         doc.rect(x, y, 4, totalH).fill(sevColor);
 
         let curY = y + 8;
+        let titleOffset = 16;
+        if (c.icon) {
+          try {
+            const raster = rasterizeIcon(c.icon, 18, sevColor);
+            doc.image(raster.png, x + 16, curY - 1, { width: 16, height: 16 });
+            titleOffset = 38;
+          } catch {
+            // Fallback
+          }
+        }
         if (c.title) {
           doc.font(this.getPdfFont(theme, 'bold')).fontSize(12).fillColor(sevColor);
-          doc.text(this.stripFormatting(c.title), x + 16, curY, { width: width - 26 });
+          doc.text(this.stripFormatting(c.title), x + titleOffset, curY, {
+            width: width - titleOffset - 10,
+          });
           curY += 18;
         }
         doc.font(this.getPdfFont(theme, 'regular')).fontSize(12).fillColor(theme.colors.text);
@@ -884,17 +896,28 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
         // Render card content once
         let renderTop = y + cardPad;
+        let titleOffset = cardPad;
+        if (card.icon) {
+          try {
+            const raster = rasterizeIcon(card.icon, 20, variantColor);
+            doc.image(raster.png, x + cardPad, renderTop - 1, { width: 16, height: 16 });
+            titleOffset = cardPad + 22;
+          } catch {
+            // Fallback
+          }
+        }
         if (card.title) {
           doc
             .font(this.getPdfFont(theme, 'bold'))
             .fontSize(15)
             .fillColor(variantColor)
-            .text(this.stripFormatting(card.title), x + cardPad, renderTop, {
-              width: width - cardPad * 2,
+            .text(this.stripFormatting(card.title), x + titleOffset, renderTop, {
+              width: width - cardPad - titleOffset,
             });
           renderTop +=
-            doc.heightOfString(this.stripFormatting(card.title), { width: width - cardPad * 2 }) +
-            8;
+            doc.heightOfString(this.stripFormatting(card.title), {
+              width: width - cardPad - titleOffset,
+            }) + 8;
         }
 
         if (card.elements) {

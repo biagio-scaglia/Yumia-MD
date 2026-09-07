@@ -736,11 +736,28 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       rectRadius: 0.03,
     });
 
+    let titleOffset = 0.25;
+    if (card.icon) {
+      try {
+        const raster = rasterizeIcon(card.icon, 32, '#' + titleColor);
+        pptxSlide.addImage({
+          data: `image/png;base64,${raster.png.toString('base64')}`,
+          x: rect.x + 0.22,
+          y: rect.y + 0.14,
+          w: 0.24,
+          h: 0.24,
+        });
+        titleOffset = 0.52;
+      } catch {
+        // Fallback
+      }
+    }
+
     if (card.title) {
       pptxSlide.addText(card.title, {
-        x: rect.x + 0.25,
+        x: rect.x + titleOffset,
         y: rect.y + 0.12,
-        w: rect.w - 0.5,
+        w: rect.w - titleOffset - 0.25,
         h: 0.3,
         fontSize: themeSizeToPptxPoints(theme.typography.sizes?.h4, 22),
         bold: true,
@@ -997,12 +1014,29 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       rectRadius: 0.08,
     });
 
+    let titleOffset = 0.2;
+    if (callout.icon) {
+      try {
+        const raster = rasterizeIcon(callout.icon, 32, '#' + sevColor);
+        pptxSlide.addImage({
+          data: `image/png;base64,${raster.png.toString('base64')}`,
+          x: rect.x + 0.2,
+          y: rect.y + 0.16,
+          w: 0.22,
+          h: 0.22,
+        });
+        titleOffset = 0.48;
+      } catch {
+        // Fallback
+      }
+    }
+
     const titleH = callout.title ? 0.38 : 0;
     if (callout.title) {
       pptxSlide.addText(callout.title, {
-        x: rect.x + 0.2,
+        x: rect.x + titleOffset,
         y: rect.y + 0.16,
-        w: rect.w - 0.4,
+        w: rect.w - titleOffset - 0.2,
         h: 0.3,
         fontSize: 13,
         bold: true,
