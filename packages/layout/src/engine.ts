@@ -341,10 +341,7 @@ export class DefaultLayoutEngine implements LayoutEngine {
       }
     }
 
-    const maxGridHeight = Math.max(
-      ...children.map((n) => n.bounds.y + n.bounds.height - y),
-      100
-    );
+    const maxGridHeight = Math.max(...children.map((n) => n.bounds.y + n.bounds.height - y), 100);
     return {
       element,
       bounds: { x, y, width, height: maxGridHeight },
