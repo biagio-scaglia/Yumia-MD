@@ -329,6 +329,11 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       return;
     }
 
+    if (el.type === 'diagram') {
+      this.renderDiagram(doc, el as DiagramElement, x, y, w, h, theme);
+      return;
+    }
+
     this.renderElement(doc, el, x, y, w, theme, presentation);
   }
 
@@ -1792,7 +1797,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       }
 
       case 'diagram': {
-        return this.renderDiagram(doc, element as DiagramElement, x, y, width, theme);
+        return this.renderDiagram(doc, element as DiagramElement, x, y, width, undefined, theme);
       }
 
       case 'sequence': {
@@ -1814,24 +1819,58 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
     x: number,
     y: number,
     width: number,
+    height: number | undefined,
     theme: YumiaTheme
   ): number {
     const isLR = (diagram.direction || 'LR').toUpperCase() === 'LR';
     if (diagram.nodes.length === 0) return y;
 
-    const layout = computeDiagramLayout(diagram, width, isLR, {
-      originX: x,
-      originY: y,
-      titleHeight: 24,
+    // Layout in a stable logical canvas, then fit into allocated bounds (PPTX parity).
+    // Computing directly in PDF points shrinks nodes and can grow height past layout `h`,
+    // overlapping following callouts (e.g. branched multi-target flow).
+    const layout = computeDiagramLayout(diagram, 1000, isLR, {
+      originX: 0,
+      originY: diagram.title ? 30 : 0,
+      titleHeight: diagram.title ? 30 : 0,
     });
-    const { nodeWidth: nodeW, nodeHeight: nodeH, positions } = layout;
+    const { nodeWidth: rawNodeW, nodeHeight: rawNodeH, positions: rawPositions } = layout;
 
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = 0;
+    let maxY = 0;
+    for (const p of Object.values(rawPositions)) {
+      minX = Math.min(minX, p.x);
+      minY = Math.min(minY, p.y);
+      maxX = Math.max(maxX, p.x + rawNodeW);
+      maxY = Math.max(maxY, p.y + rawNodeH);
+    }
+    const contentW = Math.max(1, maxX - minX);
+    const contentH = Math.max(1, maxY - minY);
+
+    const titleH = diagram.title ? 18 : 0;
     if (diagram.title) {
       doc
         .font(this.getPdfFont(theme, 'bold'))
         .fontSize(14)
         .fillColor(theme.colors.primary)
         .text(this.stripFormatting(diagram.title), x, y, { width, align: 'center' });
+    }
+
+    const drawY = y + titleH;
+    const drawH = height !== undefined ? Math.max(24, height - titleH) : contentH;
+    const scale = Math.min(width / contentW, drawH / contentH, 1);
+    const nodeW = rawNodeW * scale;
+    const nodeH = rawNodeH * scale;
+    const offsetX = x + (width - contentW * scale) / 2;
+    const offsetY = drawY + (drawH - contentH * scale) / 2;
+
+    const positions: Record<string, { x: number; y: number }> = {};
+    for (const [id, p] of Object.entries(rawPositions)) {
+      positions[id] = {
+        x: offsetX + (p.x - minX) * scale,
+        y: offsetY + (p.y - minY) * scale,
+      };
     }
 
     const arrowColor = theme.colors.accent || theme.colors.primary;
@@ -1847,7 +1886,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       const prev = pts[pts.length - 2]!;
 
       doc.save();
-      doc.lineWidth(1.5).strokeColor(arrowColor);
+      doc.lineWidth(Math.max(1, 1.5 * scale)).strokeColor(arrowColor);
       if (e.style === 'dashed') doc.dash(4, { space: 3 });
       doc.moveTo(pts[0]!.x, pts[0]!.y);
       for (let i = 1; i < pts.length; i++) doc.lineTo(pts[i]!.x, pts[i]!.y);
@@ -1855,7 +1894,7 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       doc.restore();
 
       const angle = Math.atan2(last.y - prev.y, last.x - prev.x);
-      const headLen = 6;
+      const headLen = Math.max(4, 6 * scale);
       doc.save();
       doc.fillColor(arrowColor);
       doc
@@ -1876,26 +1915,33 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
         const midX = mid.x;
         const midY = mid.y;
         const labelText = this.stripFormatting(e.label);
-        const labelW = Math.min(90, Math.max(45, labelText.length * 5.5 + 16));
+        const labelW = Math.min(
+          90 * scale,
+          Math.max(45 * scale, labelText.length * 5.5 * scale + 16)
+        );
+        const labelH = Math.max(12, 16 * scale);
         doc.save();
         doc
-          .roundedRect(midX - labelW / 2, midY - 8, labelW, 16, 4)
+          .roundedRect(midX - labelW / 2, midY - labelH / 2, labelW, labelH, 4)
           .fill(theme.colors.surface || '#151522');
         doc
-          .roundedRect(midX - labelW / 2, midY - 8, labelW, 16, 4)
+          .roundedRect(midX - labelW / 2, midY - labelH / 2, labelW, labelH, 4)
           .lineWidth(0.8)
           .strokeColor(theme.colors.border || '#334155')
           .stroke();
         doc.restore();
         doc
           .font(this.getPdfFont(theme, 'bold'))
-          .fontSize(7.5)
+          .fontSize(Math.max(6, 7.5 * scale))
           .fillColor(theme.colors.muted || '#888888')
-          .text(labelText, midX - labelW / 2, midY - 5, { width: labelW, align: 'center' });
+          .text(labelText, midX - labelW / 2, midY - labelH / 2 + 2, {
+            width: labelW,
+            align: 'center',
+          });
       }
     });
 
-    const maxChars = Math.max(6, Math.floor((nodeW - 10) / 6));
+    const maxChars = Math.max(6, Math.floor((nodeW - 10) / Math.max(4, 6 * scale)));
     diagram.nodes.forEach((n) => {
       const p = positions[n.id];
       if (!p) return;
@@ -1910,24 +1956,30 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
       else if (variant === 'info') nodeColor = theme.colors.info || theme.colors.primary;
 
       doc.save();
-      doc.roundedRect(p.x, p.y, nodeW, nodeH, 6).fill(theme.colors.surface || '#151522');
-      doc.roundedRect(p.x, p.y, nodeW, nodeH, 6).lineWidth(1.5).strokeColor(nodeColor).stroke();
+      doc
+        .roundedRect(p.x, p.y, nodeW, nodeH, Math.max(3, 6 * scale))
+        .fill(theme.colors.surface || '#151522');
+      doc
+        .roundedRect(p.x, p.y, nodeW, nodeH, Math.max(3, 6 * scale))
+        .lineWidth(Math.max(1, 1.5 * scale))
+        .strokeColor(nodeColor)
+        .stroke();
       doc.restore();
 
       const label = fitDiagramLabel(this.stripFormatting(n.label), maxChars);
       doc
         .font(this.getPdfFont(theme, 'bold'))
-        .fontSize(Math.min(10, Math.max(7.5, nodeH / 4)))
+        .fontSize(Math.min(10, Math.max(6.5, nodeH / 4)))
         .fillColor(theme.colors.text)
-        .text(label, p.x + 4, p.y + Math.max(4, nodeH / 2 - 6), {
+        .text(label, p.x + 4, p.y + Math.max(3, nodeH / 2 - 5), {
           width: nodeW - 8,
-          height: nodeH - 8,
+          height: nodeH - 6,
           align: 'center',
           ellipsis: true,
         });
     });
 
-    return y + layout.height + 8;
+    return height !== undefined ? y + height : y + titleH + contentH * scale + 8;
   }
 
   private renderSequence(

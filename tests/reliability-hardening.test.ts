@@ -50,6 +50,33 @@ describe('Reliability: diagrams, layout, icons', () => {
     expect(layout.nodeWidth).toBeGreaterThan(40);
   });
 
+  it('keeps PDF diagram paint inside layout bounds so following callouts stay clear', async () => {
+    const source = `document "MultiTarget"
+  aspectRatio "16:9"
+  slide "Un'unica sorgente, più formati"
+    heading "Compilazione Multi-Target da una Singola Sorgente"
+    diagram type="flow" direction="LR" title="Flusso di Trasformazione Multi-Target"
+      [Sorgente Yumia] -> [AST Semantico] -> [Design System] -> [HTML Interattivo]
+      [Design System] -> [PowerPoint PPTX]
+      [Design System] -> [PDF Vettoriale]
+      node [PDF Vettoriale] variant="danger"
+    callout severity="success" title="Principio Single Source of Truth"
+      Un unico file di testo (.yumia) compilabile istantaneamente per il web.
+`;
+    const presentation = parseYumia(source);
+    const engine = new DefaultLayoutEngine();
+    const slideLayout = engine.computeSlide(presentation.slides[0]!);
+    const diagram = slideLayout.nodes.find((n) => n.element.type === 'diagram');
+    const callout = slideLayout.nodes.find((n) => n.element.type === 'callout');
+    expect(diagram).toBeTruthy();
+    expect(callout).toBeTruthy();
+    expect(callout!.bounds.y).toBeGreaterThanOrEqual(diagram!.bounds.y + diagram!.bounds.height);
+
+    const pdf = await new PdfRenderer().render(presentation);
+    expect(pdf.pageCount).toBe(1);
+    expect(pdf.data.length).toBeGreaterThan(1500);
+  });
+
   it('rasterizes registry icons to PNG for binary embed', () => {
     const icon = rasterizeIcon('lucide:rocket', 48, '#ff2e88');
     expect(icon.png.length).toBeGreaterThan(100);
