@@ -3,6 +3,7 @@ import {
   createCard,
   createColumn,
   createColumns,
+  createGrid,
   createHeading,
   createList,
   createParagraph,
@@ -70,9 +71,64 @@ describe('@yumiamd/layout', () => {
     const cardNode = result.nodes[0];
     expect(cardNode?.children).toHaveLength(2);
 
+    const cardPadding = 28;
+    const titleClearance = 56;
     const innerHeading = cardNode?.children?.[0];
-    expect(innerHeading?.bounds.x).toBe(cardNode!.bounds.x + 36); // card padding
-    // padding + title clearance
-    expect(innerHeading?.bounds.y).toBe(cardNode!.bounds.y + 36 + 72);
+    expect(innerHeading?.bounds.x).toBe(cardNode!.bounds.x + cardPadding);
+    expect(innerHeading?.bounds.y).toBe(cardNode!.bounds.y + cardPadding + titleClearance);
+  });
+
+  it('equalizes sibling card heights in a grid row without overflowing the slide', () => {
+    const tall = createCard(
+      [
+        createList([
+          'Sorgente 100% versionabile con Git',
+          'Tre output compilati da un unico file',
+          'Layout e gerarchia visiva garantiti',
+          'Linter automatico per design e WCAG',
+          'Integrazione nativa con workflow AI',
+        ]),
+      ],
+      'Vantaggi Attuali'
+    );
+    const mid = createCard(
+      [
+        createList([
+          'Parità totale di rendering su edge case',
+          'Estensione della copertura dei test',
+          'Supporto a font e asset esterni complessi',
+          'Documentazione di scenari avanzati',
+        ]),
+      ],
+      'Aspetti da Consolidare'
+    );
+    const right = createCard(
+      [
+        createList([
+          'Editor visuale WYSIWYG bidirezionale',
+          'Collaborazione in tempo reale su browser',
+          'Integrazione con modelli LLM in locale',
+          'Plugin per VS Code ed estensioni IDE',
+        ]),
+      ],
+      'Sviluppi Futuri'
+    );
+
+    const slide = createSlide([
+      createHeading('Vantaggi, Limiti e Sviluppi Futuri', 1),
+      createHeading('Valutazione dello stato attuale e roadmap del progetto', 2),
+      createGrid([tall, mid, right], 3, 16),
+    ]);
+
+    const engine = new DefaultLayoutEngine();
+    const result = engine.computeSlide(slide, { width: 1920, height: 1080 });
+    const grid = result.nodes.find((n) => n.element.type === 'grid');
+    expect(grid?.children).toHaveLength(3);
+
+    const [a, b, c] = grid!.children!;
+    expect(a!.bounds.height).toBe(b!.bounds.height);
+    expect(b!.bounds.height).toBe(c!.bounds.height);
+    expect(a!.bounds.y + a!.bounds.height).toBeLessThanOrEqual(1080);
+    expect(result.overflow).toBe(false);
   });
 });

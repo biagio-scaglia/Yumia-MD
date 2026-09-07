@@ -313,7 +313,10 @@ export class DefaultLayoutEngine implements LayoutEngine {
       typeof element.columns === 'number'
         ? element.columns
         : parseInt(String(element.columns), 10) || 2;
-    const totalGap = gap * (colCount - 1);
+    // Prefer author-specified grid gap when present (e.g. gap=16).
+    const rawGap = element.gap !== undefined ? Number(element.gap) : gap;
+    const gridGap = Number.isFinite(rawGap) && rawGap >= 0 ? rawGap : gap;
+    const totalGap = gridGap * (colCount - 1);
     const colWidth = Math.max(10, (width - totalGap) / colCount);
 
     const children: LayoutNode[] = [];
@@ -321,14 +324,27 @@ export class DefaultLayoutEngine implements LayoutEngine {
 
     for (let i = 0; i < element.elements.length; i++) {
       const colIdx = i % colCount;
-      const colX = x + colIdx * (colWidth + gap);
+      const colX = x + colIdx * (colWidth + gridGap);
       const childEl = element.elements[i]!;
       const childNode = this.layoutSingleElement(childEl, colX, colYs[colIdx]!, colWidth, gap);
       children.push(childNode);
-      colYs[colIdx] += childNode.bounds.height + gap;
+      colYs[colIdx] += childNode.bounds.height + gridGap;
     }
 
-    const maxGridHeight = Math.max(...colYs.map((cy) => cy - y), 100);
+    // Equalize heights within each row so sibling cards share one closed bottom edge.
+    const rowCount = Math.ceil(children.length / colCount);
+    for (let row = 0; row < rowCount; row++) {
+      const rowNodes = children.slice(row * colCount, row * colCount + colCount);
+      const rowMax = Math.max(...rowNodes.map((n) => n.bounds.height), 0);
+      for (const node of rowNodes) {
+        node.bounds.height = rowMax;
+      }
+    }
+
+    const maxGridHeight = Math.max(
+      ...children.map((n) => n.bounds.y + n.bounds.height - y),
+      100
+    );
     return {
       element,
       bounds: { x, y, width, height: maxGridHeight },
@@ -418,21 +434,23 @@ export class DefaultLayoutEngine implements LayoutEngine {
     width: number,
     gap: number
   ): LayoutNode {
-    const cardPadding = 36;
+    const cardPadding = 28;
     const innerWidth = Math.max(10, width - cardPadding * 2);
-    const titleHeight = element.title ? 72 : 0;
+    const titleHeight = element.title ? 56 : 0;
     const innerStartY = y + cardPadding + titleHeight;
+    // Dense packing inside cards — outer slide gap is too large between bullets.
+    const innerGap = Math.min(12, Math.max(6, Math.round(gap * 0.4)));
 
     const { nodes: children, totalHeight: innerHeight } = this.layoutElementList(
       element.elements,
       x + cardPadding,
       innerStartY,
       innerWidth,
-      gap
+      innerGap
     );
 
-    const cardHeight = titleHeight + innerHeight + cardPadding * 2 + 20;
-    const bounds: Rect = { x, y, width, height: Math.max(140, cardHeight) };
+    const cardHeight = titleHeight + innerHeight + cardPadding * 2 + 12;
+    const bounds: Rect = { x, y, width, height: Math.max(120, cardHeight) };
 
     return {
       element,
@@ -520,21 +538,22 @@ export class DefaultLayoutEngine implements LayoutEngine {
   }
 
   private estimateParagraphHeight(paragraph: ParagraphElement, width: number): number {
-    // Conservative wrap: PPTX body ~13pt needs ~0.35"+ per line after scale.
-    const charsPerLine = Math.max(16, Math.floor(width / 17));
+    // Proportional body (~13–14pt): ~0.5em average advance ≈ width/9.5 chars/line.
+    // Previous width/17 over-wrapped short bullets and blew up card heights in grids.
+    const charsPerLine = Math.max(18, Math.floor(width / 9.5));
     const lines = Math.ceil(paragraph.text.length / charsPerLine) || 1;
-    return Math.max(52, lines * 48 + 10);
+    return Math.max(36, lines * 34 + 8);
   }
 
   private estimateListHeight(list: ListElement, width: number = 800): number {
-    const charsPerLine = Math.max(14, Math.floor(width / 16));
+    const charsPerLine = Math.max(18, Math.floor(width / 9.5));
     let totalHeight = 0;
     for (const item of list.items) {
       const cleanLen = item.text.replace(/\*\*/g, '').replace(/\*/g, '').length;
       const lines = Math.ceil(cleanLen / charsPerLine) || 1;
-      totalHeight += lines * 46 + 20;
+      totalHeight += lines * 32 + 10;
     }
-    return Math.max(52, totalHeight);
+    return Math.max(40, totalHeight);
   }
 
   private estimateCodeHeight(code: CodeElement, width: number = 800): number {

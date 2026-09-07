@@ -376,10 +376,12 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     .yumia-grid {
       display: grid;
       width: 100%;
-      flex: 1;
+      flex: 1 1 auto;
       min-height: 0;
+      max-height: 100%;
       gap: clamp(1rem, 1.8vw, 1.6rem);
       align-items: stretch;
+      align-content: start;
       margin-top: 0.4rem;
     }
 
@@ -423,14 +425,16 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       background: var(--yumia-surface);
       border: 1.5px solid var(--yumia-border);
       border-radius: 14px;
-      padding: clamp(1.2rem, 2vw, 1.8rem);
+      padding: clamp(1.1rem, 1.8vw, 1.5rem);
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      gap: 0.7rem;
+      gap: 0.45rem;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
       height: 100%;
+      max-height: 100%;
       min-height: 0;
+      overflow: hidden;
       box-sizing: border-box;
       transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
     }
@@ -2184,8 +2188,13 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
         const g = element as GridElement;
         const cols =
           typeof g.columns === 'number' ? `repeat(${g.columns}, minmax(0, 1fr))` : g.columns;
+        const gapRaw = g.gap !== undefined ? g.gap : '1.5rem';
         const gap =
-          g.gap !== undefined ? (typeof g.gap === 'number' ? `${g.gap}px` : g.gap) : '1.5rem';
+          typeof gapRaw === 'number'
+            ? `${gapRaw}px`
+            : /^\d+(\.\d+)?$/.test(String(gapRaw).trim())
+              ? `${String(gapRaw).trim()}px`
+              : String(gapRaw);
         const inner = g.elements
           .map((child) => this.renderElement(child, theme, presentation))
           .join('\n');

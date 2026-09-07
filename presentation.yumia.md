@@ -310,21 +310,24 @@ slide "Vantaggi, Limiti e Sviluppi Futuri"
 
   grid columns=3 gap=16
     card title="Vantaggi Attuali" variant="success" icon="lucide:check-circle"
-      text "• Sorgente 100% versionabile con Git"
-      text "• Tre output compilati da un unico file"
-      text "• Layout e gerarchia visiva garantiti"
-      text "• Linter automatico per design e WCAG"
-      text "• Integrazione nativa con workflow AI"
+      list
+        - Sorgente 100% versionabile con Git
+        - Tre output compilati da un unico file
+        - Layout e gerarchia visiva garantiti
+        - Linter automatico per design e WCAG
+        - Integrazione nativa con workflow AI
     card title="Aspetti da Consolidare" variant="warning" icon="lucide:alert-triangle"
-      text "• Parità totale di rendering su edge case"
-      text "• Estensione della copertura dei test"
-      text "• Supporto a font e asset esterni complessi"
-      text "• Documentazione di scenari avanzati"
+      list
+        - Parità totale di rendering su edge case
+        - Estensione della copertura dei test
+        - Supporto a font e asset esterni complessi
+        - Documentazione di scenari avanzati
     card title="Sviluppi Futuri" variant="primary" icon="lucide:compass"
-      text "• Editor visuale WYSIWYG bidirezionale"
-      text "• Collaborazione in tempo reale su browser"
-      text "• Integrazione con modelli LLM in locale"
-      text "• Plugin per VS Code ed estensioni IDE"
+      list
+        - Editor visuale WYSIWYG bidirezionale
+        - Collaborazione in tempo reale su browser
+        - Integrazione con modelli LLM in locale
+        - Plugin per VS Code ed estensioni IDE
 
   notes
     È importante mantenere uno sguardo critico e trasparente sullo stato del progetto:
