@@ -241,15 +241,15 @@ export class NativeYumiaParser {
 
     switch (tok.command) {
       case 'hero': {
-        const titleMatch = tok.args.match(/^(?:title=)?["']([^"']+)["']/);
-        const subMatch = tok.args.match(/\bsubtitle=["']([^"']+)["']/);
-        const tagMatch = tok.args.match(/\btagline=["']([^"']+)["']/);
-        const badgeMatch = tok.args.match(/\bbadge=["']([^"']+)["']/);
-        const alignMatch = tok.args.match(/\balign=["']?([^"'\s]+)["']?/);
-        const emphMatch = tok.args.match(/\bemphasis=["']?([^"'\s]+)["']?/);
-        const densMatch = tok.args.match(/\bdensity=["']?([^"'\s]+)["']?/);
+        const titleVal = this.extractAttr(tok.args, 'title') ?? this.extractAttr(tok.args);
+        const subVal = this.extractAttr(tok.args, 'subtitle');
+        const tagVal = this.extractAttr(tok.args, 'tagline');
+        const badgeVal = this.extractAttr(tok.args, 'badge');
+        const alignVal = this.extractAttr(tok.args, 'align');
+        const emphVal = this.extractAttr(tok.args, 'emphasis');
+        const densVal = this.extractAttr(tok.args, 'density');
 
-        const title = titleMatch ? titleMatch[1]! : this.stripQuotes(tok.args) || 'Hero';
+        const title = (titleVal ?? this.stripQuotes(tok.args)) || 'Hero';
         const children: SlideElement[] = [];
         let nextIdx = idx + 1;
 
@@ -265,14 +265,14 @@ export class NativeYumiaParser {
 
         const heroEl = createHero(
           title,
-          subMatch ? subMatch[1] : undefined,
+          subVal,
           children.length > 0 ? children : undefined,
           {
-            tagline: tagMatch ? tagMatch[1] : undefined,
-            badge: badgeMatch ? badgeMatch[1] : undefined,
-            align: alignMatch ? (alignMatch[1] as 'left' | 'center' | 'right') : undefined,
-            emphasis: emphMatch ? emphMatch[1] : undefined,
-            density: densMatch ? densMatch[1] : undefined,
+            tagline: tagVal,
+            badge: badgeVal,
+            align: alignVal as 'left' | 'center' | 'right' | undefined,
+            emphasis: emphVal,
+            density: densVal,
           }
         );
         heroEl.loc = {
@@ -1224,6 +1224,16 @@ export class NativeYumiaParser {
     } catch {
       return template;
     }
+  }
+
+  private extractAttr(argsStr: string, key?: string): string | undefined {
+    if (!argsStr) return undefined;
+    const pattern = key
+      ? new RegExp(`\\b${key}=(?:"([^"]*)"|'([^']*)'|([^\\s"']+))`)
+      : /^(?:"([^"]*)"|'([^']*)')/;
+    const m = argsStr.match(pattern);
+    if (!m) return undefined;
+    return m[1] ?? m[2] ?? m[3];
   }
 
   private stripQuotes(str: string): string {
