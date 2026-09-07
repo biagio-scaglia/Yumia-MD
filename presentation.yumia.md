@@ -8,13 +8,10 @@ document "Yumia — Creare Presentazioni con Semplicità"
 slide "Benvenuti e Introduzione"
   hero title="Yumia" subtitle="Creare presentazioni belle e veloci partendo dal semplice testo" tagline="Corso di Web Dev • Classe 25726 • Progetto di Biagio Scaglia" badge="Presentazione Progetto" align="center" emphasis="primary"
 
-  grid columns=3 gap=16
-    card title="1. Scrittura Semplice" variant="primary" icon="lucide:pencil"
-      text "Scrivi solo il testo e i concetti, senza perdere ore su margini e coordinate."
-    card title="2. Design Intelligente" variant="accent" icon="lucide:sparkles"
-      text "Yumia organizza automaticamente spazi, palette di colori e stili armoniosi."
-    card title="3. Triplo Formato" variant="success" icon="lucide:layers"
-      text "Esportazione istantanea in Sito Web interattivo, PowerPoint nativo e PDF."
+  grid columns=3 gap=20
+    metric "1" label="File di testo sorgente" diff="Zero fatica" variant="primary"
+    metric "3" label="Formati (Web, PPTX, PDF)" diff="In 1 secondo" variant="accent"
+    metric "100%" label="Layout e design garantiti" diff="Zero disallineamenti" variant="success"
 
   notes
     Ciao a tutti e benvenuti! Sono Biagio Scaglia del corso di Web Dev (classe 25726).
@@ -46,13 +43,15 @@ slide "Il Problema: Creare Slide è Lento"
 slide "La Soluzione: Cos'è Yumia?"
   heading "Scrivi solo il testo, alla grafica ci pensa il computer!"
 
-  grid columns=3 gap=16
-    card title="1. Scrittura Semplice" variant="primary" icon="lucide:pencil"
-      text "Scrivi quello che vuoi dire in modo chiaro e pulito, come prendere appunti."
-    card title="2. Grafica Automatica" variant="accent" icon="lucide:sparkles"
-      text "Yumia posiziona automaticamente blocchi, colori, font e spazi perfetti."
-    card title="3. Risultato Immediato" variant="success" icon="lucide:check-circle"
-      text "In pochi secondi hai una presentazione pronta, ordinata e moderna."
+  columns 48:52
+    column
+      card title="Separazione Intelligente" variant="primary" icon="lucide:pencil"
+        text "Tu scrivi solo le idee e i concetti in un semplice file di testo, come se prendessi appunti veloci."
+        badge "Semplice da scrivere" variant="accent"
+    column
+      card title="Composizione Automatica" variant="accent" icon="lucide:sparkles"
+        text "Yumia posiziona automaticamente i blocchi, calcola i margini e sceglie i colori più armoniosi."
+        badge "Design garantito" variant="success"
 
   callout severity="info" title="L'idea chiave" icon="lucide:lightbulb"
     Non diciamo dove mettere ogni singolo pixel: diciamo solo cosa vogliamo mostrare e Yumia trova il modo migliore per disegnarlo.
@@ -80,7 +79,7 @@ slide "Come Funziona in Pratica"
     2. Yumia calcola gli spazi, i contrasti e i margini;
     3. In un secondo la presentazione è pronta per essere proiettata o condivisa.
 
-// Slide 5 — Un Solo File, Tanti Formati
+// Slide 5 — Un Solo File, Tre Formati
 slide "Un Solo File, Tre Formati"
   heading "Da una sola pagina di testo ottieni subito 3 risultati diversi"
 
@@ -88,7 +87,7 @@ slide "Un Solo File, Tre Formati"
     card title="1. Sito Web Interattivo" variant="primary" icon="lucide:globe"
       text "• Si apre direttamente nel browser"
       text "• Navigazione con frecce da tastiera"
-      text "• Schermo intero e vista con le note per chi parla"
+      text "• Schermo intero e vista note per chi parla"
     card title="2. PowerPoint (.pptx)" variant="accent" icon="lucide:presentation"
       text "• File standard di PowerPoint"
       text "• Caselle di testo e forme modificabili"
@@ -96,7 +95,7 @@ slide "Un Solo File, Tre Formati"
     card title="3. Documento PDF" variant="success" icon="lucide:file-text"
       text "• Grafica fissa ad alta qualità"
       text "• Ottimo per stampare o inviare via email"
-      text "• Si legge bene su qualsiasi smartphone o PC"
+      text "• Si legge bene su qualsiasi dispositivo"
 
   notes
     Uno dei vantaggi più grandi: scriviamo il testo una volta sola e Yumia può creare:
@@ -130,23 +129,23 @@ slide "Esempio Pratico di Codice"
     Come potete notare, è chiarissimo: abbiamo una slide, un titolo Hero e una griglia con tre numeri evidenziati.
     Non ci sono tag complicati, parentesi difficili o stili da memorizzare.
 
-// Slide 7 — Blocchi Pronti per Ogni Esigenza
+// Slide 7 — I Mattoncini Pronti all'Uso
 slide "I Componenti Pronti all'Uso"
-  heading "Tutto quello che serve per spiegare bene un argomento"
+  heading "Tutto quello che serve per spiegare bene qualsiasi argomento"
 
   grid columns=3 gap=16
     card title="Schede e Colonne" variant="primary" icon="lucide:layout-grid"
       text "Per dividere i punti chiave ed evidenziare i concetti importanti."
-    card title="Numeri e Statistiche" variant="accent" icon="lucide:hash"
-      text "Grandi numeri con etichette per mostrare subito dati importanti."
+    card title="Numeri in Evidenza" variant="accent" icon="lucide:hash"
+      text "Grandi metriche con etichette per mostrare subito dati importanti."
     card title="Schemi e Flussi" variant="warning" icon="lucide:git-commit"
       text "Frecce e passaggi chiari per spiegare come funziona un processo."
     card title="Confronti a Due Lati" variant="info" icon="lucide:columns"
       text "Perfetti per mettere a paragone due idee (Prima vs Dopo)."
     card title="Tabelle e Liste" variant="success" icon="lucide:table"
       text "Per elenchi ordinati di informazioni e dati di sintesi."
-    card title="Icone Integrate" variant="danger" icon="lucide:shapes"
-      text "Migliaia di icone moderne pronte senza dover scaricare immagini."
+    card title="Grafici & Icone" variant="danger" icon="lucide:bar-chart-3"
+      text "Grafici a barre, ciambelle e oltre 10.000 icone vettoriali integrate."
 
   notes
     Yumia mette a disposizione tutti i mattoncini utili: schede colorate, numeri in evidenza, confronti visivi, grafici e migliaia di icone già integrate.
@@ -164,9 +163,10 @@ slide "Il Controllo Qualità Automatico"
         text "• Se gli elementi sono troppo vicini ai bordi"
         text "• Se ci sono slide vuote o incomplete"
     column
-      card title="Esempio di Avviso Semplice" variant="warning" icon="lucide:alert-circle"
-        text "• Avviso: Hai inserito troppo testo in questa slide!"
-        text "• Suggerimento: Dividi il contenuto in due schede o in una seconda slide per renderla più chiara."
+      callout severity="warning" title="Esempio di Avviso Semplice" icon="lucide:alert-circle"
+        Avviso: Hai inserito troppo testo in questa slide!
+        Suggerimento: Dividi il contenuto in due schede o in una seconda slide per renderla più chiara.
+      badge "Controllo WCAG e Accessibilità" variant="success"
 
   notes
     Proprio come quando scriviamo su Word c'è il correttore ortografico, in Yumia c'è un controllore visivo.
@@ -193,39 +193,42 @@ slide "Yumia e l'Intelligenza Artificiale"
     Se chiediamo all'AI di fare una pagina web con slide, spesso la grafica si rompe.
     Con Yumia, l'AI deve solo scrivere frasi semplici: ci pensa poi Yumia a posizionare tutto con ordine e armonia.
 
-// Slide 10 — Perché Usare Yumia? I Vantaggi
-slide "I Grandi Vantaggi di Yumia"
-  heading "Perché è utile per studenti, programmatori e professionisti"
+// Slide 10 — Il Confronto dei Tempi di Creazione
+slide "Tempo Risparmiato con Yumia"
+  heading "Meno tempo perso sulla grafica, più spazio ai contenuti"
 
-  grid columns=3 gap=16
-    card title="Super Veloce" variant="primary" icon="lucide:zap"
-      text "Crei una presentazione completa in pochi minuti partendo dai tuoi appunti."
-    card title="Sempre Ordinato" variant="accent" icon="lucide:palette"
-      text "Tutte le slide mantengono lo stesso stile coerente e moderno."
-    card title="Tutto in un File" variant="success" icon="lucide:folder"
-      text "Facilissimo da salvare, inviare, condividere e aggiornare nel tempo."
+  columns 52:48
+    column
+      chart type="bar" title="Minuti per creare 10 slide" labels="PowerPoint, Canva, Yumia" data="90, 60, 5"
+    column
+      card title="Perché tanta differenza?" variant="primary" icon="lucide:clock"
+        text "• Zero spostamenti manuali di caselle col mouse"
+        text "• Palette di colori e layout calcolati in un secondo"
+        text "• Aggiornamenti immediati su tutte le slide"
+        badge "Risparmio di oltre l'80% del tempo" variant="success"
+
+  callout severity="success" title="Efficienza Immediata" icon="lucide:zap"
+    Con Yumia passi subito dai tuoi appunti alla presentazione pronta senza stress.
 
   notes
-    In sintesi, i tre punti di forza di Yumia sono:
-    1. Velocità: non perdi tempo con la grafica;
-    2. Coerenza: tutte le slide sono coordinate tra loro;
-    3. Semplicità: un solo file di testo facile da gestire e condividere.
+    In questa slide vediamo un grafico a barre che mette a confronto il tempo necessario per realizzare 10 slide:
+    con PowerPoint o Canva si perdono tra i 60 e i 90 minuti per allineare forme e caselle, mentre con Yumia bastano appena 5 minuti di scrittura.
 
-// Slide 11 — Progetti per il Futuro
+// Slide 11 — Roadmap e Progetti per il Futuro
 slide "Cosa Vogliamo Aggiungere in Futuro"
-  heading "Le prossime novità per rendere Yumia ancora più potente"
+  heading "I prossimi passi per rendere Yumia ancora più completo"
 
-  grid columns=3 gap=16
-    card title="1. Nuovi Temi e Colori" variant="primary" icon="lucide:paint-bucket"
-      text "Più stili grafici pronti (moderno, elegante, minimale, colorato)."
-    card title="2. Lavoro di Gruppo Live" variant="accent" icon="lucide:users"
-      text "Poter scrivere le slide insieme ai compagni in tempo reale sul web."
-    card title="3. Anteprima dal Vivo" variant="success" icon="lucide:eye"
-      text "Vedere la slide che si aggiorna istantaneamente mentre scrivi il testo."
+  timeline layout="horizontal"
+    item date="Fase 1" title="Nuovi Temi" desc="Stili grafici moderni, accademici ed eleganti"
+    item date="Fase 2" title="Lavoro di Gruppo" desc="Collaborazione live via web con i compagni"
+    item date="Fase 3" title="Anteprima Live" desc="Rendering immediato mentre scrivi il testo"
+
+  callout severity="info" title="Sviluppo Aperto" icon="lucide:sparkles"
+    Un progetto in costante evoluzione per semplificare la vita a studenti e sviluppatori.
 
   notes
     Il progetto è in continua evoluzione.
-    In futuro puntiamo ad aggiungere nuovi stili grafici, la possibilità di lavorare in gruppo contemporaneamente via web e un'anteprima in tempo reale ancora più fluida.
+    Nella roadmap futura prevediamo tre fasi: nuovi temi grafici, collaborazione live tra compagni di gruppo e anteprima istantanea in tempo reale.
 
 // Slide 12 — Saluti Finali e Ringraziamenti
 slide "Conclusioni e Ringraziamenti"

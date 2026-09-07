@@ -711,8 +711,9 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
     .yumia-timeline {
       display: flex;
       gap: 16px;
-      margin: 1.2rem 0;
+      margin: 1.5rem 0 1.8rem 0;
       width: 100%;
+      box-sizing: border-box;
     }
     .yumia-timeline.layout-horizontal {
       flex-direction: row;
@@ -737,6 +738,7 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       align-items: center;
       text-align: center;
       flex: 1;
+      padding: 0 10px;
     }
     .yumia-timeline-dot {
       width: 14px;
@@ -764,6 +766,7 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       font-size: 0.85rem;
       color: var(--yumia-muted);
       line-height: 1.4;
+      max-width: 240px;
     }
 
     /* Compare Directive */

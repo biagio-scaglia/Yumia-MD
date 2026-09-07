@@ -580,8 +580,9 @@
     .yumia-timeline {
       display: flex;
       gap: 16px;
-      margin: 1.2rem 0;
+      margin: 1.5rem 0 1.8rem 0;
       width: 100%;
+      box-sizing: border-box;
     }
     .yumia-timeline.layout-horizontal {
       flex-direction: row;
@@ -606,6 +607,7 @@
       align-items: center;
       text-align: center;
       flex: 1;
+      padding: 0 10px;
     }
     .yumia-timeline-dot {
       width: 14px;
@@ -633,6 +635,7 @@
       font-size: 0.85rem;
       color: var(--yumia-muted);
       line-height: 1.4;
+      max-width: 240px;
     }
 
     /* Compare Directive */
@@ -1252,20 +1255,23 @@
           <p class="yumia-hero-tagline-text" style="color:var(--yumia-muted); font-size:0.95rem; margin-top:0.5rem;">Corso di Web Dev • Classe 25726 • Progetto di Biagio Scaglia</p>
           
         </div>
-<div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px;">
-        <div class="yumia-card" data-variant="primary">
-          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="sans-serif">P</text></svg></span><span>1. Scrittura Semplice</span></div>
-          <p>Scrivi solo il testo e i concetti, senza perdere ore su margini e coordinate.</p>
+<div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:20px;">
+        <div class="yumia-metric" data-variant="primary">
+          <span class="yumia-metric-label">File di testo sorgente</span>
+          <span class="yumia-metric-value">1</span>
+          <span class="yumia-metric-change negative">Zero fatica</span>
         </div>
 
-        <div class="yumia-card" data-variant="accent">
-          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg></span><span>2. Design Intelligente</span></div>
-          <p>Yumia organizza automaticamente spazi, palette di colori e stili armoniosi.</p>
+        <div class="yumia-metric" data-variant="accent">
+          <span class="yumia-metric-label">Formati (Web, PPTX, PDF)</span>
+          <span class="yumia-metric-value">3</span>
+          <span class="yumia-metric-change negative">In 1 secondo</span>
         </div>
 
-        <div class="yumia-card" data-variant="success">
-          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span><span>3. Triplo Formato</span></div>
-          <p>Esportazione istantanea in Sito Web interattivo, PowerPoint nativo e PDF.</p>
+        <div class="yumia-metric" data-variant="success">
+          <span class="yumia-metric-label">Layout e design garantiti</span>
+          <span class="yumia-metric-value">100%</span>
+          <span class="yumia-metric-change negative">Zero disallineamenti</span>
         </div></div>
       <div class="yumia-watermark">Yumia • Corso Web Dev 25726</div>
       <div class="yumia-progress-bar" style="width: 8%;"></div>
@@ -1301,21 +1307,18 @@
     <div class="yumia-slide-wrapper  transition-fade" id="slide-3" data-notes="L&#039;idea di Yumia è semplicissima: dividere il testo dalla grafica.&lt;br&gt;Noi ci concentriamo solo su cosa vogliamo comunicare, mentre il programma si occupa di allineare tutto, scegliere i colori giusti e rendere le slide bellissime in automatico.">
       <h1>La Soluzione: Cos&#039;è Yumia?</h1>
 <h2>Scrivi solo il testo, alla grafica ci pensa il computer!</h2>
-<div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px;">
+<div class="yumia-columns" style="grid-template-columns: 48fr 52fr;"><div class="yumia-column">
         <div class="yumia-card" data-variant="primary">
-          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="sans-serif">P</text></svg></span><span>1. Scrittura Semplice</span></div>
-          <p>Scrivi quello che vuoi dire in modo chiaro e pulito, come prendere appunti.</p>
-        </div>
-
-        <div class="yumia-card" data-variant="accent">
-          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg></span><span>2. Grafica Automatica</span></div>
-          <p>Yumia posiziona automaticamente blocchi, colori, font e spazi perfetti.</p>
-        </div>
-
-        <div class="yumia-card" data-variant="success">
-          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="sans-serif">C</text></svg></span><span>3. Risultato Immediato</span></div>
-          <p>In pochi secondi hai una presentazione pronta, ordinata e moderna.</p>
+          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="sans-serif">P</text></svg></span><span>Separazione Intelligente</span></div>
+          <p>Tu scrivi solo le idee e i concetti in un semplice file di testo, come se prendessi appunti veloci.</p>
+<span class="yumia-badge variant-accent">Semplice da scrivere</span>
         </div></div>
+<div class="yumia-column">
+        <div class="yumia-card" data-variant="accent">
+          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg></span><span>Composizione Automatica</span></div>
+          <p>Yumia posiziona automaticamente i blocchi, calcola i margini e sceglie i colori più armoniosi.</p>
+<span class="yumia-badge variant-success">Design garantito</span>
+        </div></div></div>
 
         <div class="yumia-callout" data-severity="info" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-info); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
           <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-info); margin-bottom:4px; display:flex; align-items:center;"><span style="display:inline-flex; align-items:center; margin-right:8px; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-callout-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="var(--yumia-info)" style="fill:none; stroke:var(--yumia-info);"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="sans-serif">L</text></svg></span>L&#039;idea chiave</div>
@@ -1333,11 +1336,11 @@
         <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-primary); margin-bottom:0.4rem; text-align:center;">Il percorso da testo a presentazione</div>
         <svg class="yumia-diagram" viewBox="0 0 710 128" preserveAspectRatio="xMidYMid meet">
           <defs>
-            <marker id="arrow-0og2yd" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <marker id="arrow-ouawu2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
               <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#7DCFFF" />
             </marker>
           </defs>
-          <path d="M 200 64 C 237.5 64, 237.5 64, 275 64" fill="none" stroke="#7DCFFF" stroke-width="2"  marker-end="url(#arrow-0og2yd)" /><path d="M 435 64 C 472.5 64, 472.5 64, 510 64" fill="none" stroke="#7DCFFF" stroke-width="2"  marker-end="url(#arrow-0og2yd)" />
+          <path d="M 200 64 C 237.5 64, 237.5 64, 275 64" fill="none" stroke="#7DCFFF" stroke-width="2"  marker-end="url(#arrow-ouawu2)" /><path d="M 435 64 C 472.5 64, 472.5 64, 510 64" fill="none" stroke="#7DCFFF" stroke-width="2"  marker-end="url(#arrow-ouawu2)" />
           
         <g class="yumia-diag-node" data-id="1__scrivi_il_testo">
           <rect x="40" y="40" width="160" height="48" rx="10" fill="#24283B" stroke="#7AA2F7" stroke-width="2" />
@@ -1374,7 +1377,7 @@
           <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span><span>1. Sito Web Interattivo</span></div>
           <p>• Si apre direttamente nel browser</p>
 <p>• Navigazione con frecce da tastiera</p>
-<p>• Schermo intero e vista con le note per chi parla</p>
+<p>• Schermo intero e vista note per chi parla</p>
         </div>
 
         <div class="yumia-card" data-variant="accent">
@@ -1388,7 +1391,7 @@
           <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="sans-serif">F</text></svg></span><span>3. Documento PDF</span></div>
           <p>• Grafica fissa ad alta qualità</p>
 <p>• Ottimo per stampare o inviare via email</p>
-<p>• Si legge bene su qualsiasi smartphone o PC</p>
+<p>• Si legge bene su qualsiasi dispositivo</p>
         </div></div>
       <div class="yumia-watermark">Yumia • Corso Web Dev 25726</div>
       <div class="yumia-progress-bar" style="width: 42%;"></div>
@@ -1417,7 +1420,7 @@ metric &quot;0&quot; label=&quot;Fatica grafica&quot;</code></pre></div>
 
     <div class="yumia-slide-wrapper  transition-fade" id="slide-7" data-notes="Yumia mette a disposizione tutti i mattoncini utili: schede colorate, numeri in evidenza, confronti visivi, grafici e migliaia di icone già integrate.&lt;br&gt;Non c&#039;è bisogno di scaricare immagini o ritagliare icone da internet.">
       <h1>I Componenti Pronti all&#039;Uso</h1>
-<h2>Tutto quello che serve per spiegare bene un argomento</h2>
+<h2>Tutto quello che serve per spiegare bene qualsiasi argomento</h2>
 <div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px;">
         <div class="yumia-card" data-variant="primary">
           <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="sans-serif">L</text></svg></span><span>Schede e Colonne</span></div>
@@ -1425,8 +1428,8 @@ metric &quot;0&quot; label=&quot;Fatica grafica&quot;</code></pre></div>
         </div>
 
         <div class="yumia-card" data-variant="accent">
-          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="sans-serif">H</text></svg></span><span>Numeri e Statistiche</span></div>
-          <p>Grandi numeri con etichette per mostrare subito dati importanti.</p>
+          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="sans-serif">H</text></svg></span><span>Numeri in Evidenza</span></div>
+          <p>Grandi metriche con etichette per mostrare subito dati importanti.</p>
         </div>
 
         <div class="yumia-card" data-variant="warning">
@@ -1445,8 +1448,8 @@ metric &quot;0&quot; label=&quot;Fatica grafica&quot;</code></pre></div>
         </div>
 
         <div class="yumia-card" data-variant="danger">
-          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="sans-serif">S</text></svg></span><span>Icone Integrate</span></div>
-          <p>Migliaia di icone moderne pronte senza dover scaricare immagini.</p>
+          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="sans-serif">B</text></svg></span><span>Grafici &amp; Icone</span></div>
+          <p>Grafici a barre, ciambelle e oltre 10.000 icone vettoriali integrate.</p>
         </div></div>
       <div class="yumia-watermark">Yumia • Corso Web Dev 25726</div>
       <div class="yumia-progress-bar" style="width: 58%;"></div>
@@ -1464,11 +1467,11 @@ metric &quot;0&quot; label=&quot;Fatica grafica&quot;</code></pre></div>
 <p>• Se ci sono slide vuote o incomplete</p>
         </div></div>
 <div class="yumia-column">
-        <div class="yumia-card" data-variant="warning">
-          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="sans-serif">A</text></svg></span><span>Esempio di Avviso Semplice</span></div>
-          <p>• Avviso: Hai inserito troppo testo in questa slide!</p>
-<p>• Suggerimento: Dividi il contenuto in due schede o in una seconda slide per renderla più chiara.</p>
-        </div></div></div>
+        <div class="yumia-callout" data-severity="warning" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-warning); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
+          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-warning); margin-bottom:4px; display:flex; align-items:center;"><span style="display:inline-flex; align-items:center; margin-right:8px; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-callout-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="var(--yumia-warning)" style="fill:none; stroke:var(--yumia-warning);"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="sans-serif">A</text></svg></span>Esempio di Avviso Semplice</div>
+          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">Avviso: Hai inserito troppo testo in questa slide! Suggerimento: Dividi il contenuto in due schede o in una seconda slide per renderla più chiara.</div>
+        </div>
+<span class="yumia-badge variant-success">Controllo WCAG e Accessibilità</span></div></div>
       <div class="yumia-watermark">Yumia • Corso Web Dev 25726</div>
       <div class="yumia-progress-bar" style="width: 67%;"></div>
     </div>
@@ -1498,46 +1501,81 @@ metric &quot;0&quot; label=&quot;Fatica grafica&quot;</code></pre></div>
       <div class="yumia-progress-bar" style="width: 75%;"></div>
     </div>
 
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-10" data-notes="In sintesi, i tre punti di forza di Yumia sono:&lt;br&gt;1. Velocità: non perdi tempo con la grafica;&lt;br&gt;2. Coerenza: tutte le slide sono coordinate tra loro;&lt;br&gt;3. Semplicità: un solo file di testo facile da gestire e condividere.">
-      <h1>I Grandi Vantaggi di Yumia</h1>
-<h2>Perché è utile per studenti, programmatori e professionisti</h2>
-<div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px;">
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-10" data-notes="In questa slide vediamo un grafico a barre che mette a confronto il tempo necessario per realizzare 10 slide:&lt;br&gt;con PowerPoint o Canva si perdono tra i 60 e i 90 minuti per allineare forme e caselle, mentre con Yumia bastano appena 5 minuti di scrittura.">
+      <h1>Tempo Risparmiato con Yumia</h1>
+<h2>Meno tempo perso sulla grafica, più spazio ai contenuti</h2>
+<div class="yumia-columns" style="grid-template-columns: 52fr 48fr;"><div class="yumia-column">
+    <div class="yumia-chart-container">
+      <div class="yumia-chart-title">Minuti per creare 10 slide</div>
+      <svg viewBox="0 0 640 240" style="width:100%; height:100%; max-height:280px;">
+        
+        <line x1="45" y1="157.5" x2="595" y2="157.5" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
+        <text x="37" y="161.5" text-anchor="end" fill="#565F89" font-size="10" font-family="sans-serif">23</text>
+        <line x1="45" y1="120" x2="595" y2="120" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
+        <text x="37" y="124" text-anchor="end" fill="#565F89" font-size="10" font-family="sans-serif">45</text>
+        <line x1="45" y1="82.5" x2="595" y2="82.5" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
+        <text x="37" y="86.5" text-anchor="end" fill="#565F89" font-size="10" font-family="sans-serif">68</text>
+        <line x1="45" y1="45" x2="595" y2="45" stroke="rgba(255,255,255,0.08)" stroke-dasharray="4 4" />
+        <text x="37" y="49" text-anchor="end" fill="#565F89" font-size="10" font-family="sans-serif">90</text>
+        <line x1="45" y1="195" x2="595" y2="195" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" />
+        
+        <rect x="108.66666666666669" y="45" width="56" height="150" rx="6" fill="#7AA2F7" opacity="0.95" />
+        <text x="136.66666666666669" y="37" text-anchor="middle" fill="#7AA2F7" font-size="12" font-weight="700" font-family="sans-serif">90</text>
+        <text x="136.66666666666669" y="228" text-anchor="middle" fill="#C0CAF5" font-size="11" font-weight="600" font-family="sans-serif">PowerPoint</text>
+        <rect x="292" y="95" width="56" height="100" rx="6" fill="#7DCFFF" opacity="0.95" />
+        <text x="320" y="87" text-anchor="middle" fill="#7DCFFF" font-size="12" font-weight="700" font-family="sans-serif">60</text>
+        <text x="320" y="228" text-anchor="middle" fill="#C0CAF5" font-size="11" font-weight="600" font-family="sans-serif">Canva</text>
+        <rect x="475.33333333333337" y="186.66666666666666" width="56" height="8.333333333333332" rx="6" fill="#BB9AF7" opacity="0.95" />
+        <text x="503.33333333333337" y="178.66666666666666" text-anchor="middle" fill="#BB9AF7" font-size="12" font-weight="700" font-family="sans-serif">5</text>
+        <text x="503.33333333333337" y="228" text-anchor="middle" fill="#C0CAF5" font-size="11" font-weight="600" font-family="sans-serif">Yumia</text>
+      </svg>
+    </div></div>
+<div class="yumia-column">
         <div class="yumia-card" data-variant="primary">
-          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span><span>Super Veloce</span></div>
-          <p>Crei una presentazione completa in pochi minuti partendo dai tuoi appunti.</p>
-        </div>
+          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="sans-serif">C</text></svg></span><span>Perché tanta differenza?</span></div>
+          <p>• Zero spostamenti manuali di caselle col mouse</p>
+<p>• Palette di colori e layout calcolati in un secondo</p>
+<p>• Aggiornamenti immediati su tutte le slide</p>
+<span class="yumia-badge variant-success">Risparmio di oltre l</span>
+        </div></div></div>
 
-        <div class="yumia-card" data-variant="accent">
-          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg></span><span>Sempre Ordinato</span></div>
-          <p>Tutte le slide mantengono lo stesso stile coerente e moderno.</p>
+        <div class="yumia-callout" data-severity="success" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-success); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
+          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-success); margin-bottom:4px; display:flex; align-items:center;"><span style="display:inline-flex; align-items:center; margin-right:8px; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-callout-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="var(--yumia-success)" style="fill:none; stroke:var(--yumia-success);"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>Efficienza Immediata</div>
+          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">Con Yumia passi subito dai tuoi appunti alla presentazione pronta senza stress.</div>
         </div>
-
-        <div class="yumia-card" data-variant="success">
-          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="sans-serif">F</text></svg></span><span>Tutto in un File</span></div>
-          <p>Facilissimo da salvare, inviare, condividere e aggiornare nel tempo.</p>
-        </div></div>
       <div class="yumia-watermark">Yumia • Corso Web Dev 25726</div>
       <div class="yumia-progress-bar" style="width: 83%;"></div>
     </div>
 
-    <div class="yumia-slide-wrapper  transition-fade" id="slide-11" data-notes="Il progetto è in continua evoluzione.&lt;br&gt;In futuro puntiamo ad aggiungere nuovi stili grafici, la possibilità di lavorare in gruppo contemporaneamente via web e un&#039;anteprima in tempo reale ancora più fluida.">
+    <div class="yumia-slide-wrapper  transition-fade" id="slide-11" data-notes="Il progetto è in continua evoluzione.&lt;br&gt;Nella roadmap futura prevediamo tre fasi: nuovi temi grafici, collaborazione live tra compagni di gruppo e anteprima istantanea in tempo reale.">
       <h1>Cosa Vogliamo Aggiungere in Futuro</h1>
-<h2>Le prossime novità per rendere Yumia ancora più potente</h2>
-<div class="yumia-grid" style="grid-template-columns:repeat(3, minmax(0, 1fr)); gap:16px;">
-        <div class="yumia-card" data-variant="primary">
-          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="sans-serif">P</text></svg></span><span>1. Nuovi Temi e Colori</span></div>
-          <p>Più stili grafici pronti (moderno, elegante, minimale, colorato).</p>
+<h2>I prossimi passi per rendere Yumia ancora più completo</h2>
+<div class="yumia-timeline layout-horizontal">
+        <div class="yumia-timeline-item">
+          <div class="yumia-timeline-dot"></div>
+          <div class="yumia-timeline-date">Fase 1</div>
+          <div class="yumia-timeline-title">Nuovi Temi</div>
+          <div class="yumia-timeline-desc">Stili grafici moderni, accademici ed eleganti</div>
         </div>
 
-        <div class="yumia-card" data-variant="accent">
-          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span>2. Lavoro di Gruppo Live</span></div>
-          <p>Poter scrivere le slide insieme ai compagni in tempo reale sul web.</p>
+        <div class="yumia-timeline-item">
+          <div class="yumia-timeline-dot"></div>
+          <div class="yumia-timeline-date">Fase 2</div>
+          <div class="yumia-timeline-title">Lavoro di Gruppo</div>
+          <div class="yumia-timeline-desc">Collaborazione live via web con i compagni</div>
         </div>
 
-        <div class="yumia-card" data-variant="success">
-          <div class="yumia-card-title" style="display:flex; align-items:center; gap:8px;"><span class="yumia-card-icon" style="display:inline-flex; align-items:center; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-card-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor" style="fill:none; stroke:currentColor;"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="11" font-weight="bold" fill="currentColor" font-family="sans-serif">E</text></svg></span><span>3. Anteprima dal Vivo</span></div>
-          <p>Vedere la slide che si aggiorna istantaneamente mentre scrivi il testo.</p>
+        <div class="yumia-timeline-item">
+          <div class="yumia-timeline-dot"></div>
+          <div class="yumia-timeline-date">Fase 3</div>
+          <div class="yumia-timeline-title">Anteprima Live</div>
+          <div class="yumia-timeline-desc">Rendering immediato mentre scrivi il testo</div>
         </div></div>
+
+        <div class="yumia-callout" data-severity="info" data-yumia-role="callout" style="background:var(--yumia-surface); border-left:4px solid var(--yumia-info); border-radius:var(--yumia-radius-card); padding:1rem 1.4rem; margin:0.8rem 0; width:100%; display:flex; flex-direction:column; gap:6px; box-sizing:border-box;">
+          <div style="font-weight:700; font-size:1.05rem; color:var(--yumia-info); margin-bottom:4px; display:flex; align-items:center;"><span style="display:inline-flex; align-items:center; margin-right:8px; vertical-align:middle;"><svg xmlns="http://www.w3.org/2000/svg" class="yumia-callout-icon" width="20" height="20" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="var(--yumia-info)" style="fill:none; stroke:var(--yumia-info);"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></svg></span>Sviluppo Aperto</div>
+          <div style="font-size:0.95rem; color:var(--yumia-text); line-height:1.5;">Un progetto in costante evoluzione per semplificare la vita a studenti e sviluppatori.</div>
+        </div>
       <div class="yumia-watermark">Yumia • Corso Web Dev 25726</div>
       <div class="yumia-progress-bar" style="width: 92%;"></div>
     </div>
