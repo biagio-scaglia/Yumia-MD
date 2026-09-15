@@ -11,7 +11,7 @@ Unlike legacy presentation tools (which rely on raw geometric coordinates) or Ma
 - **NPM Package**: yumiamd v0.1.31+ (https://www.npmjs.com/package/yumiamd)
 - **License**: MIT
 - **Primary Language**: TypeScript
-- **Docs Site**: https://yumiamd.org/
+- **Docs Site**: https://biagio-scaglia.github.io/Yumia-MD/
 
 ## The Yumia Philosophy
 1. **01 — Documents are Code**: Visual documents are structured, deterministic source text. Version controlled with Git, tested in CI pipelines, and reviewable in PRs.
@@ -66,10 +66,10 @@ slide "Revenue & Growth"
 ```
 
 ## Documentation Links
-- Docs home: https://yumiamd.org/
-- Full Language Specification: https://yumiamd.org/docs/language.md
-- Compiler Architecture: https://yumiamd.org/docs/architecture.md
-- CLI Reference: https://yumiamd.org/docs/cli.md
-- Known Limitations: https://yumiamd.org/docs/limitations.md
-- AI Generation Guidelines: https://yumiamd.org/docs/ai-guidelines.md
-- Complete Machine-Readable Corpus: https://yumiamd.org/llms-full.txt
+- Docs home: https://biagio-scaglia.github.io/Yumia-MD/
+- Full Language Specification: https://biagio-scaglia.github.io/Yumia-MD/docs/language.md
+- Compiler Architecture: https://biagio-scaglia.github.io/Yumia-MD/docs/architecture.md
+- CLI Reference: https://biagio-scaglia.github.io/Yumia-MD/docs/cli.md
+- Known Limitations: https://biagio-scaglia.github.io/Yumia-MD/docs/limitations.md
+- AI Generation Guidelines: https://biagio-scaglia.github.io/Yumia-MD/docs/ai-guidelines.md
+- Complete Machine-Readable Corpus: https://biagio-scaglia.github.io/Yumia-MD/llms-full.txt

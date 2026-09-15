@@ -2,7 +2,7 @@
 
 Author: Biagio Scaglia (https://github.com/biagio-scaglia)
 Package: yumiamd (v0.1.31)
-Website: https://yumiamd.org
+Website: https://biagio-scaglia.github.io/Yumia-MD
 Repository: https://github.com/biagio-scaglia/Yumia-MD
 Last-Updated: 2026-09-07
 
@@ -104,16 +104,16 @@ aspectRatio: "16:9"
 - Mermaid remains a source box in PPTX/PDF (client-rendered in HTML only).
 - `embedFonts` and POTX `--template` are not implemented yet.
 - Dense slides may clip; renderers do not auto-split overflowing content.
-- Full matrix: https://yumiamd.org/docs/limitations.md
+- Full matrix: https://biagio-scaglia.github.io/Yumia-MD/docs/limitations.md
 
 ---
 
 ## 6. Primary Links
-- Docs: https://yumiamd.org/
-- Language: https://yumiamd.org/docs/language.md
-- Architecture: https://yumiamd.org/docs/architecture.md
-- CLI: https://yumiamd.org/docs/cli.md
-- Limitations: https://yumiamd.org/docs/limitations.md
-- Short LLM feed: https://yumiamd.org/llms.txt
+- Docs: https://biagio-scaglia.github.io/Yumia-MD/
+- Language: https://biagio-scaglia.github.io/Yumia-MD/docs/language.md
+- Architecture: https://biagio-scaglia.github.io/Yumia-MD/docs/architecture.md
+- CLI: https://biagio-scaglia.github.io/Yumia-MD/docs/cli.md
+- Limitations: https://biagio-scaglia.github.io/Yumia-MD/docs/limitations.md
+- Short LLM feed: https://biagio-scaglia.github.io/Yumia-MD/llms.txt
 - npm: https://www.npmjs.com/package/yumiamd
 - GitHub: https://github.com/biagio-scaglia/Yumia-MD

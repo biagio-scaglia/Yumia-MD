@@ -268,7 +268,7 @@ pnpm add -g yumiamd
 - [AI Integration Guidelines](docs/ai-guidelines.md) — System prompts and deterministic generation workflows.
 - [Icon System](docs/icons.md) — Multi-provider icon registry (Lucide, Material, Tabler, FontAwesome).
 - [Formal Compiler Specification](docs/specification.md) — Canonical grammar and layout rules.
-- [Official Docs Site](https://yumiamd.org/) — Searchable documentation, FAQ, and playground.
+- [Official Docs Site](https://biagio-scaglia.github.io/Yumia-MD/) — Searchable documentation, FAQ, and playground.
 
 ---
 

@@ -40,4 +40,4 @@ User-agent: meta-externalagent
 Allow: /
 
 # Canonical Sitemaps & LLM Context Feeds
-Sitemap: https://yumiamd.org/sitemap.xml
+Sitemap: https://biagio-scaglia.github.io/Yumia-MD/sitemap.xml

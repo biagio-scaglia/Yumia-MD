@@ -2,153 +2,153 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://yumiamd.org/</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-    <xhtml:link rel="alternate" hreflang="en" href="https://yumiamd.org/" />
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://yumiamd.org/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://biagio-scaglia.github.io/Yumia-MD/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://biagio-scaglia.github.io/Yumia-MD/" />
   </url>
   <url>
-    <loc>https://yumiamd.org/#overview</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/#overview</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/#philosophy</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/#philosophy</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/#quickstart</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/#quickstart</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/#syntax-grammar</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/#syntax-grammar</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/#language-primitives</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/#language-primitives</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/#diagrams-graphs</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/#diagrams-graphs</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/#components-macros</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/#components-macros</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/#themes-styling</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/#themes-styling</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/#cli-reference</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/#cli-reference</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/#design-intelligence</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/#design-intelligence</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/#ai-workflows</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/#ai-workflows</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/#limitations</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/#limitations</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/#faq</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/#faq</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/#playground</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/#playground</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/llms.txt</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/llms.txt</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/llms-full.txt</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/llms-full.txt</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/docs/language.md</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/docs/language.md</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/docs/architecture.md</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/docs/architecture.md</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/docs/cli.md</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/docs/cli.md</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/docs/limitations.md</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/docs/limitations.md</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/docs/ai-guidelines.md</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/docs/ai-guidelines.md</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/docs/specification.md</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/docs/specification.md</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/docs/migration.md</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/docs/migration.md</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://yumiamd.org/docs/icons.md</loc>
+    <loc>https://biagio-scaglia.github.io/Yumia-MD/docs/icons.md</loc>
     <lastmod>2026-09-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.65</priority>
