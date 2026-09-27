@@ -276,6 +276,7 @@ slide "Cluster Performance: {{region}}" each="regions"
 Yumia provides first-class, native support for scientific formulas and mathematical equations across all output targets (interactive HTML5 SVG, high-definition Vector PDF, and OpenXML PPTX):
 
 #### 1. Native Yumia DSL
+
 ```yumia
 math "E = mc^2" caption="Special Relativity"
 
@@ -284,6 +285,7 @@ math caption="Gaussian Integral"
 ```
 
 #### 2. Markdown Directives & Code Fences
+
 ````markdown
 ```math
 \nabla \times \mathbf{B} = \mu_0\mathbf{J} + \mu_0\epsilon_0\frac{\partial \mathbf{E}}{\partial t}
@@ -301,10 +303,10 @@ $$
 ````
 
 #### 3. Inline Math in Text
+
 ```markdown
 The energy of a photon is given by $E = h\nu$ where $\nu$ represents frequency.
 ```
-
 
 ### Data Tables
 
