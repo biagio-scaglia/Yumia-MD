@@ -1124,7 +1124,15 @@ export class NativeYumiaParser {
       }
 
       case 'math': {
-        let expr = this.stripQuotes(tok.args);
+        const captionMatch = tok.args.match(/caption=["'](.*?)["']/);
+        const colorMatch = tok.args.match(/color=["'](.*?)["']/);
+        const fontSizeMatch = tok.args.match(/fontSize=["']?(\d+)["']?/);
+        const rawExpr = tok.args
+          .replace(/caption=["'].*?["']/, '')
+          .replace(/color=["'].*?["']/, '')
+          .replace(/fontSize=["']?\d+["']?/, '')
+          .trim();
+        let expr = this.stripQuotes(rawExpr);
         let nextIdx = idx + 1;
         if (!expr) {
           const mathLines: string[] = [];
@@ -1132,9 +1140,16 @@ export class NativeYumiaParser {
             mathLines.push(tokens[nextIdx]!.text);
             nextIdx++;
           }
-          expr = mathLines.join('\n');
+          expr = mathLines.join('\n').trim();
         }
-        return { element: createMath(expr), nextIdx };
+        return {
+          element: createMath(expr, true, {
+            caption: captionMatch ? captionMatch[1] : undefined,
+            color: colorMatch ? colorMatch[1] : undefined,
+            fontSize: fontSizeMatch ? parseInt(fontSizeMatch[1]!, 10) : undefined,
+          }),
+          nextIdx,
+        };
       }
 
       case 'table': {

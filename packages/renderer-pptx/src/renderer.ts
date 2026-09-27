@@ -42,6 +42,7 @@ import {
   themeSizeToPptxPoints,
   resolveLocalAsset,
   rasterizeIcon,
+  renderLatexToPng,
 } from '@yumiamd/renderer';
 import { resolveTheme, YumiaTheme } from '@yumiamd/theme';
 
@@ -1838,6 +1839,8 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
     const accentColor = this.cleanHexColor(theme.colors.primary);
     const textColor = this.cleanHexColor(theme.colors.text || 'ffffff');
 
+    const expr = math.expression || math.latex || '';
+
     // Equation Container Box
     pptxSlide.addShape(pptx.ShapeType.roundRect, {
       x: rect.x,
@@ -1859,29 +1862,109 @@ export class PptxRenderer implements YumiaRenderer<PptxOutput> {
       line: { color: accentColor, width: 0 },
     });
 
-    // Equation text
-    pptxSlide.addText(
-      [
-        {
-          text: math.expression,
-          options: {
-            fontFace: 'Cambria Math',
-            fontSize: 20,
-            color: textColor,
-            italic: true,
-            align: 'center',
-            valign: 'middle',
-          },
-        },
-      ],
-      {
-        x: rect.x + 0.15,
-        y: rect.y,
-        w: Math.max(0.1, rect.w - 0.3),
-        h: rect.h,
-        margin: 0.08,
+    const raster = renderLatexToPng(expr, {
+      display: math.displayMode ?? true,
+      color: '#' + textColor,
+      height: 80,
+      scale: 3,
+    });
+
+    if (raster.png && raster.png.length > 100) {
+      const base64Data = `data:image/png;base64,${raster.png.toString('base64')}`;
+      const aspectRatio = raster.width / Math.max(1, raster.height);
+      const maxImgW = Math.max(0.5, rect.w - 0.6);
+      const maxImgH = Math.max(0.4, rect.h - (math.caption ? 0.45 : 0.2));
+      let imgW = maxImgH * aspectRatio;
+      let imgH = maxImgH;
+      if (imgW > maxImgW) {
+        imgW = maxImgW;
+        imgH = Math.max(0.2, maxImgW / aspectRatio);
       }
-    );
+
+      const imgX = rect.x + (rect.w - imgW) / 2;
+      const imgY = rect.y + (math.caption ? 0.15 : (rect.h - imgH) / 2);
+
+      try {
+        pptxSlide.addImage({
+          data: base64Data,
+          x: imgX,
+          y: imgY,
+          w: imgW,
+          h: imgH,
+        });
+      } catch {
+        pptxSlide.addText(
+          [
+            {
+              text: expr,
+              options: {
+                fontFace: 'Cambria Math',
+                fontSize: 18,
+                color: textColor,
+                italic: true,
+                align: 'center',
+                valign: 'middle',
+              },
+            },
+          ],
+          {
+            x: rect.x + 0.15,
+            y: rect.y,
+            w: Math.max(0.1, rect.w - 0.3),
+            h: math.caption ? Math.max(0.2, rect.h - 0.3) : rect.h,
+            margin: 0.08,
+          }
+        );
+      }
+    } else {
+      // Fallback text
+      pptxSlide.addText(
+        [
+          {
+            text: expr,
+            options: {
+              fontFace: 'Cambria Math',
+              fontSize: 18,
+              color: textColor,
+              italic: true,
+              align: 'center',
+              valign: 'middle',
+            },
+          },
+        ],
+        {
+          x: rect.x + 0.15,
+          y: rect.y,
+          w: Math.max(0.1, rect.w - 0.3),
+          h: math.caption ? Math.max(0.2, rect.h - 0.3) : rect.h,
+          margin: 0.08,
+        }
+      );
+    }
+
+    if (math.caption) {
+      pptxSlide.addText(
+        [
+          {
+            text: math.caption,
+            options: {
+              fontFace: cleanFontFace(theme.typography.bodyFont),
+              fontSize: 10,
+              color: this.cleanHexColor(theme.colors.muted || 'a0a0a0'),
+              italic: true,
+              align: 'center',
+            },
+          },
+        ],
+        {
+          x: rect.x + 0.15,
+          y: rect.y + rect.h - 0.32,
+          w: Math.max(0.1, rect.w - 0.3),
+          h: 0.25,
+          margin: 0,
+        }
+      );
+    }
   }
 
   private renderDiagram(

@@ -287,7 +287,11 @@ export interface LayoutDirectiveElement extends BaseElement {
 export interface MathElement extends BaseElement {
   type: 'math';
   expression: string;
+  latex?: string | undefined;
   displayMode?: boolean | undefined;
+  caption?: string | undefined;
+  fontSize?: number | undefined;
+  color?: string | undefined;
 }
 
 export interface IconElement extends BaseElement {

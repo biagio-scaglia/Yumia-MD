@@ -291,11 +291,23 @@ export function createToc(title?: string, items?: TocItem[]): TocElement {
   };
 }
 
-export function createMath(expression: string, displayMode: boolean = true): MathElement {
+export function createMath(
+  expression: string,
+  displayMode: boolean = true,
+  options?: {
+    caption?: string | undefined;
+    fontSize?: number | undefined;
+    color?: string | undefined;
+  }
+): MathElement {
   return {
     type: 'math',
     expression,
+    latex: expression,
     displayMode,
+    ...(options?.caption !== undefined ? { caption: options.caption } : {}),
+    ...(options?.fontSize !== undefined ? { fontSize: options.fontSize } : {}),
+    ...(options?.color !== undefined ? { color: options.color } : {}),
   };
 }
 

@@ -447,6 +447,17 @@ export class DefaultYumiaParser implements YumiaParser {
           });
         }
 
+        const codeContent = codeLines.join('\n').trim();
+        if (language === 'math' || language === 'latex' || language === 'katex') {
+          const el = createMath(codeContent, true);
+          el.loc = {
+            start: { line: codeStartLine, column: 1 },
+            end: { line: baseLine + i - 1, column: 1 },
+          };
+          elements.push(el);
+          continue;
+        }
+
         const el = createCode(codeLines.join('\n'), language);
         if (highlight) {
           el.highlight = highlight;
@@ -560,6 +571,46 @@ export class DefaultYumiaParser implements YumiaParser {
           continue;
         }
 
+        // Check if single-line math e.g. :::math latex="E = mc^2" caption="Relativity" or :::math E = mc^2
+        if (
+          directiveHeader.startsWith('math ') ||
+          directiveHeader.startsWith('latex ') ||
+          directiveHeader.startsWith('katex ') ||
+          directiveHeader.startsWith('math:') ||
+          directiveHeader.startsWith('latex:') ||
+          directiveHeader.startsWith('katex:')
+        ) {
+          const mathHeaderArg = directiveHeader.replace(/^(?:math|latex|katex)[:\s]\s*/, '').trim();
+          const exprMatch = mathHeaderArg.match(/(?:latex|expr|expression)=['"](.*?)['"]/);
+          const captionMatch = mathHeaderArg.match(/caption=['"](.*?)['"]/);
+          const colorMatch = mathHeaderArg.match(/color=['"](.*?)['"]/);
+          const fontSizeMatch = mathHeaderArg.match(/fontSize=['"]?(\d+)['"]?/);
+
+          let expr = exprMatch ? exprMatch[1]! : '';
+          if (!expr && mathHeaderArg && !mathHeaderArg.startsWith('[')) {
+            expr = mathHeaderArg
+              .replace(/caption=['"].*?['"]/, '')
+              .replace(/color=['"].*?['"]/, '')
+              .replace(/fontSize=['"]?\d+['"]?/, '')
+              .trim();
+            expr = expr.replace(/^['"](.*)['"]$/, '$1');
+          }
+          if (expr) {
+            const el = createMath(expr, true, {
+              caption: captionMatch ? captionMatch[1] : undefined,
+              color: colorMatch ? colorMatch[1] : undefined,
+              fontSize: fontSizeMatch ? parseInt(fontSizeMatch[1]!, 10) : undefined,
+            });
+            el.loc = {
+              start: { line: currentLineNum, column: 1 },
+              end: { line: currentLineNum, column: rawLine.length + 1 },
+            };
+            elements.push(el);
+            i++;
+            continue;
+          }
+        }
+
         // Block with closing :::
         const [directiveName, ...args] = directiveHeader.split(' ');
         const directiveArg = args.join(' ').trim();
@@ -580,6 +631,8 @@ export class DefaultYumiaParser implements YumiaParser {
             innerLine.startsWith(':::transition') ||
             innerLine.startsWith(':::metric') ||
             innerLine.startsWith(':::layout') ||
+            ((innerLine.startsWith(':::math ') || innerLine.startsWith(':::latex ')) &&
+              (innerLine.includes('latex=') || innerLine.includes('expr='))) ||
             (innerLine.startsWith(':::badge') &&
               (innerLine.includes('text=') || innerLine.includes('variant='))) ||
             (innerLine.startsWith(':::chart') && innerLine.includes('data='));
@@ -832,9 +885,20 @@ export class DefaultYumiaParser implements YumiaParser {
             sEl.step = 1;
             elements.push(sEl);
           }
-        } else if (directiveName === 'math') {
+        } else if (
+          directiveName === 'math' ||
+          directiveName === 'latex' ||
+          directiveName === 'katex'
+        ) {
+          const captionMatch = directiveArg.match(/caption=['"](.*?)['"]/);
+          const colorMatch = directiveArg.match(/color=['"](.*?)['"]/);
+          const fontSizeMatch = directiveArg.match(/fontSize=['"]?(\d+)['"]?/);
           const expr = blockLines.join('\n').trim();
-          const el = createMath(expr, true);
+          const el = createMath(expr, true, {
+            caption: captionMatch ? captionMatch[1] : undefined,
+            color: colorMatch ? colorMatch[1] : undefined,
+            fontSize: fontSizeMatch ? parseInt(fontSizeMatch[1]!, 10) : undefined,
+          });
           el.loc = {
             start: { line: directiveStartLine, column: 1 },
             end: { line: baseLine + i - 1, column: 1 },

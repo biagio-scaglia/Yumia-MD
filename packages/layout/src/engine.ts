@@ -14,6 +14,7 @@ import {
   IconElement,
   ImageElement,
   ListElement,
+  MathElement,
   MetricElement,
   ParagraphElement,
   Presentation,
@@ -188,7 +189,10 @@ export class DefaultLayoutEngine implements LayoutEngine {
         return { element, bounds: { x, y, width, height: 52 } };
       }
       case 'math': {
-        const height = 90;
+        const m = element as MathElement;
+        const lineCount = (m.expression || m.latex || '').split('\n').length;
+        let height = Math.max(90, Math.min(260, 60 + lineCount * 35));
+        if (m.caption) height += 28;
         return { element, bounds: { x, y, width, height } };
       }
       case 'chart': {

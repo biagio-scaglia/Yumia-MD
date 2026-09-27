@@ -16,7 +16,8 @@
     "@resvg/resvg-js": "^2.6.2",
     "@yumiamd/ast": "workspace:*",
     "@yumiamd/layout": "workspace:*",
-    "@yumiamd/theme": "workspace:*"
+    "@yumiamd/theme": "workspace:*",
+    "mathjax-full": "^3.2.2"
   },
   "scripts": {
     "build": "tsc",

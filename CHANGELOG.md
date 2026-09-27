@@ -4,6 +4,20 @@ All notable changes to the Yumia project will be documented in this file.
 
 ---
 
+## [0.1.38] - 2026-09-27
+
+### Added
+
+- **First-Class LaTeX / KaTeX Mathematical Formulas Support**:
+  - Direct conversion of TeX formulas to crisp SVG vector paths (`mathjax-full`) with zero-dependency runtime in HTML.
+  - High-DPI transparent PNG rasterization (`@resvg/resvg-js`) for Vector PDF embedding and native OpenXML PowerPoint decks.
+  - Full support for block math (`$$...$$`), fenced code blocks (````math`, ````latex`, ````katex`), and directives (`:::math` / `:::latex`) with `caption`, `color`, and `fontSize` attributes.
+  - Inline mathematical equation rendering (`$formula$`) in Markdown paragraphs, lists, headers, and callouts.
+  - LRU in-memory cache for instant subsequent compilations.
+  - Comprehensive test suite `tests/math.test.ts` covering end-to-end multi-target parity.
+
+---
+
 ## [0.1.20] - 2026-09-05
 
 ### Added

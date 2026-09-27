@@ -271,11 +271,40 @@ slide "Cluster Performance: {{region}}" each="regions"
     metric "{{nodes}}" label="Active Nodes" variant="accent"
 ```
 
-### Mathematical Equations (KaTeX)
+### Mathematical Equations (LaTeX / KaTeX)
 
+Yumia provides first-class, native support for scientific formulas and mathematical equations across all output targets (interactive HTML5 SVG, high-definition Vector PDF, and OpenXML PPTX):
+
+#### 1. Native Yumia DSL
 ```yumia
-math "E = mc^2"
+math "E = mc^2" caption="Special Relativity"
+
+math caption="Gaussian Integral"
+  \int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
 ```
+
+#### 2. Markdown Directives & Code Fences
+````markdown
+```math
+\nabla \times \mathbf{B} = \mu_0\mathbf{J} + \mu_0\epsilon_0\frac{\partial \mathbf{E}}{\partial t}
+```
+
+:::math caption="Boltzmann Distribution" color="#38bdf8"
+P(E) = \frac{e^{-\beta E}}{Z}
+:::
+
+:::math latex="\sum_{i=1}^{n} i = \frac{n(n+1)}{2}" caption="Gauss Summation"
+
+$$
+\lim_{x \to 0} \frac{\sin x}{x} = 1
+$$
+````
+
+#### 3. Inline Math in Text
+```markdown
+The energy of a photon is given by $E = h\nu$ where $\nu$ represents frequency.
+```
+
 
 ### Data Tables
 

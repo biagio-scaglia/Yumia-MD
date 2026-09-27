@@ -30,7 +30,12 @@ import {
   TimelineElement,
   TocElement,
 } from '@yumiamd/ast';
-import { RenderContext, YumiaRenderer, defaultIconResolver } from '@yumiamd/renderer';
+import {
+  RenderContext,
+  YumiaRenderer,
+  defaultIconResolver,
+  renderLatexToSvg,
+} from '@yumiamd/renderer';
 import { defaultTheme, resolveTheme, ThemeOverrides, YumiaTheme } from '@yumiamd/theme';
 
 export interface HtmlRenderOptions {
@@ -2181,10 +2186,22 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
       }
       case 'math': {
         const mathEl = element as MathElement;
-        const expr = mathEl.expression;
+        const expr = mathEl.expression || mathEl.latex || '';
+        const color = mathEl.color || 'var(--yumia-text)';
+        const svg = renderLatexToSvg(expr, {
+          display: mathEl.displayMode ?? true,
+          color: mathEl.color || 'currentColor',
+          em: mathEl.fontSize ? Math.round(mathEl.fontSize * 1.1) : 20,
+        });
+        const captionHtml = mathEl.caption
+          ? `<div class="yumia-math-caption" style="margin-top: 10px; font-size: 0.88rem; color: var(--yumia-muted); text-align: center; font-style: italic;">${this.formatInline(mathEl.caption)}</div>`
+          : '';
         return `
-        <div class="yumia-math-container">
-          <div class="yumia-math-equation" data-expr="${this.escapeHtml(expr)}">$$${this.escapeHtml(expr)}$$</div>
+        <div class="yumia-math-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; margin: 1.2rem 0; padding: 1.25rem 1.5rem; background: var(--yumia-surface, rgba(255,255,255,0.04)); border: 1px solid var(--yumia-border, rgba(255,255,255,0.1)); border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); backdrop-filter: blur(8px);">
+          <div class="yumia-math-equation" style="display: flex; justify-content: center; align-items: center; width: 100%; overflow-x: auto; color: ${color};" data-expr="${this.escapeHtml(expr)}">
+            ${svg}
+          </div>
+          ${captionHtml}
         </div>`;
       }
       case 'chart': {
@@ -3058,10 +3075,35 @@ export class HtmlRenderer implements YumiaRenderer<HtmlOutput> {
   }
 
   private formatInline(text: string): string {
-    return this.escapeHtml(text)
+    if (!text) return '';
+    const mathTokens: string[] = [];
+    const withMathPlaceholders = text.replace(/\$([^$\n]+)\$/g, (_, mathExpr) => {
+      try {
+        const svg = renderLatexToSvg(mathExpr.trim(), {
+          display: false,
+          color: 'currentColor',
+          em: 15,
+          ex: 7,
+        });
+        const token = `__YUMIA_INLINE_MATH_${mathTokens.length}__`;
+        mathTokens.push(
+          `<span class="yumia-inline-math" style="display:inline-flex; align-items:center; vertical-align:middle; margin:0 2px;">${svg}</span>`
+        );
+        return token;
+      } catch {
+        return `$${mathExpr}$`;
+      }
+    });
+
+    let escaped = this.escapeHtml(withMathPlaceholders)
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/`(.*?)`/g, '<code>$1</code>');
+
+    for (let i = 0; i < mathTokens.length; i++) {
+      escaped = escaped.replace(`__YUMIA_INLINE_MATH_${i}__`, mathTokens[i]!);
+    }
+    return escaped;
   }
 
   private escapeHtml(str: string): string {

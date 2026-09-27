@@ -36,6 +36,7 @@ import {
   YumiaRenderer,
   findSystemFont,
   rasterizeIcon,
+  renderLatexToPng,
   resolveLocalAsset,
   resolveSlideGeometry,
   themeSizeToPdfPoints,
@@ -1592,25 +1593,74 @@ export class PdfRenderer implements YumiaRenderer<PdfOutput> {
 
       case 'math': {
         const mathEl = element as MathElement;
-        const boxH = 50;
+        const expr = mathEl.expression || mathEl.latex || '';
+        const color = mathEl.color || theme.colors.text || '#ffffff';
+        const raster = renderLatexToPng(expr, {
+          display: mathEl.displayMode ?? true,
+          color,
+          height: 60,
+          scale: 3,
+        });
+
+        const aspect = raster.width / Math.max(1, raster.height);
+        const maxW = Math.max(40, width - 40);
+        let mathImgW = Math.min(maxW, aspect * 40);
+        let mathImgH = 40;
+        if (mathImgW >= maxW) {
+          mathImgW = maxW;
+          mathImgH = Math.max(16, maxW / aspect);
+        }
+        const boxH = Math.max(68, mathImgH + (mathEl.caption ? 36 : 22));
+
         doc
-          .roundedRect(x, y, width, boxH, 6)
+          .roundedRect(x, y, width, boxH, 8)
           .fill(theme.colors.surface || 'rgba(255,255,255,0.06)');
         doc
-          .roundedRect(x, y, width, boxH, 6)
+          .roundedRect(x, y, width, boxH, 8)
           .lineWidth(1)
           .strokeColor(theme.colors.border || theme.colors.primary)
           .stroke();
         doc.rect(x, y, 4, boxH).fill(theme.colors.primary);
 
-        doc
-          .font(this.getPdfFont(theme, 'italic'))
-          .fontSize(14)
-          .fillColor(theme.colors.text)
-          .text(this.stripFormatting(mathEl.expression), x + 16, y + 18, {
-            width: width - 32,
-            align: 'center',
-          });
+        if (raster.png && raster.png.length > 100) {
+          try {
+            const imgY = y + (mathEl.caption ? 10 : (boxH - mathImgH) / 2);
+            doc.image(raster.png, x + (width - mathImgW) / 2, imgY, {
+              width: mathImgW,
+              height: mathImgH,
+            });
+          } catch {
+            doc
+              .font(this.getPdfFont(theme, 'italic'))
+              .fontSize(14)
+              .fillColor(theme.colors.text)
+              .text(this.stripFormatting(expr), x + 16, y + 18, {
+                width: width - 32,
+                align: 'center',
+              });
+          }
+        } else {
+          doc
+            .font(this.getPdfFont(theme, 'italic'))
+            .fontSize(14)
+            .fillColor(theme.colors.text)
+            .text(this.stripFormatting(expr), x + 16, y + 18, {
+              width: width - 32,
+              align: 'center',
+            });
+        }
+
+        if (mathEl.caption) {
+          doc
+            .font(this.getPdfFont(theme, 'italic'))
+            .fontSize(9)
+            .fillColor(theme.colors.muted || '#a0a0a0')
+            .text(this.stripFormatting(mathEl.caption), x + 16, y + boxH - 18, {
+              width: width - 32,
+              align: 'center',
+            });
+        }
+
         return y + boxH + 8;
       }
 
