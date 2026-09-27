@@ -11,6 +11,10 @@
   </p>
 </div>
 
+<p align="center">
+  <img src="https://media.tenor.com/9h8PPuYCDM8AAAAM/atelier-yumia.gif" alt="Atelier Yumia">
+</p>
+
 ---
 
 ## One Source. Every Visual Format.
