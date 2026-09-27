@@ -1321,15 +1321,115 @@ export class DefaultYumiaParser implements YumiaParser {
     const layout = layoutMatch && layoutMatch[1] === 'vertical' ? 'vertical' : 'horizontal';
     const items: TimelineItem[] = [];
 
+    let currentItem: Partial<TimelineItem> | null = null;
+
+    const flushCurrentItem = () => {
+      if (currentItem && (currentItem.title || currentItem.date || currentItem.description)) {
+        items.push({
+          title: currentItem.title || currentItem.date || 'Milestone',
+          date: currentItem.date,
+          description: currentItem.description,
+        });
+        currentItem = null;
+      }
+    };
+
     for (const line of blockLines) {
       const trimmed = line.trim();
       if (!trimmed) continue;
 
-      const bracketMatch = trimmed.match(/^[-*]?\s*\[(.*?)\]\s*(.*?)(?::\s*(.*))?$/);
-      if (bracketMatch && bracketMatch[1] && bracketMatch[2]) {
+      if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
+        flushCurrentItem();
+
+        const contentAfterDash = trimmed.replace(/^[-*]\s*/, '').trim();
+
+        // Check if inline attributes: date="..." title="..." description="..."
+        const dateAttr = contentAfterDash.match(/\bdate=["']([^"']+)["']/);
+        const titleAttr = contentAfterDash.match(/\btitle=["']([^"']+)["']/);
+        const descAttr = contentAfterDash.match(/\b(?:description|desc)=['"]([^"']+)['']/);
+        if (dateAttr || titleAttr || descAttr) {
+          items.push({
+            date: dateAttr ? dateAttr[1] : undefined,
+            title:
+              titleAttr?.[1] ||
+              contentAfterDash
+                .replace(/\b(date|title|description|desc)=['"][^"']+['"]/g, '')
+                .trim() ||
+              'Milestone',
+            description: descAttr ? descAttr[1] : undefined,
+          });
+          continue;
+        }
+
+        // Check if YAML key-value on the same line after dash: "- date: ..." or "- title: ..."
+        if (contentAfterDash.startsWith('date:')) {
+          currentItem = { date: contentAfterDash.slice(5).trim() };
+          continue;
+        }
+        if (contentAfterDash.startsWith('title:')) {
+          currentItem = { title: contentAfterDash.slice(6).trim() };
+          continue;
+        }
+        if (contentAfterDash.startsWith('description:') || contentAfterDash.startsWith('desc:')) {
+          currentItem = {
+            description: contentAfterDash.replace(/^(?:description|desc):/, '').trim(),
+          };
+          continue;
+        }
+
+        // Check [date] Title: Description
+        const bracketMatch = contentAfterDash.match(/^\[(.*?)\]\s*(.*?)(?::\s*(.*))?$/);
+        if (bracketMatch && bracketMatch[1]) {
+          items.push({
+            date: bracketMatch[1].trim(),
+            title: bracketMatch[2]?.trim() || '',
+            description: bracketMatch[3] ? bracketMatch[3].trim() : undefined,
+          });
+          continue;
+        }
+
+        // Check pipe format: date | title | description
+        if (contentAfterDash.includes('|')) {
+          const parts = contentAfterDash.split('|').map((s) => s.trim());
+          if (parts.length >= 2) {
+            items.push({
+              date: parts[0],
+              title: parts[1] || '',
+              description: parts[2] || undefined,
+            });
+            continue;
+          }
+        }
+
+        // Generic single line bullet
+        items.push({
+          title: contentAfterDash,
+        });
+        continue;
+      }
+
+      // Indented / continuation line belonging to currentItem
+      if (currentItem) {
+        if (trimmed.startsWith('title:')) {
+          currentItem.title = trimmed.slice(6).trim();
+          continue;
+        }
+        if (trimmed.startsWith('description:') || trimmed.startsWith('desc:')) {
+          currentItem.description = trimmed.replace(/^(?:description|desc):/, '').trim();
+          continue;
+        }
+        if (trimmed.startsWith('date:')) {
+          currentItem.date = trimmed.slice(5).trim();
+          continue;
+        }
+      }
+
+      // Fallback bracket or pipe
+      const bracketMatch = trimmed.match(/^\[(.*?)\]\s*(.*?)(?::\s*(.*))?$/);
+      if (bracketMatch && bracketMatch[1]) {
         items.push({
           date: bracketMatch[1].trim(),
-          title: bracketMatch[2].trim(),
+          title: bracketMatch[2]?.trim() || '',
           description: bracketMatch[3] ? bracketMatch[3].trim() : undefined,
         });
         continue;
@@ -1348,9 +1448,11 @@ export class DefaultYumiaParser implements YumiaParser {
       }
 
       items.push({
-        title: trimmed.replace(/^[-*]\s*/, ''),
+        title: trimmed,
       });
     }
+
+    flushCurrentItem();
 
     return createTimeline(items, layout);
   }
