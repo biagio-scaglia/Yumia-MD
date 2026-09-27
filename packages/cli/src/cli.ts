@@ -1,5 +1,5 @@
 import { mkdirSync, readFileSync, watch as fsWatch, writeFileSync } from 'node:fs';
-import { basename, dirname, extname, join, resolve } from 'node:path';
+import { basename, dirname, extname, isAbsolute, join, resolve } from 'node:path';
 import { parseYumia } from '@yumiamd/parser';
 import { DefaultLayoutEngine } from '@yumiamd/layout';
 import { Presentation } from '@yumiamd/ast';
@@ -9,6 +9,7 @@ import { PptxRenderer } from '@yumiamd/renderer-pptx';
 import { HtmlRenderer } from '@yumiamd/renderer-html';
 import { PdfRenderer } from '@yumiamd/renderer-pdf';
 import { startDevServer } from './dev-server.js';
+import { STARTER_TEMPLATES, listTemplates } from './templates.js';
 
 export const VERSION = '0.1.37';
 
@@ -20,7 +21,9 @@ Usage:
   yumia <command> [options] [file]
 
 Commands:
-  init [name]        Scaffold a new Yumia presentation project
+  init [name]        Scaffold a new presentation project (--template <type> --native)
+  create [name]      Alias for 'init' to scaffold a presentation
+  templates          List all available starter templates
   dev <file>         Start live-reload dev server with instant HTML preview & Inspector
   check <file>       Run design audit, contrast & density checks (--optimize)
   explain <file>     Explain document composition, design metrics, and visual rhythm
@@ -112,16 +115,44 @@ export async function runCli(
     };
   }
 
-  if (command === 'init') {
-    const projectName = target || 'yumia-deck';
-    const projectDir = join(process.cwd(), projectName);
+  if (
+    command === 'templates' ||
+    (command === 'init' && (args.includes('--list') || args.includes('-l')))
+  ) {
+    return {
+      exitCode: 0,
+      output: isJson
+        ? JSON.stringify(
+            Object.values(STARTER_TEMPLATES).map((t) => ({
+              id: t.id,
+              name: t.name,
+              theme: t.theme,
+              description: t.description,
+            })),
+            null,
+            2
+          )
+        : listTemplates(),
+    };
+  }
+
+  if (command === 'init' || command === 'create') {
+    const rawTarget = target || 'yumia-deck';
+    const projectDir = isAbsolute(rawTarget) ? rawTarget : resolve(process.cwd(), rawTarget);
+    const projectName = basename(projectDir);
+    const templateId = (
+      getFlagValue(args, ['--template', '-T', '--tpl']) || 'pitch-deck'
+    ).toLowerCase();
+    const isNative = args.includes('--native');
+
+    const template = STARTER_TEMPLATES[templateId] || STARTER_TEMPLATES['pitch-deck']!;
 
     try {
       mkdirSync(projectDir, { recursive: true });
       mkdirSync(join(projectDir, 'assets'), { recursive: true });
       mkdirSync(join(projectDir, 'themes'), { recursive: true });
 
-      const chosenTheme = cliTheme || 'default';
+      const chosenTheme = cliTheme || template.theme;
       const colorLines: string[] = [];
       if (cliBg) colorLines.push(`background: "${cliBg}"`);
       if (cliPrimary) colorLines.push(`primary: "${cliPrimary}"`);
@@ -131,45 +162,22 @@ export async function runCli(
 
       const colorsYaml = colorLines.length > 0 ? `\n${colorLines.join('\n')}` : '';
 
-      const sampleContent = `---
-title: ${projectName}
-theme: ${chosenTheme}
-aspectRatio: "16:9"${colorsYaml}
----
+      let content = isNative
+        ? template.generateNative(projectName)
+        : template.generateMarkdown(projectName);
 
-# ${projectName}
-Presentation authoring designed for humans and AI.
+      if (chosenTheme !== template.theme && !isNative) {
+        content = content.replace(
+          `theme: "${template.theme}"`,
+          `theme: "${chosenTheme}"${colorsYaml}`
+        );
+      } else if (chosenTheme !== template.theme && isNative) {
+        content = content.replace(`theme "${template.theme}"`, `theme "${chosenTheme}"`);
+      }
 
-:::notes
-Opening slide introducing the presentation deck.
-:::
-
----
-
-# Architecture & Modularity
-
-:::columns ratios="50:50"
-
-:::column
-:::card Core Pipeline variant="primary"
-- Semantic AST model
-- Markdown + Directive parser
-- 100% Deterministic layout
-:::
-:::
-
-:::column
-:::card Native Output variant="warning"
-- Fully editable PowerPoint objects
-- Vector PDF documents
-- Interactive HTML decks
-:::
-:::
-
-:::
-`.trim();
-
-      writeFileSync(join(projectDir, 'presentation.yumia.md'), sampleContent, 'utf-8');
+      const fileName = isNative ? 'presentation.yumia' : 'presentation.yumia.md';
+      const filePath = join(projectDir, fileName);
+      writeFileSync(filePath, content, 'utf-8');
 
       if (isJson) {
         return {
@@ -179,8 +187,10 @@ Opening slide introducing the presentation deck.
               success: true,
               project: projectName,
               path: projectDir,
-              entry: join(projectDir, 'presentation.yumia.md'),
+              entry: filePath,
+              template: template.id,
               theme: chosenTheme,
+              syntax: isNative ? 'native' : 'markdown',
             },
             null,
             2
@@ -190,7 +200,7 @@ Opening slide introducing the presentation deck.
 
       return {
         exitCode: 0,
-        output: `✓ Created presentation project '${projectName}' at ./${projectName}\n  Theme: ${chosenTheme}${colorsYaml ? ` (with custom colors)` : ''}\n  Edit ./${projectName}/presentation.yumia.md to get started!\n  Then compile with: yumia build ./${projectName}/presentation.yumia.md`,
+        output: `✓ Created presentation project '${projectName}' at ./${projectName}\n  Template: ${template.name} (${template.id})\n  Theme:    ${chosenTheme}${colorsYaml ? ` (with custom colors)` : ''}\n  Syntax:   ${isNative ? 'Native Yumia (.yumia)' : 'Extended Markdown (.yumia.md)'}\n\n  Edit ./${projectName}/${fileName} to get started!\n  Preview live:  yumia dev ./${projectName}/${fileName}\n  Compile deck:  yumia build ./${projectName}/${fileName} --format pptx`,
       };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

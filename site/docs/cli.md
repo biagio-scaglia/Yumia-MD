@@ -182,6 +182,30 @@ yumia deploy presentation.yumia --provider gh-pages --out public
 
 ---
 
+## 8. `yumia init` & `yumia create` — Starter Templates
+
+Quickly scaffold professional presentation decks with built-in best practices, typography scales, and theme palettes:
+
+```bash
+# Scaffold a Pitch Deck (default)
+yumia init my-pitch-deck --template pitch-deck
+
+# Scaffold a Technical Architecture Deck in Native Yumia (.yumia)
+yumia create cloud-architecture --template tech-architecture --native
+
+# List all available starter templates
+yumia templates
+```
+
+### Available Templates:
+
+- 🚀 **`pitch-deck`**: Series A / Seed venture pitch with ARR metrics, comparative analysis, growth charts, and roadmap timeline.
+- 📐 **`scientific-research`**: Academic research deck with LaTeX equations ($E=mc^2$, Schrödinger wave equations), scatter/line convergence charts, and citations.
+- ☁️ **`tech-architecture`**: Distributed systems review with sequence diagrams, microservices grids with icons, and syntax-highlighted code.
+- 📊 **`quarterly-business`**: Executive leadership QBR deck with KPI scorecards, segment revenue charts, and regional tables.
+
+---
+
 ## 🎨 Global Theming & Color Override Flags
 
 All compile and server commands accept runtime theme overrides:

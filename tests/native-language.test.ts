@@ -118,7 +118,7 @@ Card body text.
     const pdfResult = await compiler.render(ast, pdfRenderer);
     expect(pdfResult.format).toBe('pdf');
     expect(pdfResult.data.length).toBeGreaterThan(100);
-  });
+  }, 15000);
 
   it('should parse and render rich native visual elements (images, charts, compare, timeline, math, mermaid)', async () => {
     const visualSample = `

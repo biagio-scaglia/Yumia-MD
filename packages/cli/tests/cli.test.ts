@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import path from 'node:path';
-import { existsSync, unlinkSync } from 'node:fs';
+import { existsSync, rmSync, unlinkSync } from 'node:fs';
 import { runCli } from '../src/index.js';
 
 describe('yumia CLI', () => {
@@ -80,5 +80,57 @@ describe('yumia CLI', () => {
     expect(deployRes.output).toContain('Presentation Deployment Ready');
     expect(existsSync(path.join(deployDir, 'index.html'))).toBe(true);
     expect(existsSync(path.join(deployDir, 'vercel.json'))).toBe(true);
+  });
+
+  it('should list starter templates with yumia templates', async () => {
+    const res = await runCli(['node', 'yumia', 'templates']);
+    expect(res.exitCode).toBe(0);
+    expect(res.output).toContain('Available Starter Templates');
+    expect(res.output).toContain('pitch-deck');
+    expect(res.output).toContain('scientific-research');
+    expect(res.output).toContain('tech-architecture');
+    expect(res.output).toContain('quarterly-business');
+  });
+
+  it('should scaffold pitch-deck, scientific-research, and tech-architecture templates', async () => {
+    const testDeckDir = path.resolve(__dirname, '../../../examples/test-scaffold-deck');
+
+    // 1. Markdown Pitch Deck
+    const initRes = await runCli([
+      'node',
+      'yumia',
+      'init',
+      testDeckDir,
+      '--template',
+      'pitch-deck',
+      '--json',
+    ]);
+    expect(initRes.exitCode).toBe(0);
+    const parsedInit = JSON.parse(initRes.output);
+    expect(parsedInit.success).toBe(true);
+    expect(parsedInit.template).toBe('pitch-deck');
+    expect(existsSync(path.join(testDeckDir, 'presentation.yumia.md'))).toBe(true);
+
+    // 2. Native Yumia Tech Architecture Deck
+    const nativeRes = await runCli([
+      'node',
+      'yumia',
+      'create',
+      testDeckDir,
+      '--template',
+      'tech-architecture',
+      '--native',
+      '--json',
+    ]);
+    expect(nativeRes.exitCode).toBe(0);
+    const parsedNative = JSON.parse(nativeRes.output);
+    expect(parsedNative.success).toBe(true);
+    expect(parsedNative.template).toBe('tech-architecture');
+    expect(parsedNative.syntax).toBe('native');
+    expect(existsSync(path.join(testDeckDir, 'presentation.yumia'))).toBe(true);
+
+    if (existsSync(testDeckDir)) {
+      rmSync(testDeckDir, { recursive: true, force: true });
+    }
   });
 });

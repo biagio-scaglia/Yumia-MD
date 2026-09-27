@@ -15,6 +15,12 @@ All notable changes to the Yumia project will be documented in this file.
   - Inline mathematical equation rendering (`$formula$`) in Markdown paragraphs, lists, headers, and callouts.
   - LRU in-memory cache for instant subsequent compilations.
   - Comprehensive test suite `tests/math.test.ts` covering end-to-end multi-target parity.
+- **Interactive CLI Starter Templates (`yumia init` / `yumia create` / `yumia templates`)**:
+  - `pitch-deck`: Venture pitch with ARR metrics, comparative analysis, growth charts, and roadmap.
+  - `scientific-research`: Peer-reviewed academic deck with LaTeX math equations, statistical convergence graphs, and citations.
+  - `tech-architecture`: Microservices architecture with sequence diagrams, infrastructure grids with icons, and syntax-highlighted code.
+  - `quarterly-business`: Executive QBR deck with KPI scorecards, segment revenue charts, and regional tables.
+  - Support for both Extended Markdown (`.yumia.md`) and Native Yumia DSL (`--native`).
 
 ---
 
